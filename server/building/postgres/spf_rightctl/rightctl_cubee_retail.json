@@ -1,0 +1,235 @@
+{
+    "translations": [
+        {
+            "id": "headquarters",
+            "locale": "ja",
+            "t": "メンバーA"
+        },
+        {
+            "id": "branch",
+            "locale": "ja",
+            "t": "メンバーB"
+        },
+        {
+            "id": "viewer",
+            "locale": "ja",
+            "t": "ゲスト"
+        },
+        {
+            "id": "p_view_feed",
+            "locale": "ja",
+            "t": "フィード閲覧"
+        },
+        {
+            "id": "p_send_feed",
+            "locale": "ja",
+            "t": "フィード投稿"
+        },
+        {
+            "id": "p_view_community",
+            "locale": "ja",
+            "t": "プロジェクト閲覧"
+        },
+        {
+            "id": "p_send_community",
+            "locale": "ja",
+            "t": "プロジェクト投稿"
+        },
+        {
+            "id": "p_manage_community",
+            "locale": "ja",
+            "t": "プロジェクト管理"
+        },
+        {
+            "id": "p_create_community",
+            "locale": "ja",
+            "t": "プロジェクト作成"
+        },
+        {
+            "id": "p_view_groupchat",
+            "locale": "ja",
+            "t": "グループチャット閲覧"
+        },
+        {
+            "id": "p_send_groupchat",
+            "locale": "ja",
+            "t": "グループチャット投稿"
+        },
+        {
+            "id": "p_manage_groupchat",
+            "locale": "ja",
+            "t": "グループチャット管理"
+        },
+        {
+            "id": "p_create_groupchat",
+            "locale": "ja",
+            "t": "グループチャット作成"
+        }
+    ],
+    "rights": [
+        {
+            "action": "sendMessageToFeed",
+            "enable_flag": true
+        },
+        {
+            "action": "viewMessageInFeed",
+            "enable_flag": true
+        },
+        {
+            "action": "createGroupchat",
+            "enable_flag": true
+        },
+        {
+            "action": "manageGroupchat",
+            "enable_flag": true
+        },
+        {
+            "action": "sendMessageToGroupchat",
+            "enable_flag": true
+        },
+        {
+            "action": "viewMessageInGroupchat",
+            "enable_flag": true
+        },
+        {
+            "action": "createCommunity",
+            "enable_flag": true
+        },
+        {
+            "action": "manageCommunity",
+            "enable_flag": true
+        },
+        {
+            "action": "sendMessageToCommunity",
+            "enable_flag": true
+        },
+        {
+            "action": "viewMessageInCommunity",
+            "enable_flag": true
+        },
+        {
+            "action": "searchAllMessages",
+            "enable_flag": true
+        },
+        {
+            "action": "deleteAllMessages",
+            "enable_flag": true
+        }
+    ],
+    "policies": [
+        {
+            "id": "p_view_feed",
+            "policy_tid": "p_view_feed",
+            "rights": [
+                "viewMessageInFeed"
+            ]
+        },
+        {
+            "id": "p_send_feed",
+            "policy_tid": "p_send_feed",
+            "rights": [
+                "viewMessageInFeed",
+                "sendMessageToFeed"
+            ]
+        },
+        {
+            "id": "p_view_community",
+            "policy_tid": "p_view_community",
+            "rights": [
+                "viewMessageInCommunity"
+            ]
+        },
+        {
+            "id": "p_send_community",
+            "policy_tid": "p_send_community",
+            "rights": [
+                "viewMessageInCommunity",
+                "sendMessageToCommunity"
+            ]
+        },
+        {
+            "id": "p_manage_community",
+            "policy_tid": "p_manage_community",
+            "rights": [
+                "manageCommunity"
+            ]
+        },
+        {
+            "id": "p_create_community",
+            "policy_tid": "p_create_community",
+            "rights": [
+                "manageCommunity",
+                "createCommunity"
+            ]
+        },
+        {
+            "id": "p_view_groupchat",
+            "policy_tid": "p_view_groupchat",
+            "rights": [
+                "viewMessageInGroupchat"
+            ]
+        },
+        {
+            "id": "p_send_groupchat",
+            "policy_tid": "p_send_groupchat",
+            "rights": [
+                "viewMessageInGroupchat",
+                "sendMessageToGroupchat"
+            ]
+        },
+        {
+            "id": "p_manage_groupchat",
+            "policy_tid": "p_manage_groupchat",
+            "rights": [
+                "viewMessageInGroupchat",
+                "sendMessageToGroupchat",
+                "manageGroupchat"
+            ]
+        },
+        {
+            "id": "p_create_groupchat",
+            "policy_tid": "p_create_groupchat",
+            "rights": [
+                "viewMessageInGroupchat",
+                "sendMessageToGroupchat",
+                "manageGroupchat",
+                "createGroupchat"
+            ]
+        },
+        {
+            "id": "p_surveillance_messages",
+            "policy_tid": "p_surveillance_messages",
+            "rights": [
+                "searchAllMessages",
+                "deleteAllMessages"
+            ]
+        }
+    ],
+    "roles": [
+        {
+            "id": "headquarters",
+            "role_tid": "headquarters",
+            "policies": [
+                "p_send_feed",
+                "p_create_community",
+                "p_create_groupchat"
+            ]
+        },
+        {
+            "id": "branch",
+            "role_tid": "branch",
+            "policies": [
+                "p_view_feed",
+                "p_create_community",
+                "p_create_groupchat"
+            ]
+        },
+        {
+            "id": "viewer",
+            "role_tid": "viewer",
+            "policies": [
+                "p_view_feed"
+            ]
+        }
+    ]
+}

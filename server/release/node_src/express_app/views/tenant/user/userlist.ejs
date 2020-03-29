@@ -1,0 +1,70 @@
+<!-- ユーザ一覧 -->
+<h3><%= pageTitle %></h3>
+<% if (error) { %>
+<div><pre class="license"><%= message %></pre></div>
+<% } else { %>
+<% if (result) { %>
+<% if (message) { %>
+<div><pre class="license"><%= message %></pre></div>
+<% } %>
+    <% if (items) { %>
+        <script type="text/javascript">
+            //ユーザ削除要求時
+            function deleteUser(uid) {
+                frmPost.action = "<%= location %>/admintool/tenant/<%= tid %>/user/" + uid;
+                frmPost._method.value = "delete";
+                frmPost.submit();
+            };
+        </script>
+        <div class="">
+            <form class="offset7 span5">
+                <!-- select display perPage -->
+                <label class="">ページ内表示件数:</label>
+                <select class="input-medium" onchange="location.href=this.value">
+                    <%- perPageOptions %>
+                </select>
+            </form>
+        </div>
+        <table class="table table-striped">
+            <thead>
+            <tr class="user-list-tr">
+                <th><%= product_name %>アカウント</th>
+                <th>ニックネーム</th>
+                <th>所属</th>
+                <th>利用停止</th>
+            </tr>
+            </thead>
+            <tbody>
+            <% if (items) { %>
+                <% for (var _userCount = 0; _userCount < items.length; _userCount++) { %>
+                    <tr>
+                        <td class="user-list-account <%= (items[_userCount].status == 2)? 'line-through' : '' %>"><a href="<%= location %>/admintool/tenant/<%= tid %>/user/<%= items[_userCount].id %>/update?account=<%= items[_userCount].loginAccount %>"><%= items[_userCount].loginAccount %></a></td>
+                        <td class="user-list-nickname <%= (items[_userCount].status == 2)? 'line-through' : '' %>"><%= items[_userCount].nickName %></td>
+                        <td class="user-list-group <%= (items[_userCount].status == 2)? 'line-through' : '' %>"><%= items[_userCount].group %></td>
+                        <% if(updatable) { %>
+                            <td class="user-list-status"><input type="checkbox" action="<%= location %>/admintool/tenant/<%= tid %>/user/<%= items[_userCount].id %>/status" ATH="<%= accessTokenHash %>" <%= (items[_userCount].status == 2)? 'checked' : '' %>/></td>
+                        <% } else { %>
+                            <td class="user-list-status"><input type="checkbox" disabled action="<%= location %>/admintool/tenant/<%= tid %>/user/<%= items[_userCount].id %>/status" ATH="<%= accessTokenHash %>" <%= (items[_userCount].status == 2)? 'checked' : '' %>/></td>
+                        <% } %>
+                    </tr>
+                <% } %>
+            <% } %>
+            </tbody>
+        </table>
+        <!-- ページネーション -->
+        <%- pagination %>
+        <!-- 削除時にPostするデータ -->
+        <form name="frmPost" method="post">
+            <input type="hidden" name="_method" value="" />
+            <input type="hidden" name="pageIndex" value="<%= currentPage %>" />
+            <input type="hidden" name="perPage" value="<%= selectedPerPage %>" />
+            <input type="hidden" name="allUserCount" value="<%= allCount %>" />
+        </form>
+    <% } %>
+<% } else { %>
+    <!-- 一覧取得失敗 -->
+    <p><%= message %></p>
+<% } %>
+
+<% } %>
+<script src="<%= location %>/admintool/js/userlist_ejs.js"></script>

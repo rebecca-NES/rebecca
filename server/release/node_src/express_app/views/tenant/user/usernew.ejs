@@ -1,0 +1,75 @@
+<!-- ユーザ新規登録 -->
+<h3><%= pageTitle %></h3>
+
+<% if(error) { %>
+
+<div><pre class="license"><%= message %></pre></div>
+
+<% } else { %>
+
+<p class="text-warning"><%= warningMessage %></p>
+
+<form class="form-horizontal" name="userInfo" method="post" action="<%= actionPath %>">
+    <div class="control-group">
+        <label class="control-label" for="inputAccount"><%= account %></label>
+        <div class="controls">
+            <input type="text" id="inputAccount" placeholder="" name="account" value="<%= txtAccount %>" maxlength="252" class="ime-mode-disable" required>
+            <small class="text-error"><%= errMessageAccount %></small>
+        </div>
+    </div>
+    <div class="control-group">
+        <label class="control-label" for="inputNickname"><%= nickname %></label>
+        <div class="controls">
+            <input type="text" id="inputNickname" placeholder="" name="nickname" value="<%= txtNickname %>" maxlength="20">
+            <small class="text-error"><%= errMessageNickname %></small>
+        </div>
+    </div>
+    <div class="control-group">
+        <label class="control-label" for="inputGroup"><%= group %></label>
+        <div class="controls">
+            <input type="text" id="inputGroup" placeholder="" name="group" value="<%= txtGroup %>" />
+            <small class="text-error"><%= errMessageGroup %></small>
+        </div>
+    </div>
+    <div class="control-group">
+        <label class="control-label" for="inputPassword"><%= password %></label>
+        <div class="controls">
+            <input type="password" id="inputPassword" placeholder="" name="password" required>
+            <small class="text-error"><%= errMessagePassword %></small>
+        </div>
+    </div>
+    <div class="control-group">
+        <label class="control-label" for="inputConfirmPassword"><%= confirmPassword %></label>
+        <div class="controls">
+            <input type="password" id="inputConfirmPassword" placeholder="" name="confirmPassword" required>
+            <small class="text-error"><%= errMessageConfirmPassword %></small>
+        </div>
+    </div>
+    <div class="control-group">
+        <label class="control-label" for="roleslist"><%= labelAccountType %></label>
+        <div class="controls">
+          <select id="selectAccountType" name="accountType" required>
+            <option value=""></option>
+            <% for(var i in accountTypeList ) { %>
+              <option value=<%= i %>><%= accountTypeList[i] %>(<%= i %>)</option>
+            <% } %>
+          </select>
+        </div>
+    </div>
+    <div class="control-group">
+        <div class="controls">
+            <input type="hidden" name="ATH" value="<%= accessTokenHash %>">
+            <button type="submit" class="btn"><%= register %></button>
+        </div>
+    </div>
+</form>
+<% if (message) { %>
+<div><pre class="license"><%= message %></pre></div>
+<% } %>
+<% } %>
+<% if(successMessage) {%>
+<p class="offset1"> <%= successMessage %> </p>
+<% } %>
+<% if(errRegisterAccountType) {%>
+<div><pre class="license"> <%= errRegisterAccountType %> </pre></div>
+<% } %>

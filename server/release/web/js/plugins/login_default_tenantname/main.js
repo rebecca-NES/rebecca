@@ -1,0 +1,1 @@
+$(document).ready(function(){$("#txtLogintenant").attr("value","spf"),$("#txtLoginid").focus()});
