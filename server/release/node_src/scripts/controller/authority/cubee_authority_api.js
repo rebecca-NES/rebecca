@@ -1,18 +1,7 @@
-/*
-Copyright 2020 NEC Solution Innovators, Ltd.
-
-Licensed under the Apache License, Version 2.0 (the "License");
-you may not use this file except in compliance with the License.
-You may obtain a copy of the License at
-
-    http://www.apache.org/licenses/LICENSE-2.0
-
-Unless required by applicable law or agreed to in writing, software
-distributed under the License is distributed on an "AS IS" BASIS,
-WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-See the License for the specific language governing permissions and
-limitations under the License.
-*/
+/**
+ * Cubee Authority Web API interface module
+ * @module  src/scripts/controller/auhority/cubee_authority_api
+ */
 
 'use strict';
 
@@ -23,26 +12,51 @@ const SessionDataMannager = require('../session_data_manager');
 
 const SynchronousBridgeNodeXmpp = require('../synchronous_bridge_node_xmpp');
 const API_STATUS = require('../const').API_STATUS;
+// Authority配下ではないutils
 const Utils = require('../../utils');
 
+// TODO we should not use Authority's files without IF file.
 const utils = require('../../Authority/utils');
+//const role_api = require('../../Authority/authority_api');
 
 
 const requestMap = {
     [utils.API_GET_ROLES]: getRoles,
     [utils.API_GET_ROLE_ASSIGNMENT]: getRoleAssignmentForUser,
     [utils.API_ASSIGN_ROLE]: assignRoleToUser,
+    // 5 権限参照
     [utils.API_RIGHT_GET]: getRights,
+    // 6.1 ポリシー更新
     [utils.API_POLICY_CREATE]: createPolicy,
+    // 6.2 権限更新
     [utils.API_RIGHT_CREATE]: createRight,
+    // 7 ポリシー紐付
     [utils.API_POLICY_ASSIGN_TO_USERS]: assignPolicyToUsers,
+    // 8 リソース関連ユーザー情報参照
     [utils.API_POLICIES_OF_USER_GET_BY_RESOURCE]: getUserPoliciesByResource,
+    // 9 ポリシー紐づけ解除
     [utils.API_POLICY_UNASSIGN_FROM_USERS]: unassignPolicyFromUser,
+    //10 ユーザー権限保持チェック
     [utils.API_POLICY_CHECK]: checkUserHavePolicy,
+    //11 ルームに紐付された権限をとポリシーを削除
     [utils.API_DELETE_RIGHT_POLICY_RESOURCE]: deleteRightPolicyOfResource
 };
 
+/**
+ * recieve
+ *
+ * 権限管理に関するAPIの受け口。
+ * role, policy, resourceといった指定されたリソースに対するrequestごとにAPIを実行する。
+ *
+ * @param {Object} socket - socket情報
+ * @param {Object} _receiveObject - リクエスト情報
+ * @param {function} processCallback - クライアントへの応答CallBack
+ * @param {function} apiUtil - APIとしての返却時のUtil関数（Cubee_web_apiから抜粋）
+ *
+ * @return {boolean}
+ */
 function receive(socket, _receiveObject={}, processCallback, apiUtil){
+    // requestごとに実行する処理の振り分け
     if (_.has(requestMap, _receiveObject.request)) {
         requestMap[_receiveObject.request](_receiveObject, processCallback, apiUtil);
     } else {
@@ -54,6 +68,15 @@ function receive(socket, _receiveObject={}, processCallback, apiUtil){
     return true;
 }
 
+/**
+ * 1. ロール一覧参照, 2. ロール詳細参照(id指定あり)
+ *
+ * @param {Object} receiveObj - リクエスト情報
+ * @param {Object} callback - クライアントへの応答CallBack
+ * @param {function} apiUtil - APIとしての返却時のUtil関数（Cubee_web_apiから抜粋）
+ *
+ * @return {boolean}
+ */
 function getRoles(receiveObj, callback, apiUtil) {
     const _content = receiveObj.content || {},
             _session = SessionDataMannager.getInstance().get(receiveObj.accessToken),
@@ -67,6 +90,7 @@ function getRoles(receiveObj, callback, apiUtil) {
                 executeCallback(receiveObj, callback, reason, 1, apiUtil);
             });
     } else {
+        //role_api.listRoles(_system_uuid, _receiveObject, processCallback)
         authorityController.listRoles(_system_uuid, _session)
             .then((res) => {
                 executeCallback(receiveObj, callback, res, 0, apiUtil);
@@ -77,6 +101,17 @@ function getRoles(receiveObj, callback, apiUtil) {
     }
 }
 
+/**
+ * getRoleAssignmentForUser
+ *
+ * 3. 指定ユーザのロール（アカウントタイプ）を取得する
+ *
+ * @param {Object} receiveObj - リクエスト情報
+ * @param {Object} callback - クライアントへの応答CallBack
+ * @param {function} apiUtil - APIとしての返却時のUtil関数（Cubee_web_apiから抜粋）
+ *
+ * @return {boolean}
+ */
 function getRoleAssignmentForUser(receiveObj, callback, apiUtil) {
     const _content = receiveObj.content,
             _session = SessionDataMannager.getInstance().get(receiveObj.accessToken),
@@ -92,6 +127,17 @@ function getRoleAssignmentForUser(receiveObj, callback, apiUtil) {
     return true;
 }
 
+/**
+ * AssignRoleToUser
+ *
+ * 4. 指定されたユーザにロール（アカウントタイプ）をセットする
+ *
+ * @param {Object} receiveObj - リクエスト情報
+ * @param {Object} callback - クライアントへの応答CallBack
+ * @param {function} apiUtil - APIとしての返却時のUtil関数（Cubee_web_apiから抜粋）
+ *
+ * @return {boolean} - whether to execute properly
+ */
 function assignRoleToUser(receiveObj, callback, apiUtil) {
     const _content = receiveObj.content,
             _session = SessionDataMannager.getInstance().get(receiveObj.accessToken),
@@ -114,6 +160,7 @@ function confirmTenantAdmin(_accessToken, _fromJid) {
     return new Promise((resolve, reject) => {
 
         function _tenantAdminCallback(xmlIqElem){
+            // 正常にデータが取得できていない場合
             const _userAuthorityElem = Utils.getChildXmlElement(xmlIqElem, 'user_authority');
             if (_userAuthorityElem == null) {
                 reject({result: false, reason: API_STATUS.INTERNAL_SERVER_ERROR});
@@ -124,9 +171,11 @@ function confirmTenantAdmin(_accessToken, _fromJid) {
                 reject({result: false, reason: API_STATUS.INTERNAL_SERVER_ERROR});
                 return;
             }
+            // ログインユーザがテナント管理者である場合、リクエストの処理を実行
             const _authorityType = _typeElem.text();
             const PersonData = require('../../model/person_data');
             if (_authorityType == PersonData.AUTHORITY_TYPE_ADMIN) {
+                // リクエストによって処理を振り分け
                 resolve(true);
             } else {
                 reject({result: false, reason: API_STATUS.FORBIDDEN});
@@ -138,6 +187,17 @@ function confirmTenantAdmin(_accessToken, _fromJid) {
     });
 }
 
+/**
+ * getRights
+ *
+ * 5 権限参照
+ *
+ * @param {Object} receiveObj - リクエスト情報
+ * @param {Object} callback - クライアントへの応答CallBack
+ * @param {function} apiUtil - APIとしての返却時のUtil関数（Cubee_web_apiから抜粋）
+ *
+ * @return {boolean} - whether to execute properly
+ */
 function getRights(receiveObj, callback, apiUtil) {
     const _content = receiveObj.content,
             _session = SessionDataMannager.getInstance().get(receiveObj.accessToken),
@@ -154,6 +214,17 @@ function getRights(receiveObj, callback, apiUtil) {
     return true;
 }
 
+/**
+ * createPolicy
+ *
+ * 6.1 ポリシー更新
+ *
+ * @param {Object} receiveObj - リクエスト情報
+ * @param {Object} callback - クライアントへの応答CallBack
+ * @param {function} apiUtil - APIとしての返却時のUtil関数（Cubee_web_apiから抜粋）
+ *
+ * @return {boolean} - whether to execute properly
+ */
 function createPolicy(receiveObj, callback, apiUtil) {
     const _content = receiveObj.content,
             _session = SessionDataMannager.getInstance().get(receiveObj.accessToken),
@@ -170,6 +241,17 @@ function createPolicy(receiveObj, callback, apiUtil) {
     return true;
 }
 
+/**
+ * createRight
+ *
+ * 6.2 権限更新
+ *
+ * @param {Object} receiveObj - リクエスト情報
+ * @param {Object} callback - クライアントへの応答CallBack
+ * @param {function} apiUtil - APIとしての返却時のUtil関数（Cubee_web_apiから抜粋）
+ *
+ * @return {boolean} - whether to execute properly
+ */
 function createRight(receiveObj, callback, apiUtil) {
     const _content = receiveObj.content,
             _session = SessionDataMannager.getInstance().get(receiveObj.accessToken),
@@ -186,6 +268,18 @@ function createRight(receiveObj, callback, apiUtil) {
     return true;
 }
 
+/**
+ * assignPolicyToUsers
+ *
+ * 7 ポリシー紐付
+ *
+ * @param {Object} receiveObj - リクエスト情報
+ * @param {Object} callback - クライアントへの応答CallBack
+ * @param {function} apiUtil - APIとしての返却時のUtil関数（Cubee_web_apiから抜粋）
+ * @param {string} triger - create or update デフォルトはupdate。権限変更が実施された場合の処理を記載。通知にのせる。
+ *
+ * @return {boolean} - whether to execute properly
+ */
 function assignPolicyToUsers(receiveObj, callback, apiUtil, triger='update') {
     const _content = receiveObj.content,
             _session = SessionDataMannager.getInstance().get(receiveObj.accessToken),
@@ -202,6 +296,17 @@ function assignPolicyToUsers(receiveObj, callback, apiUtil, triger='update') {
     return true;
 }
 
+/**
+ * getUserPoliciesByResource
+ *
+ * 8 リソース関連ユーザー情報参照
+ *
+ * @param {Object} receiveObj - リクエスト情報
+ * @param {Object} callback - クライアントへの応答CallBack
+ * @param {function} apiUtil - APIとしての返却時のUtil関数（Cubee_web_apiから抜粋）
+ *
+ * @return {boolean} - whether to execute properly
+ */
 function getUserPoliciesByResource(receiveObj, callback, apiUtil) {
     const _content = receiveObj.content,
             _session = SessionDataMannager.getInstance().get(receiveObj.accessToken),
@@ -218,6 +323,17 @@ function getUserPoliciesByResource(receiveObj, callback, apiUtil) {
     return true;
 }
 
+/**
+ * unassignPolicyFromUser
+ *
+ * 9 ポリシー紐づけ解除
+ *
+ * @param {Object} receiveObj - リクエスト情報
+ * @param {Object} callback - クライアントへの応答CallBack
+ * @param {function} apiUtil - APIとしての返却時のUtil関数（Cubee_web_apiから抜粋）
+ *
+ * @return {boolean} - whether to execute properly
+ */
 function unassignPolicyFromUser(receiveObj, callback, apiUtil) {
     const _content = receiveObj.content,
             _session = SessionDataMannager.getInstance().get(receiveObj.accessToken),
@@ -234,6 +350,17 @@ function unassignPolicyFromUser(receiveObj, callback, apiUtil) {
     return true;
 }
 
+/**
+ * checkUserHavePolicy
+ *
+ * 10 ユーザー権限保持チェック
+ *
+ * @param {Object} receiveObj - リクエスト情報
+ * @param {Object} callback - クライアントへの応答CallBack
+ * @param {function} apiUtil - APIとしての返却時のUtil関数（Cubee_web_apiから抜粋）
+ *
+ * @return {boolean} - whether to execute properly
+ */
 function checkUserHavePolicy(receiveObj, callback, apiUtil) {
     const _content = receiveObj.content,
             _session = SessionDataMannager.getInstance().get(receiveObj.accessToken),
@@ -250,6 +377,17 @@ function checkUserHavePolicy(receiveObj, callback, apiUtil) {
     return true;
 }
 
+/**
+ * deleteRightPolicyOfResource
+ *
+ * 11 ルームに紐付された権限とポリシーを削除
+ *
+ * @param {Object} receiveObj - リクエスト情報
+ * @param {Object} callback - クライアントへの応答CallBack
+ * @param {function} apiUtil - APIとしての返却時のUtil関数（Cubee_web_apiから抜粋）
+ *
+ * @return {boolean} - whether to execute properly
+ */
 function deleteRightPolicyOfResource(receiveObj, callback, apiUtil) {
     const _content = receiveObj.content,
             _session = SessionDataMannager.getInstance().get(receiveObj.accessToken),

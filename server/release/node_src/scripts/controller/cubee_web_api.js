@@ -1,18 +1,3 @@
-/*
-Copyright 2020 NEC Solution Innovators, Ltd.
-
-Licensed under the Apache License, Version 2.0 (the "License");
-you may not use this file except in compliance with the License.
-You may obtain a copy of the License at
-
-    http://www.apache.org/licenses/LICENSE-2.0
-
-Unless required by applicable law or agreed to in writing, software
-distributed under the License is distributed on an "AS IS" BASIS,
-WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-See the License for the specific language governing permissions and
-limitations under the License.
-*/
 (function() {
     var _ = require('underscore');
     var API_STATUS = require('./const').API_STATUS;
@@ -30,6 +15,7 @@ limitations under the License.
     var ReadCacheBeforeDBChef = require('../lib/CacheHelper/read_cache_before_db_chef');
     var StoreVolatileChef = require('../lib/CacheHelper/store_volatile_chef');
     var TenantData = require('../lib/CacheHelper/tenant_data');
+    //var RoleApiController = require('../Authority/authority_api');
     var RoleApiController = require('./authority/cubee_authority_api');
     var AuthorityChecker = require('./authority/authority_checker');
     var CommunityWebAPI = require('./community/web_api');
@@ -57,6 +43,7 @@ limitations under the License.
 
     }
 
+    // リクエストのキー
     var STR_REQUEST = 'request';
     var STR_ACCESS_TOKEN = 'accessToken';
     var STR_ID = 'id';
@@ -68,6 +55,7 @@ limitations under the License.
 
     var _proto = CubeeWebApi.prototype;
 
+    // APIの受付
     _proto.receive = function(socket, receiveStr, processCallback, isIndependence) {
         var _self = this;
         if (processCallback == null || typeof processCallback != 'function') {
@@ -103,15 +91,18 @@ limitations under the License.
         var _receiveStr = receiveStr;
         var _isIndependence = isIndependence;
 
+        // 権限チェック後のコールバック関数
         function _onAuthorityCheck(res) {
             if (res) {
                 _log.connectionLog(4, 'CubeeWebApi::receive::_onAuthorityCheck() unauthorized.');
                 _callBackResponse(_processCallback, res.accessToken, res.request, res.id, res.version, res.errorCode, res.content);
                 return;
             }
+            // 後段の Cubee API につなぐ
             runApi(_socket, _receiveStr, _receiveObject, _processCallback, _isIndependence);
         }
 
+        // 権限チェック
         AuthorityChecker.checkOnReceiveApi(_receiveObject, _onAuthorityCheck);
 
         return true;
@@ -130,13 +121,18 @@ limitations under the License.
             var _sessionData = _sessionDataMannager.get(_accessToken);
             if(_sessionData != null) {
                 if(_sessionData.getSocketIoSock() == null) {
+                    // 再接続を通知
                     var _synchronousBridgeNodeXmpp = SynchronousBridgeNodeXmpp.getInstance();
                     _synchronousBridgeNodeXmpp.clientReconnect(socket, _accessToken);
                 }
+                // Redisの中継先情報の時限を更新する
                 StoreVolatileChef.getInstance().extend(_accessToken, null);
             } else {
+                // 不正な接続
                 _log.connectionLog(4, '_sessionData is null. receive data : ' + receiveStr);
+                // TODO 切断通知＋切断する
 
+                // とえあず、エラーを返す（エラーコードは9(ERROR_REASON_NO_LOGINED)）
                 _callBackResponse(processCallback, null, _request, _id, _version, 9, _content);
                 return false;
             }
@@ -144,6 +140,8 @@ limitations under the License.
         _log.connectionLog(7, 'do func CubeeWebApi::runApi before switch _request : ' + _request);
         switch(_request) {
         case Const.API_REQUEST.API_LOGIN:
+                //_ret = _loginRequest(socket, _receiveObject, processCallback, isIndependence);
+                // ユーザの通常のログインはアクセスの方式(Socket.IO or HTTP)にかかわらず単一（複数の接続は不可）とする(スマデバ対応用暫定対処)
             _ret = _loginRequest(socket, _receiveObject, processCallback, false);
             break;
         case Const.API_REQUEST.API_LOGOUT:
@@ -166,6 +164,8 @@ limitations under the License.
             }
             break;
        case Const.API_REQUEST.API_GET_PROFILE_LIST:
+            //_retは使わない上位の数でレスポンスを処理していないのと、下の関数内でreturnを返すと
+            //ブラウザーに2重にヘッダーレスポンスを返しエラーになるため
             ProfileListAPI.receive(_globalSnsDB,socket, _receiveObject, processCallback, _callBackResponse);
             break;
         case Const.API_REQUEST.API_GET_MESSAGE:
@@ -204,14 +204,17 @@ limitations under the License.
         case Const.API_REQUEST.API_MESSAGE_OPTION:
             _ret = _sendMessageOptionRequest(socket, _receiveObject, processCallback);
             break;
+                //threadTitleの編集を行うAPI
         case Const.API_REQUEST.API_UPDATE_THREAD_TITLE:
             var apiUtil = {_callBackResponse: _callBackResponse};
             _ret = MessageWebAPI.updateTreadTitle(socket, _receiveObject, processCallback, apiUtil);
             break;
+            //threadTitleのリスト
         case Const.API_REQUEST.API_GET_THREAD_TITLE_LIST:
             var apiUtil = {_callBackResponse: _callBackResponse};
             _ret = MessageWebAPI.getTreadTitleList(socket, _receiveObject, processCallback, apiUtil);
             break;
+                //コミュニティー、グループチャット作成
         case Const.API_REQUEST.API_CREATE_GROUP:
             var _type = Utils.getChildObject(
                     Utils.getChildObject(_receiveObject, STR_CONTENT),
@@ -289,20 +292,33 @@ limitations under the License.
         case Const.API_REQUEST.API_GET_ROLES:
         case Const.API_REQUEST.API_GET_ROLE_ASSIGNMENT:
         case Const.API_REQUEST.API_ASSIGN_ROLE:
+            // 5 権限参照
         case Const.API_REQUEST.API_RIGHT_GET:
+            // 6.1 ポリシー更新
         case Const.API_REQUEST.API_POLICY_CREATE:
+            // 6.2 権限更新
         case Const.API_REQUEST.API_RIGHT_CREATE:
+            // 7 ポリシー紐付
         case Const.API_REQUEST.API_POLICY_ASSIGN_TO_USERS:
+            // 8 リソース関連ユーザー情報参照
         case Const.API_REQUEST.API_POLICIES_OF_USER_GET_BY_RESOURCE:
+            // 9 ポリシー紐づけ解除
         case Const.API_REQUEST.API_POLICY_UNASSIGN_FROM_USERS:
+            //10 ユーザー権限保持チェック
         case Const.API_REQUEST.API_POLICY_CHECK:
             var apiUtil = {_callBackResponse: _callBackResponse};
             _ret = RoleApiController.receive(socket, _receiveObject, processCallback, apiUtil);
             break;
+            // テナント管理者用API定義
+            // ユーザ登録
         case Const.API_REQUEST.ADMIN_API_CREATE_USER:
+            // ユーザ更新
         case Const.API_REQUEST.ADMIN_API_UPDATE_USER:
+            // ユーザステータス更新
         case Const.API_REQUEST.ADMIN_API_UPDATE_USER_STATUS:
+            // ユーザ一覧取得
         case Const.API_REQUEST.ADMIN_API_GET_USERS:
+            // ライセンス情報取得
         case Const.API_REQUEST.ADMIN_API_GET_LICENSE_INFO:
             var apiUtil = {_callBackResponse: _callBackResponse};
             _ret = UserManagementController.receive(socket, _receiveObject, processCallback, apiUtil);
@@ -317,6 +333,7 @@ limitations under the License.
 
     _proto.notifyDisconnect = function(socket) {
         var _synchronousBridgeNodeXmpp = SynchronousBridgeNodeXmpp.getInstance();
+        // 切断通知
         _synchronousBridgeNodeXmpp.clientDisconnect(socket);
     };
 
@@ -379,6 +396,8 @@ limitations under the License.
         }
     }
 
+    // ログイン処理の排他制御
+    // XMPPサーバとのセッションは複数作れないので、順に処理する必要がある。
     var _loginSequenceLock = {};
     function _lockLoginSequence(tenantUuid, userName){
         var lockValue = tenantUuid + " " + userName;
@@ -404,6 +423,7 @@ limitations under the License.
         return false;
     };
 
+    // ログイン要求
     function _loginRequest(socket, request, processCallback, isIndependence) {
         var _requestStr = Utils.getChildObject(request, STR_REQUEST);
         var _id = Utils.getChildObject(request, STR_ID);
@@ -426,10 +446,12 @@ limitations under the License.
         if (_tenantName == null || typeof _tenantName != 'string' || _tenantName == '') {
             _tenantName = _conf.getConfData(CONF_KEY_DEFAULT_TENANT_NAME);
             if(!_tenantName) {
+                // 設定がない場合はデフォルトをセット
                 _tenantName = 'spf';
             }
         }
 
+        // Redis から tenant_uuid を読み出す
         var _tenantUuid = null;
         var _tenantConf = {};
         var _tenantData = TenantData.createAsOrder(_tenantName);
@@ -452,14 +474,17 @@ limitations under the License.
             _unlockLoginSequence(_tenantUuid, _user);
             _log.connectionLog(7, 'unlockLoginSequence['+ _tenantUuid + ' ' +_user+'] case callback');
             if(result == false) {
+                // 失敗した場合はエラーを返す
                 _callBackResponse(processCallback, null, _requestStr, _id, _version, 0, _responceContent);
                 return;
             }
+            // ログインした人の情報を取得する
             _execLoginUserPersonData(accessToken, _id, _version, _requestStr, _responceContent ,_resExtras, processCallback);
         }
         var _login_wait_count  = 0;
         var _LOCK_RETRY_MAX_CNT = _conf.getConfData('LOGIN_SEQUENCE_LOCK_RETRY_MAX_CNT');
         function _waitLogin() {
+            /* ログイン処理中か確認 */
             var _lock = _lockLoginSequence(_tenantUuid, _user);
             if(_lock != true && _login_wait_count  < _LOCK_RETRY_MAX_CNT ) {
                 setTimeout(function (){
@@ -474,6 +499,7 @@ limitations under the License.
                 var _synchronousBridgeNodeXmpp = SynchronousBridgeNodeXmpp.getInstance();
                 var _ret = _synchronousBridgeNodeXmpp.login(socket, _tenantUuid, _user, _password, _loginCallback, isIndependence);
                 if( _ret != true) {
+                    // 失敗した場合はエラーを返す
                     _unlockLoginSequence(_tenantUuid, _user);
                     _log.connectionLog(7, 'unlockLoginSequence['+ _tenantUuid + ' ' +_user+'] case false');
                     _callBackResponse(processCallback, null, _requestStr, _id, _version, 1, _content);
@@ -493,6 +519,8 @@ limitations under the License.
             }
             _tenantUuid = dish.getTenantUuid();
             _tenantConf = dish.getTenantConf();
+            // ENABLE_NOTEの値を見て、tenantInfo内のnote値を書き換える
+            // DBに情報が格納されていなかった場合は無効化で初期化する
             if (_.has(_tenantConf, "disclosable") &&
                 !_.has(_tenantConf.disclosable, "note")){
                 _tenantConf.disclosable.note = {enable:false}
@@ -506,14 +534,17 @@ limitations under the License.
         }
         return true;
     }
+    // vCardの取得
     function _getVCardData(accessToken, jid, callbackFunc) {
         var _synchronousBridgeNodeXmpp = SynchronousBridgeNodeXmpp.getInstance();
         _synchronousBridgeNodeXmpp.getVCard(accessToken, jid, callbackFunc);
     }
+    // メールアカウント設定の取得
     function _getGetMailCooperationSettings(accessToken, callbackFunc) {
         var _synchronousBridgeNodeXmpp = SynchronousBridgeNodeXmpp.getInstance();
         _synchronousBridgeNodeXmpp.getGetMailCooperationSettings(accessToken, callbackFunc);
     }
+    // ログインユーザの情報取得要求
     function _getLoginPersonDataRequest(socket, request, processCallback) {
         var _requestStr = Utils.getChildObject(request, STR_REQUEST);
         var _accessToken = Utils.getChildObject(request, STR_ACCESS_TOKEN);
@@ -525,6 +556,7 @@ limitations under the License.
             _callBackResponse(processCallback, null, _requestStr, _id, _version, 1, _content);
             return false;
         }
+        // ログインした人の情報を取得する
         var _responceContent = {
             result : false,
             reason : SynchronousBridgeNodeXmpp.DISCCONECT_REASON_UNKNOWN,
@@ -534,10 +566,13 @@ limitations under the License.
         _execLoginUserPersonData(_accessToken, _id, _version, _requestStr, _responceContent , _resExtras, processCallback);
         return true;
     }
+    // ログインユーザの情報取得処理
     function _execLoginUserPersonData(accessToken, id, version, requestStr, responceContent, resExtras, callbackFunc) {
+        // ログインした人の情報を取得する
         var _sessionDataMannager = SessionDataMannager.getInstance();
         var _sessionData = _sessionDataMannager.get(accessToken);
         if(_sessionData == null) {
+            // 失敗した場合はエラーを返す
             responceContent.result = false;
             responceContent.reason = SynchronousBridgeNodeXmpp.DISCCONECT_REASON_ERROR_INNER;
             _callBackResponse(callbackFunc, null, requestStr, id, version, 0, responceContent);
@@ -561,10 +596,14 @@ limitations under the License.
                 _userInfo.avatarType = responceData.avatarType;
                 _userInfo.avatarData = responceData.avatarData;
                 if (resExtras) {
+                    // decodeURIComponent は不要
+                    // SynchronousBridgeNodeXmpp.getVCardDataFromOnGetVCard()
+                    // で行っているため
                     _userInfo.extras = responceData.extras;
                 }
             }
             _getGetMailCooperationSettings(accessToken, onGetMailCooperationSettings);
+            //メール連携情報取得後のコールバック
             function onGetMailCooperationSettings(result, reason, extras, count, items){
                 if(result == false) {
                     responceContent.result = result;
@@ -574,8 +613,10 @@ limitations under the License.
                 _userInfo.mailCooperationItems = items;
                 UserAccountUtils.getUserDataByTenantLoginAccount(_tenantUuid, _name, _onGetUserAccountData);
             }
+            //ユーザアカウント情報の取得(deleteFlgをレスポンス(status)として設定するため)
             function _onGetUserAccountData(userAccountData){
                 if(!userAccountData){
+                    // 失敗した場合はエラーを返す
                     responceContent.result = false;
                     responceContent.reason = SynchronousBridgeNodeXmpp.DISCCONECT_REASON_ERROR_INNER;
                     _callBackResponse(callbackFunc, null, requestStr, id, version, 0, responceContent);
@@ -588,9 +629,11 @@ limitations under the License.
                 _callBackResponse(callbackFunc, null, requestStr, id, version, 0, responceContent);
             }
         }
+        //vCard情報取得
         _getVCardData(accessToken, _jid, onGetVCardCallback);
     }
 
+    // ログアウト要求
     function _logoutRequest(socket, request, processCallback) {
         var _accessToken = Utils.getChildObject(request, STR_ACCESS_TOKEN);
         var _requestStr = Utils.getChildObject(request, STR_REQUEST);
@@ -600,11 +643,13 @@ limitations under the License.
         _callBackResponse(processCallback, _accessToken, _requestStr, _id, _version, 0, _content);
 
         var _synchronousBridgeNodeXmpp = SynchronousBridgeNodeXmpp.getInstance();
+        // ログアウト実行
         _synchronousBridgeNodeXmpp.logout(socket);
 
         return true;
     }
 
+    // 人のリスト要求
     function _getPersonListRequest(socket, request, processCallback) {
         _log.connectionLog(7, 'CubeeWebApi::_getPersonListRequest - ');
         var _accessToken = Utils.getChildObject(request, STR_ACCESS_TOKEN);
@@ -660,6 +705,7 @@ limitations under the License.
         }
         return _ret;
     }
+    // ログインユーザ情報の更新要求
     function _setLoginPersonData(socket, request, processCallback) {
         _log.connectionLog(7, 'do func CubeeWebApi::_setLoginPersonData - ');
         var _accessToken = Utils.getChildObject(request, STR_ACCESS_TOKEN);
@@ -680,6 +726,7 @@ limitations under the License.
         switch(_type) {
         case RequestData.SET_LOGIN_PERSON_DATA_TYPE_PRESENCE:
             _ret = _synchronousBridgeNodeXmpp.setLoginPersonData(_accessToken, _content, null);
+                //  コールバックはないのですぐに結果を返す
             _isSoonCallBack = true;
             _responceContent = {
                 result : _ret,
@@ -723,6 +770,7 @@ limitations under the License.
         }
         return _ret;
     }
+    // メッセージの要求
     function _getMessageRequest(socket, request, processCallback) {
         _log.connectionLog(7, 'do func CubeeWebApi::_getMessageRequest');
         _log.connectionLog(7, 'CubeeWebApi::_getMessageRequest - ');
@@ -741,6 +789,7 @@ limitations under the License.
         var _synchronousBridgeNodeXmpp = SynchronousBridgeNodeXmpp.getInstance();
         _log.connectionLog(7, 'do func CubeeWebApi::_getMessageRequest before switch _type : '+_type);
         switch(_type) {
+            //全メッセージ検索を行う分岐
         case RequestData.GET_MESSAGE_TYPE_SEARCH_ALL:
             let apiUtil = {_callBackResponse: _callBackResponse};
             _ret = MessageWebAPI.searchAllMessage(socket, request, processCallback, apiUtil);
@@ -775,6 +824,7 @@ limitations under the License.
         }
         return _ret;
     }
+    // メッセージの送信
     function _sendMessageRequest(socket, request, processCallback) {
         _log.connectionLog(7, 'do func CubeeWebApi::_sendMessageRequest - ');
         var _accessToken = Utils.getChildObject(request, STR_ACCESS_TOKEN);
@@ -807,6 +857,7 @@ limitations under the License.
                     reason : reason,
                     type : _type,
                 };
+                    // 古いIF(コミュニティ以外)はextras、count、itemsがないためチェックして応答データに格納する
                 if(extras != null) {
                     _responceContent.extras = extras;
                 }
@@ -817,6 +868,7 @@ limitations under the License.
                     _responceContent.items = items;
                 }
                 if(result && Array.isArray(items) && items.length > 0){
+                    //hashtagDBに追加(新規メッセージ投稿時)
                     HashTagAPI.setHashtagToDb(_globalSnsDB, _accessToken, _content.body, items[0].itemId);
                 }
                 _callBackResponse(processCallback, _accessToken, _requestStr, _id, _version, 0, _responceContent);
@@ -834,6 +886,7 @@ limitations under the License.
         }
         return _ret;
     }
+    // メッセージの更新
     function _updateMessageRequest(socket, request, processCallback) {
         _log.connectionLog(7, 'CubeeWebApi::_updateMessageRequest - ');
         var _accessToken = Utils.getChildObject(request, STR_ACCESS_TOKEN);
@@ -864,7 +917,9 @@ limitations under the License.
                 };
                 if(result &&
                    Array.isArray(items) && items.length > 0 && items[0].itemId &&
+                   //アンケートUPDATEでは本文を書き換えるものでなく回答のアクションのため
                    _type != RequestData.UPDATE_MESSAGE_TYPE_QUESTIONNAIRE){
+                    //hashtagDBに追加(更新メッセージ投稿時,タスクの更新のみ)
                     HashTagAPI.setHashtagToDb(_globalSnsDB, _accessToken,  _content.body, items[0].itemId);
                 }
                 _callBackResponse(processCallback, _accessToken, _requestStr, _id, _version, 0, _responceContent);
@@ -881,6 +936,7 @@ limitations under the License.
         return _ret;
     }
 
+    // メッセージ本文（bodyデータ）の更新
     function _updateMessageBodyRequest(socket, request, processCallback, apiUtil) {
         _log.connectionLog(7, 'do func CubeeWebApi::_updateMessageBodyRequest - ');
         let _accessToken = Utils.getChildObject(request, STR_ACCESS_TOKEN);
@@ -909,6 +965,7 @@ limitations under the License.
                     reason : reason,
                     type : _type,
                 };
+                // 古いIF(コミュニティ以外)はextras、count、itemsがないためチェックして応答データに格納する
                 if(extras != null) {
                     _responceContent.extras = extras;
                 }
@@ -919,6 +976,7 @@ limitations under the License.
                     _responceContent.items = items;
                 }
                 if(result){
+                    //hashtagDBに追加(本文更新メッセージ投稿時)
                     HashTagAPI.setHashtagToDb(_globalSnsDB, _accessToken, _content.body, _content.itemId);
                 }
                 _callBackResponse(processCallback, _accessToken, _requestStr, _id, _version, 0, _responceContent);
@@ -935,6 +993,7 @@ limitations under the License.
         return _ret;
     }
 
+    // MessageOption
     function _sendMessageOptionRequest(socket, request, processCallback) {
         _log.connectionLog(7, 'CubeeWebApi::_sendMessageOptionRequest - ');
         var _accessToken = Utils.getChildObject(request, STR_ACCESS_TOKEN);
@@ -971,16 +1030,19 @@ limitations under the License.
         case RequestData.MESSAGE_OPTION_TYPE_GET_HASHTAG_RANKING:
                 HashTagAPI.getHashtagRanking(_globalSnsDB, _accessToken, _content)
                           .then((res)=>{
+                              //レスポンス、httpsアクセスにはhttpsでwebsocketアクセスにはwebsoketでもレスポンス
                               _onResponceCallBack(res.result,
                                                   res.reason,
                                                   res.data);
                           }).catch((err)=>{
+                              //エラー処理&レスポンス
                               _callBackResponse(processCallback,
                                                 _accessToken,
                                                 _requestStr,
                                                 _id, _version,
                                                 1, _responceContent);
                           });
+                //エラー状態は上のcatch内で処理するため、ここは固定
                 _ret = true;
             break;
         default:
@@ -1006,6 +1068,7 @@ limitations under the License.
         }
     }
 
+    // GetGroup
     function _getGroupRequest(socket, request, processCallback) {
         var _accessToken = Utils.getChildObject(request, STR_ACCESS_TOKEN);
         var _requestStr = Utils.getChildObject(request, STR_REQUEST);
@@ -1023,6 +1086,7 @@ limitations under the License.
         var _type = Utils.getChildObject(_content, 'type');
         switch(_type) {
         case RequestData.GET_GROUP_TYPE_GROUP_CHAT_ROOM_LIST:
+                //入力値の不整合チェックを行う
             if( _.has(request.content,"parentRoomId") &&
                     ! Utils.varidieter.parentRoomId(request.content.parentRoomId) ){
                 _callBackResponse(processCallback,
@@ -1060,6 +1124,7 @@ limitations under the License.
         }
         return _ret;
     }
+    // UpdateGroup
     function _updateGroupRequest(socket, request, processCallback) {
         var _accessToken = Utils.getChildObject(request, STR_ACCESS_TOKEN);
         var _requestStr = Utils.getChildObject(request, STR_REQUEST);
@@ -1110,6 +1175,7 @@ limitations under the License.
         }
         return _ret;
     }
+    // AddMember
     function _addMemberRequest(socket, request, processCallback) {
         var _accessToken = Utils.getChildObject(request, STR_ACCESS_TOKEN);
         var _requestStr = Utils.getChildObject(request, STR_REQUEST);
@@ -1151,6 +1217,7 @@ limitations under the License.
         }
         return _ret;
     }
+    // GetServerList
     function _getServerListRequest(socket, request, processCallback) {
         var _accessToken = Utils.getChildObject(request, STR_ACCESS_TOKEN);
         var _requestStr = Utils.getChildObject(request, STR_REQUEST);
@@ -1191,6 +1258,7 @@ limitations under the License.
         return _ret;
     }
 
+    // GetSettings
     function _getSettingsRequest(request, processCallback) {
         var _accessToken = Utils.getChildObject(request, STR_ACCESS_TOKEN);
         var _requestStr = Utils.getChildObject(request, STR_REQUEST);
@@ -1230,6 +1298,7 @@ limitations under the License.
         }
         return _ret;
     }
+    // 通信制御要求
     function _controllConectionRequest(socket, request, processCallback) {
         var _accessToken = Utils.getChildObject(request, STR_ACCESS_TOKEN);
         var _requestStr = Utils.getChildObject(request, STR_REQUEST);
@@ -1260,11 +1329,13 @@ limitations under the License.
             }
             var _curIPAddress = _sessionData.getIpAddress();
             var _requestIPAdress = Utils.getIPAddress(socket);
+                //IPアドレスのチェック
             if(_curIPAddress != _requestIPAdress){
                 _log.connectionLog(4, 'Bad IPAddress. CubeeWebApi::_controllConectionRequest - _curIPAddress = ' + _curIPAddress + ' / _requestIPAdress = ' + _requestIPAdress);
                 _callBackResponse(processCallback, _accessToken, _requestStr, _id, _version, _errorCodeErr, _responceContent);
                 break;
             }
+                //セッションデータ更新
             SessionDataMannager.getInstance().get(_accessToken).setSocketIoSock(socket);
             _ret = true;
             _responceContent.result = true;
@@ -1281,6 +1352,7 @@ limitations under the License.
         }
         return _ret;
     }
+    // 件数取得要求
     function _getCountRequest(socket, request, processCallback) {
         var _accessToken = Utils.getChildObject(request, STR_ACCESS_TOKEN);
         var _requestStr = Utils.getChildObject(request, STR_REQUEST);
@@ -1318,6 +1390,7 @@ limitations under the License.
         }
         return _ret;
     }
+    // メンバー情報更新要求
     function _updateMemberRequest(socket, request, processCallback) {
         var _accessToken = Utils.getChildObject(request, STR_ACCESS_TOKEN);
         var _requestStr = Utils.getChildObject(request, STR_REQUEST);
@@ -1356,6 +1429,7 @@ limitations under the License.
         }
         return _ret;
     }
+    // メンバー削除要求
     function _removeMemberRequest(socket, request, processCallback) {
         var _accessToken = Utils.getChildObject(request, STR_ACCESS_TOKEN);
         var _requestStr = Utils.getChildObject(request, STR_REQUEST);
@@ -1397,6 +1471,7 @@ limitations under the License.
         }
         return _ret;
     }
+    // Admin用ログイン要求
     function _adminLoginRequest(socket, request, processCallback, isIndependence) {
         var _requestStr = Utils.getChildObject(request, STR_REQUEST);
         var _id = Utils.getChildObject(request, STR_ID);
@@ -1420,6 +1495,7 @@ limitations under the License.
         var _synchronousBridgeNodeXmpp = SynchronousBridgeNodeXmpp.getInstance();
         return _synchronousBridgeNodeXmpp.adminLogin(socket, _user, _password, _loginCallback, isIndependence);
     }
+    // ユーザ登録要求
     function _registerUserRequest(request, processCallback) {
         var _requestStr = Utils.getChildObject(request, STR_REQUEST);
         var _id = Utils.getChildObject(request, STR_ID);
@@ -1456,6 +1532,7 @@ limitations under the License.
         return _synchronousBridgeNodeXmpp.registerUser(_accessToken, _personData, _password, _registeredContactData,_registerUserCallback);
     }
 
+    // メッセージのプッシュ
     _proto.pushMessage = function(accessToken, notify, content) {
         _log.connectionLog(7, "do func CubeeWebAPI.pushMessage(...");
         var _sessionDataMannager = SessionDataMannager.getInstance();
@@ -1512,6 +1589,7 @@ limitations under the License.
         }
     };
 
+    // Xmppサーバでエラーが発生
     _proto.onErrorXmppServer = function(socket, error) {
         if(socket == null) {
             return;
@@ -1524,6 +1602,7 @@ limitations under the License.
         }
     };
 
+    // Xmppサーバから切断された
     _proto.onDisconnectXmppServer = function(socket) {
         if(socket == null) {
             return;

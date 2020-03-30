@@ -1,19 +1,17 @@
-/*
-Copyright 2020 NEC Solution Innovators, Ltd.
 
-Licensed under the Apache License, Version 2.0 (the "License");
-you may not use this file except in compliance with the License.
-You may obtain a copy of the License at
-
-    http://www.apache.org/licenses/LICENSE-2.0
-
-Unless required by applicable law or agreed to in writing, software
-distributed under the License is distributed on an "AS IS" BASIS,
-WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-See the License for the specific language governing permissions and
-limitations under the License.
+/**
+* createContent
+*
+* responseのjson内のcontentを作成するためのメソッド
+* 処理成功時のみこのメソッドを用いてcontentを作成する。
+* 失敗時は原因となるerrorCodeとrequestの際のcontentをそのまま返却する。
+*
+* @param {str} valueKey APIの実行結果dictのkey値
+* @param {object} value APIの実行結果が格納されたdict
+* @param {str} _accessToken
+*
+* @return {object} _content
 */
-
 function createContent(valueKey, value, _accessToken){
     var _content = {
         result: true,
@@ -24,6 +22,18 @@ function createContent(valueKey, value, _accessToken){
     return(_content);
 }
 
+/**
+* createResponseStr
+*
+* response用リストの作成用メソッド
+*
+* @param {list} _receiveObject
+* @param {list} _roles
+* @param {int} _errorCode
+* @param {int} _reason
+*
+* @param _response
+*/
 function createResponseStr(_receiveObject, _content, _errorCode=0, _reason=0){
     var _request = getChildObject(_receiveObject, 'request');
     var _id = getChildObject(_receiveObject, 'id');
@@ -38,6 +48,16 @@ function createResponseStr(_receiveObject, _content, _errorCode=0, _reason=0){
     return(JSON.stringify(_response));
 }
 
+/**
+* getChildObject
+*
+* リストのkey値を取得するメソッド
+*
+* @param {list} obj
+* @param {str} key
+*
+* @param _ret
+*/
 function getChildObject(obj, key) {
     if(obj == null || typeof obj != 'object') {
         return null;
@@ -56,6 +76,7 @@ exports.createResponseStr = createResponseStr;
 exports.getChildObject = getChildObject;
 exports.createContent = createContent;
 
+// requestごとの振り分け
 exports.API_GET_ROLES = 'GetRoles';
 exports.API_GET_ROLE_ASSIGNMENT = 'GetRoleAssignmentForUser';
 exports.API_ASSIGN_ROLE = 'AssignRoleToUser';
@@ -68,5 +89,6 @@ exports.API_POLICY_UNASSIGN_FROM_USERS = 'UnassignPolicyFromUser';
 exports.API_POLICY_CHECK = 'CheckUserHavePolicy';
 exports.API_DELETE_RIGHT_POLICY_RESOURCE = 'DeleteRightPolicyOfResource';
 
+// API処理時のエラーコード定義
 exports.API_ERR_RESPONSE_Not_Found = 404;
 exports.API_ERR_RESPONSE_Service_Unavailable = 503;

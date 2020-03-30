@@ -1,23 +1,9 @@
-/*
-Copyright 2020 NEC Solution Innovators, Ltd.
-
-Licensed under the Apache License, Version 2.0 (the "License");
-you may not use this file except in compliance with the License.
-You may obtain a copy of the License at
-
-    http://www.apache.org/licenses/LICENSE-2.0
-
-Unless required by applicable law or agreed to in writing, software
-distributed under the License is distributed on an "AS IS" BASIS,
-WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-See the License for the specific language governing permissions and
-limitations under the License.
-*/
 "use strict";
 
 const request = require("request");
 const cookie_mod  = require("cookie");
 const crypto = require("crypto");
+// セッション管理モジュールの読み込み
 const SessionDataMannager = require("../session_data_manager");
 const _conf = require("../conf").getInstance();
 let log = require("../server_log").getInstance();
@@ -26,7 +12,16 @@ const CubeeWebApi = require('../cubee_web_api');
 const XmppUtils = require('../xmpp_utils');
 const Const = require("../const");
 const CodimdXmpp = require('./xmpp');
+/**
+ * このファイル内の設定、定数に当たるもの
+ */
 let conf = {
+    /**
+     * Setting file /var/lib/docker/volumes/opt_cubee_node_conf/spf-dckr-nj-0001/server.conf
+     * 固定値のランダムな値を入れておく,パスワードを生成するシードの様なもの。
+     * あえて複雑な物の必要は無くこの値を元にランダムな値を生成するので
+     * 神経質になる必要はない。
+     */
     "settingkey" : (_conf.getConfData("CODIMD_USER_PASSWORD_KEY") ? _conf.getConfData("CODIMD_USER_PASSWORD_KEY") : "ho#g@e*720$_b"),
     "cubee_base_location": (_conf.getConfData("SYSTEM_LOCATION_ROOT") ? _conf.getConfData("SYSTEM_LOCATION_ROOT") : "cubee"),
     "codimd_sv" : {
@@ -37,9 +32,17 @@ let conf = {
 };
 
 let data = {
+    
+};
 
-    };
-
+/**
+ * ログイン後ノートページ表示（ログイン状態をJsonの値でレスポンス）
+ *
+ * @param request
+ * @param response
+ *
+ * @return レスポンスは正しく実行されればブラウザーへJsonが返され、エラーの場合はcodimdのパスにリダイレクトされる。
+ */
 exports.Login = (request, response, globalSnsDB) => {
     log.connectionLog(7,"do func  codimd.api.js Login");
     let _accessToken, acountId, tenantuuId;
@@ -58,6 +61,7 @@ exports.Login = (request, response, globalSnsDB) => {
         tenantuuId = _sessionData.getTenantUuid();
         getCodiMDCookie(request, response, globalSnsDB, acountId, tenantuuId, conf.settingkey).then((res) => {
             if(res){
+                //CookieをCodimdから取得しブラウザーにセットする。
                 let exdate = new Date(res.cookie.Expires);
                 response.cookie("connect.sid", res.cookieid, {
                     "expires" : exdate,
@@ -94,6 +98,7 @@ exports.Login = (request, response, globalSnsDB) => {
             return;
         });
     }else{
+        //accessTokenがないときはcubeeのTopページにリダイレクト
         log.connectionLog(1,"codimd.api.js - not found accessToken:" + request.body.accessToken);
         response.json({
             result: false,
@@ -103,6 +108,12 @@ exports.Login = (request, response, globalSnsDB) => {
     }
 };
 
+/**
+ * ログイン後ノートページ表示（リダイレクト）
+ *
+ * @param request
+ * @param response
+ */
 exports.LoginRedirect = (request, response, globalSnsDB) => {
     log.connectionLog(7,"do func  codimd.api.js LoginRedirect");
     let _accessToken, acountId, tenantuuId;
@@ -122,6 +133,7 @@ exports.LoginRedirect = (request, response, globalSnsDB) => {
         tenantuuId = _sessionData.getTenantUuid();
         getCodiMDCookie(request, response, globalSnsDB, acountId, tenantuuId, conf.settingkey).then((res) => {
             if(res){
+                //CookieをCodimdから取得しブラウザーにセットする。
                 let exdate = new Date(res.cookie.Expires);
                 response.cookie("connect.sid",res.cookieid, {
                     "expires" : exdate,
@@ -162,12 +174,22 @@ exports.LoginRedirect = (request, response, globalSnsDB) => {
             return;
         });
     }else{
+        //accessTokenがないときはcubeeのTopページにリダイレクト
         log.connectionLog(1,"codimd.api.js - not found accessToken");
         response.redirect(conf.cubee_base_location + "/");
         return;
     }
 };
 
+/**
+ * 新規ノート作成
+ * express のルーター引数に取る関数
+ * app.post(location + '/codimd/new', CodiMDConnector.getNewNoteUrl);
+ * の様に利用してください。
+ *
+ * @param request
+ * @param response
+ */
 exports.getNewNoteUrl = (request, response, globalSnsDB) => {
     log.connectionLog(7,"do func  codimd.api.js getNewNoteUrl");
     try{
@@ -186,10 +208,13 @@ exports.getNewNoteUrl = (request, response, globalSnsDB) => {
             log.connectionLog(3," codimd.api.js getNewNoteUrl  request title invalid." + request.body.title);
             return;
         }
+        // noteTitle
         noteTitle = request.body.title;
+        // noteThreadRootId
         if(Validation.itemIdValidationCheck(request.body.threadRootId,true)){
             noteThreadRootId = request.body.threadRootId;
         }
+        // noteRoomId
         if(Validation.roomIdValidationCheck(request.body.roomId,true)){
             noteRoomId = request.body.roomId;
         }
@@ -210,6 +235,7 @@ exports.getNewNoteUrl = (request, response, globalSnsDB) => {
             tenantuuId = _sessionData.getTenantUuid();
             getCodiMDCookie(request, response, globalSnsDB, acountId, tenantuuId, conf.settingkey).then((res) => {
                 if(res){
+                    //CookieをCodimdから取得しブラウザーにセットする。
                     let exdate = new Date(res.cookie.Expires);
                     response.cookie("connect.sid",res.cookieid, {
                         "expires" : exdate,
@@ -262,6 +288,7 @@ exports.getNewNoteUrl = (request, response, globalSnsDB) => {
                 return;
             });
         }else{
+            //accessTokenがないとき
             log.connectionLog(1,"codimd.api.js - not found accessToken");
             response.json({
                 result: false,
@@ -279,9 +306,16 @@ exports.getNewNoteUrl = (request, response, globalSnsDB) => {
     }
 };
 
+/**
+ * ノートを削除する
+ *
+ * @param request
+ * @param response
+ */
 exports.deleteNote = (request, response, globalSnsDB) => {
     log.connectionLog(7,"do func  codimd.api.js deleteNote");
     try{
+        //note id
         if(!Validation.noteIdValidationCheck(request.params.id, true)){
             if(request.params.id &&
                typeof request.params.id == 'string'){
@@ -293,6 +327,7 @@ exports.deleteNote = (request, response, globalSnsDB) => {
             });
             return;
         }
+        //CodiMDからのCookieを取得しているかチェック
         if(request == undefined ||
            request == null ||
            request.cookies == undefined ||
@@ -327,6 +362,7 @@ exports.deleteNote = (request, response, globalSnsDB) => {
             deleteNoteRedirect(cookieid, request.params.id, conf.codimd_sv)
                 .then((res) => {
                     if(res.result){
+                        //cubeer連動DBからも削除
                         globalSnsDB.deleteNoteFromJid(tuuid,
                                                       _sessionData.getJid(),
                                                       "/codimd/" + request.params.id)
@@ -339,12 +375,14 @@ exports.deleteNote = (request, response, globalSnsDB) => {
                                        if(res3.data.msgtype){
                                            delete res3.data.msgtype;
                                        }
+                                       // 直接通知なので日付けをフォーマット
                                        res3.data.created_at = formatDate(res3.data.created_at);
                                        if(res3.data.updated_at != ""){
                                            res3.data.updated_at = formatDate(res3.data.updated_at);
                                        }
                                        res3["reason"] = Const.API_STATUS.SUCCESS;
                                        response.json(res3);
+                                       //cubee共有時
                                        if(res3.data.thread_root_id){
                                            log.connectionLog(7," codimd.api.js deleteNote Note join cubee.");
                                            sendToOpenfireForNotify(_sessionData,
@@ -352,6 +390,7 @@ exports.deleteNote = (request, response, globalSnsDB) => {
                                                                    CodimdXmpp.makeDeleteNoteForXmpp
                                            );
                                        }else
+                                       //未cubee共有時
                                        {
                                            log.connectionLog(7," codimd.api.js deleteNote Note not join cubee.");
                                            let _xsConn = _sessionData.getOpenfireSock();
@@ -385,6 +424,7 @@ exports.deleteNote = (request, response, globalSnsDB) => {
                     return;
                 });
         }else{
+            //accessTokenがないとき
             log.connectionLog(1,"codimd.api.js deleteNote not found accessToken");
             response.json({
                 result: false,
@@ -402,8 +442,22 @@ exports.deleteNote = (request, response, globalSnsDB) => {
     }
 };
 
+/**
+ * (未使用であるが、今後利用する削除はCubee紐づけしない場合に取って置く)
+ * ノートを削除する
+ * アクセストークンの認証が無いが、CodimdのCookieの認証を引き継ぐこととノートのランダムIDのマッチで
+ * 十分な認証とする。
+ *
+ * express のルーター引数に取る関数
+ * app.post(location + '/codimd/new', CodiMDConnector.getNewNoteUrl);
+ * の様に利用してください。
+ *
+ * @param request
+ * @param response
+ */
 exports.deleteNoteFromCodimd = (request, response, globalSnsDB) => {
     log.connectionLog(7,"do func  codimd.api.js deleteNote");
+    //note id
     if(!Validation.noteIdValidationCheck(request.params.id, true)){
         if(request.params.id &&
            typeof request.params.id == 'string'){
@@ -415,6 +469,7 @@ exports.deleteNoteFromCodimd = (request, response, globalSnsDB) => {
         });
         return;
     }
+    //CodiMDからのCookieを取得しているかチェック
     if(request == undefined ||
        request == null ||
        request.cookies == undefined ||
@@ -443,6 +498,7 @@ exports.deleteNoteFromCodimd = (request, response, globalSnsDB) => {
     deleteNoteRedirect(cookieid, request.params.id, conf.codimd_sv)
         .then((res) => {
             if(res.result){
+                //cubeer連動DBからも削除
                 globalSnsDB.deleteNoteFromCodimdUid(tuuid,
                                                     codimduid,
                                                     "/codimd/" + request.params.id)
@@ -472,6 +528,12 @@ exports.deleteNoteFromCodimd = (request, response, globalSnsDB) => {
         });
 };
 
+/**
+ * ThreadRoorIdに関連、RoomId or 自分, のノートリストを取得
+ *
+ * @param request
+ * @param response
+ */
 exports.getNoteList = (request, response, globalSnsDB) => {
     log.connectionLog(7,"do func  codimd.api.js getNoteList");
     try{
@@ -481,9 +543,11 @@ exports.getNoteList = (request, response, globalSnsDB) => {
                 noteThreadRootId,
                 noteRoomId,
                 msgtype;
+        // noteThreadRootId
         if(Validation.itemIdValidationCheck(request.body.threadRootId, true)){
             noteThreadRootId = request.body.threadRootId;
         }
+        // msgtype
         if(request.body.msgtype &&
            typeof request.body.msgtype == 'number' &&
            (
@@ -499,6 +563,8 @@ exports.getNoteList = (request, response, globalSnsDB) => {
         ){
             msgtype = request.body.msgtype;
         }
+        // noteRoomId
+        //ルームIDにはChat,つぶやきはJIDが入ってくるのでそれぞれ場合分けでチェックを行う
         if(((msgtype == 2 || msgtype == 11) && Validation.jidValidationCheck(request.body.roomId,true)) ||
            (Validation.roomIdValidationCheck(request.body.roomId,true))){
             noteRoomId = request.body.roomId;
@@ -576,6 +642,7 @@ exports.getNoteList = (request, response, globalSnsDB) => {
                 return;
             });
         }else{
+            //accessTokenがないとき
             log.connectionLog(1,"codimd.api.js getNoteList not found accessToken");
             response.json({
                 result: false,
@@ -595,6 +662,16 @@ exports.getNoteList = (request, response, globalSnsDB) => {
     }
 };
 
+/**
+ * ノートをcubeeの会話に紐付けするAPI
+ *
+ * express のルーター引数に取る関数
+ * app.post(location + '/codimd/new', CodiMDConnector.getNewNoteUrl);
+ * の様に利用してください。
+ *
+ * @param request
+ * @param response
+ */
 exports.joinNoteToCubeeMesssage = (request, response, globalSnsDB) => {
     log.connectionLog(7,"do func  codimd.api.js joinNoteToCubeeMesssage");
     try{
@@ -620,6 +697,7 @@ exports.joinNoteToCubeeMesssage = (request, response, globalSnsDB) => {
             }
             noteUrl = request.body.noteUrl;
         }
+        // noteThreadRootId
         if(!Validation.itemIdValidationCheck(request.body.threadRootId, true) &&
            request.body.threadRootId != ""
         ){
@@ -631,6 +709,7 @@ exports.joinNoteToCubeeMesssage = (request, response, globalSnsDB) => {
             return;
         }
         noteThreadRootId = request.body.threadRootId;
+        //
         if(!Validation.accessTokenValidationCheck(request.body.accessToken,true)){
             log.connectionLog(5," codimd.api.js joinNoteToCubeeMesssage accessToken invalid.");
             response.json({
@@ -665,6 +744,7 @@ exports.joinNoteToCubeeMesssage = (request, response, globalSnsDB) => {
                                             res.data.room_id == "null")){
                                            res.data.room_id = "";
                                        }
+                                       // 直接通知なので日付けをフォーマット
                                        res.data.created_at = formatDate(res.data.created_at);
                                        if(res.data.updated_at != ""){
                                            res.data.updated_at = formatDate(res.data.updated_at);
@@ -719,6 +799,7 @@ exports.joinNoteToCubeeMesssage = (request, response, globalSnsDB) => {
                 return;
             });
         }else{
+            //accessTokenがないとき
             log.connectionLog(1,"codimd.api.js joinNoteToCubeeMesssage not found accessToken");
             response.json({
                 result: false,
@@ -736,6 +817,16 @@ exports.joinNoteToCubeeMesssage = (request, response, globalSnsDB) => {
     }
 };
 
+/**
+ * ノートをcubee上での名前を変更する
+ *
+ * express のルーター引数に取る関数
+ * app.post(location + '/codimd/new', CodiMDConnector.getNewNoteUrl);
+ * の様に利用してください。
+ *
+ * @param request
+ * @param response
+ */
 exports.renameNoteOnCubee =  (request, response, globalSnsDB) => {
     log.connectionLog(7,"do func  codimd.api.js renameNoteOnCubee");
     try{
@@ -761,6 +852,7 @@ exports.renameNoteOnCubee =  (request, response, globalSnsDB) => {
             }
             noteUrl = request.body.noteUrl;
         }
+        // noteTitle
         if(!Validation.noteTitleValidationCheck(request.body.title, true)){
             log.connectionLog(5," codimd.api.js renameNoteOnCubee title invalid.");
             response.json({
@@ -770,6 +862,7 @@ exports.renameNoteOnCubee =  (request, response, globalSnsDB) => {
             return;
         }
         noteTitle = request.body.title;
+        //
         if(!Validation.accessTokenValidationCheck(request.body.accessToken,true)){
             log.connectionLog(5," codimd.api.js renameNoteOnCubee accessToken invalid.");
             response.json({
@@ -805,6 +898,7 @@ exports.renameNoteOnCubee =  (request, response, globalSnsDB) => {
                                                 res.data.room_id == "null")){
                                                res.data.room_id = "";
                                            }
+                                           // 直接通知なので日付けをフォーマット
                                            res.data.created_at = formatDate(res.data.created_at);
                                            if(res.data.updated_at != ""){
                                                res.data.updated_at = formatDate(res.data.updated_at);
@@ -867,6 +961,7 @@ exports.renameNoteOnCubee =  (request, response, globalSnsDB) => {
                 return;
             });
         }else{
+            //accessTokenがないとき
             log.connectionLog(1,"codimd.api.js renameNoteOnCubee not found accessToken");
             response.json({
                 result: false,
@@ -885,6 +980,16 @@ exports.renameNoteOnCubee =  (request, response, globalSnsDB) => {
 };
 
 
+/**
+ * CodimdからのCookieがあればそのcookieでログイン、Cookieを持っていなければ
+ * ログイン状態のCookieを取得しその値を返却する。
+ *
+ * @param request
+ * @param request
+ * @param acountId
+ * @param tenantuuId
+ * @param settingkey
+ */
 const getCodiMDCookie = (request, response, globalSnsDB, acountId, tenantuuId, settingkey) => {
     return new Promise((resolve, reject)=>{
         log.connectionLog(7,"do func  codimd.api.js getCodiMDCookie");
@@ -921,6 +1026,7 @@ const getCodiMDCookie = (request, response, globalSnsDB, acountId, tenantuuId, s
             "password" : hashpw
         };
         let cookieid;
+        //CodiMDからのCookieを取得しているかチェック
         if(request != undefined &&
            request.cookies != undefined &&
            request.cookies["connect.sid"] != undefined &&
@@ -933,10 +1039,13 @@ const getCodiMDCookie = (request, response, globalSnsDB, acountId, tenantuuId, s
             .then((res)=>{
                 if(res.cookieid){
                     log.connectionLog(7,"codimd.api.js getCodiMDCookie resolve!"+ JSON.stringify(res));
+                    //ログインできているので
+                    //Codimdのアカウントチェックテーブルに
                     globalSnsDB
                         .getAccountStatus(tenantuuId, acountId)
                         .then((sas_res)=>{
                             if(sas_res.status == 0){
+                                //ログインできているのにnotoのアカウント管理テーブルに登録されていないのでここで行う。
                                 globalSnsDB
                                     .setAccountStatus(tenantuuId, acountId, 1)
                                     .then((sas_res)=>{
@@ -1011,12 +1120,16 @@ const getCodiMDCookie = (request, response, globalSnsDB, acountId, tenantuuId, s
                                                        log.connectionLog(
                                                            7,"codimd.api.js getCodiMDCookie getAccountStatus to register:"
                                                            + JSON.stringify(sas_res));
+                                                       //ノートのアカウント管理テーブルに登録ない、
+                                                       //メモリ上のユーザ登録フラグの立っていないことを確認
                                                        if(sas_res.status == 0 && ! data[useraccount.email]){
+                                                           //メモリ上にユーザ登録中のフラグを立てる。
                                                            data[useraccount.email] = true;
+                                                           //ユーザ登録
                                                            codiMDAcountRegister(e.cookieid,
                                                                                 useraccount.email,
                                                                                 useraccount.password,
-                                                                                conf.codimd_sv)
+                                                                                conf.codimd_sv)//アカウント作成
                                                                .then((res)=>{
                                                                    globalSnsDB.setAccountStatus(tenantuuId, acountId, 1)
                                                                               .then((sas_res)=>{
@@ -1031,7 +1144,7 @@ const getCodiMDCookie = (request, response, globalSnsDB, acountId, tenantuuId, s
                                                                    codiMDLogin(e.cookieid,
                                                                                useraccount.email,
                                                                                useraccount.password,
-                                                                               conf.codimd_sv)
+                                                                               conf.codimd_sv)//ログイン
                                                                        .then((res)=>{
                                                                            codiMDLoginCheck(e.cookieid, acountId, conf.codimd_sv)
                                                                                .then((res)=>{
@@ -1081,6 +1194,8 @@ const getCodiMDCookie = (request, response, globalSnsDB, acountId, tenantuuId, s
                                                        return;
                                                    });
                                     }else{
+                                        //ログイン成功後後に
+                                        //クッキーを取得に失敗している。
                                         log.connectionLog(1,"codimd.api.js getCodiMDCookie can not get cookie from codimd.. :"+e.mess);
                                         reject(e);
                                         return;
@@ -1093,6 +1208,7 @@ const getCodiMDCookie = (request, response, globalSnsDB, acountId, tenantuuId, s
                             return;
                         });
                 }else{
+                    //クッキーを取得に失敗している。
                     log.connectionLog(3,"codimd.api.js getCodiMDCookie can not get cookie from codimd. :"+e.mess);
                     reject(e);
                     return;
@@ -1101,6 +1217,10 @@ const getCodiMDCookie = (request, response, globalSnsDB, acountId, tenantuuId, s
     });
 };
 
+/**
+ * 新規ノート作成のリダイレクト先をresolveに返す
+ *
+ */
 const getNewNoteRedirectUrl = (req_cookieid, sv_options) => {
     return new Promise((resolve, reject)=>{
         log.connectionLog(7,"do func codimd.api.js getNewNoteRedirectUrl");
@@ -1158,6 +1278,10 @@ const getNewNoteRedirectUrl = (req_cookieid, sv_options) => {
     });
 };
 
+/**
+ * ノートを削除のリダイレクト先をresolveに返す
+ *
+ */
 const deleteNoteRedirect = (req_cookieid, noteid, sv_options) => {
     return new Promise((resolve, reject)=>{
         log.connectionLog(7,"do func codimd.api.js deleteNoteRedirect");
@@ -1224,8 +1348,18 @@ const deleteNoteRedirect = (req_cookieid, noteid, sv_options) => {
 };
 
 
+/**
+ * CodiMDへのログイン状態をチェック
+ *
+ * @param req_cookieid
+ * @param acountId
+ * @param sv_options
+ *
+ * @return Promise
+ */
 const codiMDLoginCheck = (req_cookieid, acountId, sv_options) => {
     return new Promise((resolve, reject)=>{
+        //
         log.connectionLog(7,"do func codimd.api.js codiMDLoginCheck");
         let j = null;
         if(req_cookieid != undefined &&
@@ -1257,10 +1391,12 @@ const codiMDLoginCheck = (req_cookieid, acountId, sv_options) => {
                         return;
                     }else{
                         try{
+                            //Codimdは1つcookieをレスポンスしてくるので、これをパースさせる
                             const res_cookie = cookie_mod.parse(response.headers["set-cookie"][0] || "");
                             let bodyjson = JSON.parse(body);
                             if(bodyjson.status == undefined ||
                                bodyjson.status == null){
+                                //リクエストエラーは無かったが/meの問い合わせで正しいフォーマットが却ってこなかった
                                 log.connectionLog(1,"codimd.api.js codiMDLoginCheck error: body.status is invalid");
                                 reject({
                                     result : false,
@@ -1268,6 +1404,7 @@ const codiMDLoginCheck = (req_cookieid, acountId, sv_options) => {
                                 });
                                 return;
                             }else if(bodyjson.status != "ok"){
+                                //ログイン状態ではないがCookieを発行された
                                 log.connectionLog(7,"codimd.api.js codiMDLoginCheck body.status is not ok");
                                 reject({
                                     result : false,
@@ -1278,6 +1415,7 @@ const codiMDLoginCheck = (req_cookieid, acountId, sv_options) => {
                                 });
                                 return;
                             }else if(acountId != bodyjson.name){
+                                //現在のcubeeのログインしているユーザではないユーザ
                                 log.connectionLog(7,"codimd.api.js codiMDLoginCheck body.name is not cubee acountId");
                                 reject({
                                     result : false,
@@ -1288,6 +1426,7 @@ const codiMDLoginCheck = (req_cookieid, acountId, sv_options) => {
                                 });
                                 return;
                             }else{
+                                //ログイン状態でCookieを返却
                                 log.connectionLog(7,"codimd.api.js codiMDLoginCheck logined OK!");
                                 resolve({
                                     result : true,
@@ -1299,6 +1438,7 @@ const codiMDLoginCheck = (req_cookieid, acountId, sv_options) => {
                                 return;
                             }
                         }catch(e){
+                            //リクエストエラーは無かったが/meのレスポンスでJSON.parse出来無いものが混入されている
                             log.connectionLog(1,"codimd.api.js codiMDLoginCheck error:" + e);
                             reject({
                                 result : false,
@@ -1311,6 +1451,14 @@ const codiMDLoginCheck = (req_cookieid, acountId, sv_options) => {
     });
 };
 
+/**
+ * codimd ログイン
+ *
+ * @param req_cookieid
+ * @param email
+ * @param password
+ * @param sv_options
+ */
 const codiMDLogin = (req_cookieid, email, password, sv_options) => {
     return new Promise((resolve, reject)=>{
         log.connectionLog(7,"do func codimd.api.js codiMDLogin");
@@ -1368,6 +1516,9 @@ const codiMDLogin = (req_cookieid, email, password, sv_options) => {
     });
 };
 
+/**
+ * Codimd アカウント登録
+ */
 const codiMDAcountRegister = (req_cookieid, email, password, sv_options) => {
     return new Promise((resolve, reject)=>{
         log.connectionLog(7,"do func codimd.api.js codiMDAcountRegister");
@@ -1426,6 +1577,16 @@ const codiMDAcountRegister = (req_cookieid, email, password, sv_options) => {
 };
 
 
+// ====== ここから通知送信関数 or Openfireリクエスト関数 ======
+/**
+ * 自分だけに通知配信するための関数
+ * sessionDataは自分自身のものしか取得できないので
+ * 未cubee共有時に使う(openfireまで経由しないので負荷が小く、レスポンスも速い)
+ *
+ * @param sessionDataAry
+ * @param notifyType
+ * @param pushContent
+ */
 const notifyPushMessge = (sessionDataAry, notifyType, pushContent) => {
     log.connectionLog(7, "do func codimd.api.js notifyPushMessage(");
     try{
@@ -1438,6 +1599,7 @@ const notifyPushMessge = (sessionDataAry, notifyType, pushContent) => {
             var _accessToken = sessionDataAry[_index].getAccessToken();
             _index++;
             log.connectionLog(7, ' codimd.api.js notifyPushMessage:['+_accessToken+']');
+            //ここで通知を行う
             CubeeWebApi.getInstance().pushMessage(_accessToken, notifyType, pushContent);
             if(_index < sessionDataAry.length){
                 setTimeout(_callPushMessage, 1);
@@ -1449,20 +1611,33 @@ const notifyPushMessge = (sessionDataAry, notifyType, pushContent) => {
     }
 };
 
+/**
+ * Openfireへリクエストを送信関数
+ * これを送信することでSynchronouseBridgeNode内_onMessageで通知を受けることが出来る
+ *
+ * @param _sessionData
+ * @param requestData
+ * @param xmppDataMakeFunction 引数に（XmppHostName,FromJid,MessageData）を持つ関数、例） Xmppライブラリーで作成さている内容
+ */
 const sendToOpenfireForNotify = (sessionData, requestData, xmppDataMakeFunction) => {
     log.connectionLog(7,"do func codimd.api.js sendToOpenfireForNotify(");
+    //通知の受信は SynchronouseBridgeNode._onMessageNotify
     var _xsConn = sessionData.getOpenfireSock();
     var _xmppServerHostName = sessionData.getXmppServerName();
     var _fromJid = sessionData.getJid();
     var _messageData = requestData;
     try{
+        //XMPPフォーマットのチェック
         let _xmppData = XmppUtils.checkCreateXmppData(_xsConn, function() {
+            //XML作成はXMPPライブラリーで作成
             return xmppDataMakeFunction(_xmppServerHostName,
                                         _fromJid,
                                         _messageData);
         });
         var _id = _xmppData[1];
+        //XMPPからのレスポンスを受ける
         sessionData.setCallback(_id,(responceXml) => {
+            //responceXmlを受け取るがエラー記録以外は必要としない？
             let typeAttr = responceXml.attr("type");
             if(typeAttr == null || typeAttr.value() == ":result"){
                 log.connectionLog(3,"do func codimd.api.js sendToOpenfireForNotify sessionData.setCallback error:" + responceXml);
@@ -1470,6 +1645,7 @@ const sendToOpenfireForNotify = (sessionData, requestData, xmppDataMakeFunction)
             }
             log.connectionLog(7," codimd.api.js sendToOpenfireForNotify sessionData.setCallback :" + responceXml);
         });
+        //ノート削除XMPP送信
         var _xmppStr = _xmppData[0];
         _xsConn.send(_xmppStr);
     }catch(e){
@@ -1478,6 +1654,10 @@ const sendToOpenfireForNotify = (sessionData, requestData, xmppDataMakeFunction)
 };
 
 
+// ====== ここから通知送信関数 or Openfireリクエスト関数 ======
+/**
+ * 日付フォーマット関数
+ */
 const formatDate = (dateString) => {
     if(!dateString){
         return "";

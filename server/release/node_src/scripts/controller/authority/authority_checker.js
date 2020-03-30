@@ -1,18 +1,7 @@
-/*
-Copyright 2020 NEC Solution Innovators, Ltd.
-
-Licensed under the Apache License, Version 2.0 (the "License");
-you may not use this file except in compliance with the License.
-You may obtain a copy of the License at
-
-    http://www.apache.org/licenses/LICENSE-2.0
-
-Unless required by applicable law or agreed to in writing, software
-distributed under the License is distributed on an "AS IS" BASIS,
-WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-See the License for the specific language governing permissions and
-limitations under the License.
-*/
+/**
+ * Cubee Authority API calling on introduction of Cubee APIs
+ * @module  src/scripts/controller/authority/authority_checker
+ */
 
 'use strict';
 
@@ -27,8 +16,14 @@ const RequestData = require('../../model/request_data').RequestData;
 const LOG = require('../server_log').getInstance();
 const Const = require('../const');
 
+/**
+ * checkOnReceiveApi のパラメータチェック
+ * @param  {string} token トークン文字列
+ * @return {boolean}       パラメータに問題なければ true, そうでなければ false
+ */
 function _checkParams(token) {
 
+    // ログイン済みか
     if (! _.isString(token) || _.isEmpty(token)) {
         LOG.connectionLog(7, "authority_checker::_checkParams, ignore cos not logged in.");
         return false;
@@ -47,6 +42,10 @@ function _checkParams(token) {
     return true;
 }
 
+/**
+ * 権限チェックを切り分けるためのオブジェクト（switch文の代わり）
+ * @type {Object}
+ */
 const CheckFacard = {
     [Const.API_REQUEST.API_GET_MESSAGE]: {
         [RequestData.GET_MESSAGE_TYPE_MY_FEED]: _addCheckingForViewFeed,
@@ -79,12 +78,14 @@ const CheckFacard = {
         [RequestData.MESSAGE_OPTION_TYPE_GET_EMOTION_POINT_LIST]: _addCheckingForViewFeedItem,
     },
     [Const.API_REQUEST.API_UPDATE_THREAD_TITLE]:{
+        //スレッドタイトルの編集はメッセージの書き込み権限と同権限で実行可能
         [RequestData.SEND_MESSAGE_TYPE_PUBLIC]: _addCheckingForSendToFeed,
         [RequestData.SEND_MESSAGE_TYPE_GROUP_CHAT]: _addCheckingForSendToGroupchat,
         [RequestData.SEND_MESSAGE_TYPE_COMMUNITY]: _addCheckingForSendToCommunity,
         [RequestData.SEND_MESSAGE_TYPE_MURMUR]: _addCheckingForSendToMurmur
     },
     [Const.API_REQUEST.API_GET_THREAD_TITLE_LIST]:{
+        //スレッドタイトルのリスト取得はメッセージの閲覧権限と同権限で実行可能
         [RequestData.SEND_MESSAGE_TYPE_PUBLIC]: _addCheckingForViewFeed,
         [RequestData.SEND_MESSAGE_TYPE_GROUP_CHAT]: _addCheckingForViewGroupchat,
         [RequestData.SEND_MESSAGE_TYPE_COMMUNITY]: _addCheckingForViewCommunity,
@@ -139,6 +140,13 @@ const CheckFacard = {
 };
 
 
+/**
+ * 権限チェックをするか、その条件を何にするか、呼び出しパラメータに応じて振り分ける
+ * @param  {string} request APIリクエスト
+ * @param  {string} type    リクエストデータのタイプ
+ * @param  {object} content リクエストデータの内容
+ * @param  {object} params  権限チェックするためのデータ in/out
+ */
 function _checkFacard(request, type, content, params) {
     LOG.connectionLog(7, "do func AuthorityChecker._checkFacard(... request,type : " + request + ', '+ type);
     if (_.has(CheckFacard, request)) {
@@ -152,6 +160,12 @@ function _checkFacard(request, type, content, params) {
     }
 }
 
+/**
+ *  6.1 ポリシー更新
+ *
+ * @param  {object} content リクエストデータの内容
+ * @param {object} params 権限チェックするためのデータ in/out
+ */
 function _addCheckingForCreatePolicyOrRight(content, params) {
     let _policy_id = content.policy_id;
     if (_.isString(_policy_id) && _policy_id != '' &&
@@ -188,6 +202,8 @@ function _addCheckingForCreatePolicyOrRight(content, params) {
             };
             break;
         default:
+            // グループチャット、コミュニティに関するポリシー以外の作成は、許容しない
+            // 管理系APIは、このチェックを通らず、直接 権限管理APIをコールする
             params.invalid = true;
             break;
         }
@@ -196,6 +212,12 @@ function _addCheckingForCreatePolicyOrRight(content, params) {
 }
 
 
+/**
+ * 8 リソース関連ユーザー情報参照
+ *
+ * @param  {object} content リクエストデータの内容
+ * @param {object} params 権限チェックするためのデータ in/out
+ */
 function _addCheckingForGetUserPoliciesByResource(content, params) {
     const _resouce = content.resource_id;
 
@@ -211,12 +233,19 @@ function _addCheckingForGetUserPoliciesByResource(content, params) {
         params.checks.push( { action: AUTHORITY_ACTIONS.GC_MANAGE, resource: _resouce});
         break;
     default:
+        // グループチャット、コミュニティに関するリソース以外は FORBIDDENとする。
         params.invalid = true;
         break;
     }
     LOG.connectionLog(7, "authority_checker::_addCheckingForGetUserPoliciesByResource");
 }
 
+/**
+ * 9 ポリシー紐づけ解除
+ *
+ * @param  {object} content リクエストデータの内容
+ * @param {object} params 権限チェックするためのデータ in/out
+ */
 function _addCheckingForUnassignPolicyFromUser(content, params) {
     const _policy_id = content.policy_id;
     if (_.isString(_policy_id) && _policy_id != '' &&
@@ -242,35 +271,63 @@ function _addCheckingForUnassignPolicyFromUser(content, params) {
                 resource: _resouce
             });
         } else {
+            // グループチャット、コミュニティに関するリソース以外は FORBIDDENとする。
             params.invalid = true;
         }
     }
     LOG.connectionLog(7, "authority_checker::_addCheckingForUnassignPolicyFromUser");
 }
 
+/**
+ * フィード投稿件有無をチェックするための指定を追加する
+ * @param  {object} content リクエストデータの内容
+ * @param {object} params 権限チェックするためのデータ in/out
+ */
 function _addCheckingForSendToFeed(content, params) {
     LOG.connectionLog(7, "do func AuthorityChecker._addCheckingForSendToFeed(...");
     params.checks.push( { action: AUTHORITY_ACTIONS.FEED_SEND, resource: null });
 }
 
+/**
+ * フィード閲覧件有無をチェックするための指定を追加する
+ * @param  {object} content リクエストデータの内容
+ * @param {object} params 権限チェックするためのデータ in/out
+ */
 function _addCheckingForViewFeed(content, params) {
     params.checks.push( { action: AUTHORITY_ACTIONS.FEED_SEND, resource: null });
     params.checks.push( { action: AUTHORITY_ACTIONS.FEED_VIEW, resource: null });
     LOG.connectionLog(7, "authority_checker::_addCheckingForViewFeed");
 }
 
+/**
+ * 全メッセージを検索できる権限のための指定を追加する
+ * @param  {object} content リクエストデータの内容
+ * @param {object} params 権限チェックするためのデータ in/out
+ */
 function _addCheckingForAllMessage(content, params) {
+    //特権ユーザ、全メッセージを検索できる権限も可能であることを追加
     params.checks.push( { action: AUTHORITY_ACTIONS.SEARCH_ALL_MESSAGES, resource: null });
     LOG.connectionLog(7, "authority_checker::_addCheckingForAllMessage");
 }
 
+/**
+ * メッセージの種別がフィードであるかを確認の上、フィード閲覧件有無をチェックするための指定を追加する
+ * @param  {object} content リクエストデータの内容
+ * @param {object} params 権限チェックするためのデータ in/out
+ */
 function _addCheckingForViewFeedItem(content, params) {
     if ('itemId' in content && content.itemId.startsWith('stream_')) {
+        // Create params
         _addCheckingForViewFeed(content, params);
         LOG.connectionLog(7, "authority_checker::_addCheckingForViewFeedItem");
     }
 }
 
+/**
+ * メッセージ検索時の条件にフィードの条件が含まれるか
+ * @param  {string}  p     content.condition.filter のオブジェクト
+ * @return {boolean}       含まれる場合は true
+ */
 function _checkItContainSearchFeedCondition(p) {
     let _p = p;
     if (_.isObject(_p) && _.has(_p, 'value')) {
@@ -296,6 +353,11 @@ function _checkItContainSearchFeedCondition(p) {
     return false;
 }
 
+/**
+ * メッセージ検索時の条件につぶやきの条件が含まれるか
+ * @param  {string}  p     content.condition.filter のオブジェクト
+ * @return {boolean}       含まれる場合は true
+ */
 function _checkItContainSearchMurmurCondition(p) {
     let _p = p;
     if (_.isObject(_p) && _.has(_p, 'value')) {
@@ -321,11 +383,25 @@ function _checkItContainSearchMurmurCondition(p) {
     return false;
 }
 
+/**
+ * メッセージ検索時の基本条件チェック
+ * 条件）
+ *  検索のJsonはvalueブロックで始まり、構成され
+ *  typeの値にitemを設定してあるものが、メッセージタイプにあたるmsgtypeの項目をnameの値として
+ *  持つことが検索のターゲット設定になるためこの関数でチェック
+ *
+ * ※検索ターゲットのメッセージタイプ所有のみをチェック
+ * ※v5で全メッセージ検索で利用
+ *
+ * @param  {string}  p     content.condition.filter のオブジェクト
+ * @return {boolean}       含まれる場合は true
+ */
 function _checkItContainSearchBasicCondition(p) {
     let _p = p;
     if (!_.isObject(_p) || !_.has(_p, 'value')) {
         return false;
     }
+    //配列を持つvalueブロックかチェック
     if (_.isArray(_p.value)) {
         for (let i = 0; i < _p.value.length; i++) {
             if (_checkItContainSearchBasicCondition(_p.value[i])) {
@@ -333,6 +409,7 @@ function _checkItContainSearchBasicCondition(p) {
             }
         }
     } else {
+        //検索のターゲットフィード、チャット、GC、タスク、コミュニティーなどを設定する条件をチェック
         if (! ('type' in _p ) || _p.type !== 'item') {
             return false;
         }
@@ -344,25 +421,42 @@ function _checkItContainSearchBasicCondition(p) {
     return false;
 }
 
+/**
+ * フィードを対象に検索する場合の権限チェック
+ * @param  {object} content リクエストデータの内容
+ * @param {object} params 権限チェックするためのデータ in/out
+ */
 function _addCheckingForSearchingFeed(content, params) {
     if ('condition' in content && 'filter') {
         if (_checkItContainSearchFeedCondition(content.condition.filter)) {
+            // Create params
             _addCheckingForViewFeed(content, params);
+            // 権限がない場合の後処理を仕込む
             params.on_bad = _onNoViewFeedRightThenRemoveValueFromSearchReq;
             LOG.connectionLog(7, "authority_checker::_addCheckingForSearchingFeed");
         }
         else if (_checkItContainSearchMurmurCondition(content.condition.filter)) {
+            // Create params
             _addCheckingForViewMurmur(content, params);
+            // 権限がない場合の後処理を仕込む
             params.on_bad = _onNoViewMurmurRightThenRemoveValueFromSearchReq;
             LOG.connectionLog(7, "authority_checker::_addCheckingForSearchingFeed");
         }
     }
 }
 
+/**
+ * メッセージの全文検索する場合の権限チェックの為の全メッセージ検索権限をチェック値に設定する
+ *
+ * @param  {object} content リクエストデータの内容
+ * @param {object} params 権限チェックするためのデータ in/out
+ */
 function _addCheckingForSearchingAllMessage(content, params) {
     if ( _.has(content,'condition') && _.has(content.condition,'filter')) {
+        //メッセージ検索時の条件チェック
         if (_checkItContainSearchBasicCondition(content.condition.filter)) {
 
+            // 全メッセージ検索権限の有無をチェックするための指定を追加する
             _addCheckingForAllMessage(content, params);
             LOG.connectionLog(7, "authority_checker::_addCheckingForSearchingAllMessage");
         }
@@ -370,11 +464,21 @@ function _addCheckingForSearchingAllMessage(content, params) {
 }
 
 
+/**
+ * グループチャットの作成権があるかをチェックする設定を追加する
+ * @param  {object} content リクエストデータの内容
+ * @param {object} params 権限チェックするためのデータ in/out
+ */
 function _addCheckingForCreateGroupchat(content, params) {
     params.checks.push( { action: AUTHORITY_ACTIONS.GC_CREATE, resource: null });
     LOG.connectionLog(7, "authority_checker::_addCheckingForCreateGroupchat");
 }
 
+/**
+ * 特定ルームへのグループチャットの管理権があるかをチェックする設定を追加する
+ * @param  {object} content リクエストデータの内容
+ * @param {object} params 権限チェックするためのデータ in/out
+ */
 function _addCheckingForManageGroupchat(content, params) {
     if ('roomId' in content && typeof content.roomId == 'string' && content.roomId != '') {
         params.checks.push( { action: AUTHORITY_ACTIONS.GC_MANAGE, resource: content.roomId });
@@ -382,6 +486,11 @@ function _addCheckingForManageGroupchat(content, params) {
     }
 }
 
+/**
+ * グループチャットへのメッセージ投稿をチェックする設定を追加する
+ * @param  {object} content リクエストデータの内容
+ * @param {object} params 権限チェックするためのデータ in/out
+ */
 function _addCheckingForSendToGroupchat(content, params) {
     if ('roomId' in content && typeof content.roomId == 'string' && content.roomId != '') {
         params.checks.push( { action: AUTHORITY_ACTIONS.GC_MANAGE, resource: content.roomId });
@@ -390,6 +499,11 @@ function _addCheckingForSendToGroupchat(content, params) {
     }
 }
 
+/**
+ * グループチャットへの閲覧権をチェックする設定を追加する
+ * @param  {object} content リクエストデータの内容
+ * @param {object} params 権限チェックするためのデータ in/out
+ */
 function _addCheckingForViewGroupchat(content, params) {
     if ('roomId' in content && typeof content.roomId == 'string' && content.roomId != '') {
         params.checks.push( { action: AUTHORITY_ACTIONS.GC_MANAGE, resource: content.roomId });
@@ -399,16 +513,31 @@ function _addCheckingForViewGroupchat(content, params) {
     }
 }
 
+/**
+ * コミュニティの作成権があるかをチェックする設定を追加する
+ * @param  {object} content リクエストデータの内容
+ * @param {object} params 権限チェックするためのデータ in/out
+ */
 function _addCheckingForCreateCommunity(content, params) {
     params.checks.push( { action: AUTHORITY_ACTIONS.COMMUNITY_CREATE, resource: null });
     LOG.connectionLog(7, "authority_checker::_addCheckingForCreateCommunity");
 }
 
+/**
+ * 全テナントメッセージ削除権限があるかをチェックする設定を追加する
+ * @param  {object} content リクエストデータの内容
+ * @param {object} params 権限チェックするためのデータ in/out
+ */
 function _addCheckingForAdminDeleteMessages(content, params) {
     params.checks.push( { action: AUTHORITY_ACTIONS.ADMIN_DELETE, resource: null });
     LOG.connectionLog(7, "authority_checker::_addCheckingForAdminDeleteMessages");
 }
 
+/**
+ * 特定ルームへのコミュニティの管理権があるかをチェックする設定を追加する
+ * @param  {object} content リクエストデータの内容
+ * @param {object} params 権限チェックするためのデータ in/out
+ */
 function _addCheckingForManageCommunity(content, params) {
     if ('roomId' in content && typeof content.roomId == 'string' && content.roomId != '') {
         params.checks.push( { action: AUTHORITY_ACTIONS.COMMUNITY_MANAGE, resource: content.roomId });
@@ -416,6 +545,11 @@ function _addCheckingForManageCommunity(content, params) {
     }
 }
 
+/**
+ * コミュニティへのメッセージ投稿をチェックする設定を追加する
+ * @param  {object} content リクエストデータの内容
+ * @param {object} params 権限チェックするためのデータ in/out
+ */
 function _addCheckingForSendToCommunity(content, params) {
     if ('roomId' in content && typeof content.roomId == 'string' && content.roomId != '') {
         params.checks.push( { action: AUTHORITY_ACTIONS.COMMUNITY_MANAGE, resource: content.roomId });
@@ -424,6 +558,11 @@ function _addCheckingForSendToCommunity(content, params) {
     }
 }
 
+/**
+ * コミュニティへの閲覧権をチェックする設定を追加する
+ * @param  {object} content リクエストデータの内容
+ * @param {object} params 権限チェックするためのデータ in/out
+ */
 function _addCheckingForViewCommunity(content, params) {
     if ('roomId' in content && typeof content.roomId == 'string' && content.roomId != '') {
         params.checks.push( { action: AUTHORITY_ACTIONS.COMMUNITY_MANAGE, resource: content.roomId });
@@ -433,6 +572,11 @@ function _addCheckingForViewCommunity(content, params) {
     }
 }
 
+/**
+ * アンケート作成をチェックするための指定を追加する
+ * @param  {object} content リクエストデータの内容
+ * @param {object} params 権限チェックするためのデータ in/out
+ */
 function _addCheckingForCreateQuestionnaire(content, params) {
     LOG.connectionLog(7, "do func AuthorityChecker._addCheckingForCreateQuestionnaire(...");
     if ('roomId' in content && typeof content.roomId == 'string' && content.roomId != '') {
@@ -445,6 +589,11 @@ function _addCheckingForCreateQuestionnaire(content, params) {
     }
 }
 
+/**
+ * アンケート回答をチェックするための指定を追加する
+ * @param  {object} content リクエストデータの内容
+ * @param {object} params 権限チェックするためのデータ in/out
+ */
 function _addCheckingForUpdateToQuestionnaire(content, params) {
     LOG.connectionLog(7, "do func AuthorityChecker._addCheckingForUpdateToQuestionnaire(...");
     if ('msgto' in content && typeof content.msgto == 'string' && content.msgto != '') {
@@ -457,21 +606,39 @@ function _addCheckingForUpdateToQuestionnaire(content, params) {
     }
 }
 
+/**
+ * つぶやき閲覧件有無をチェックするための指定を追加する
+ * @param  {object} content リクエストデータの内容
+ * @param {object} params 権限チェックするためのデータ in/out
+ */
 function _addCheckingForViewMurmur(content, params) {
     LOG.connectionLog(7, "do func AuthorityChecker._addCheckingForViewMurmur(...");
     params.checks.push( { action: AUTHORITY_ACTIONS.MURMUR_SEND, resource: null });
     params.checks.push( { action: AUTHORITY_ACTIONS.MURMUR_VIEW, resource: null });
 }
 
+/**
+ * つぶやきをチェックするための指定を追加する(現在はログインユーザーは全員書き込めるとした)
+ * @param  {object} content リクエストデータの内容
+ * @param {object} params 権限チェックするためのデータ in/out
+ */
 function _addCheckingForSendToMurmur(content, params) {
     LOG.connectionLog(7, "do func AuthorityChecker._addCheckingForSendToMurmur(...");
     params.checks.push( { action: AUTHORITY_ACTIONS.MURMUR_SEND, resource: null });
 }
 
+/**
+ * アンケート表示をチェックするための指定を追加する
+ * GC、Communityはルームメンバーに属しているかGlobalSNS内でチェックしている
+ *
+ * @param  {object} content リクエストデータの内容
+ * @param {object} params 権限チェックするためのデータ in/out
+ */
 function _addCheckingForViewToQuestionnaire(content, params) {
     LOG.connectionLog(7, "do func AuthorityChecker._addCheckingForViewToQuestionnaire(...");
     params.checks.push( { action: AUTHORITY_ACTIONS.FEED_SEND, resource: null });
     params.checks.push( { action: AUTHORITY_ACTIONS.FEED_VIEW, resource: null });
+    // 権限がない場合の後処理を仕込む
     params.on_bad = (p) => {
         if(! content.condition){
             content.condition = {};
@@ -479,6 +646,7 @@ function _addCheckingForViewToQuestionnaire(content, params) {
         if(! content.condition.filter){
             content.condition.filter = {};
         }
+        //Feedを排除するフィルタ
         content.condition.filter = {
             "withoutfeed":true
         };
@@ -486,10 +654,16 @@ function _addCheckingForViewToQuestionnaire(content, params) {
     };
 }
 
+/**
+ * 新着閲覧権をチェックする設定を追加する
+ * @param  {object} content リクエストデータの内容
+ * @param {object} params 権限チェックするためのデータ in/out
+ */
 function _addCheckingForViewRecent(content, params) {
     LOG.connectionLog(7, "do func AuthorityChecker._addCheckingForViewRecent(...");
     params.checks.push( { action: AUTHORITY_ACTIONS.FEED_SEND, resource: null });
     params.checks.push( { action: AUTHORITY_ACTIONS.FEED_VIEW, resource: null });
+    // 権限がない場合の後処理を仕込む
     params.on_bad = (p) => {
         if(! content.condition){
             content.condition = {};
@@ -497,6 +671,7 @@ function _addCheckingForViewRecent(content, params) {
         if(! content.condition.filter){
             content.condition.filter = {};
         }
+        //Feedを排除するフィルタ
         content.condition.filter = {
             "withoutfeed":true
         };
@@ -504,6 +679,11 @@ function _addCheckingForViewRecent(content, params) {
     };
 }
 
+/**
+ * 指定されたリソースがポリシーを保持しているかどうか
+ * @param  {string}   resourceId リソースID（ルームID）
+ * @param  {Function} callback   コールバック関数
+ */
 function _hasResourcePolicy(tenant_uuid, req, session, params, callback) {
     return new Promise((resolve, reject)=> {
         LOG.connectionLog(7, "authority_checker::_hasResourcePolicy");
@@ -528,6 +708,10 @@ function _hasResourcePolicy(tenant_uuid, req, session, params, callback) {
     });
 }
 
+/**
+ * 検索条件から、フィードの条件を取り除く
+ * @param  {string}  p         content.condition.filter のオブジェクト
+ */
 function _removeContainedSearchFeedCondition(p) {
     LOG.connectionLog(7, "do func authority_checker::_removeContainedSearchFeedCondition");
     let _p = p;
@@ -558,6 +742,10 @@ function _removeContainedSearchFeedCondition(p) {
     return false;
 }
 
+/**
+ * 検索条件から、つぶやきの条件を取り除く
+ * @param  {string}  p         content.condition.filter のオブジェクト
+ */
 function _removeContainedSearchMurmurCondition(p) {
     LOG.connectionLog(7, "do func authority_checker::_removeContainedSearchMurmurCondition");
     let _p = p;
@@ -588,6 +776,11 @@ function _removeContainedSearchMurmurCondition(p) {
     return false;
 }
 
+/**
+ * フィードを対象に検索する権限がない場合のリクエスト加工
+ * @param  {object} content リクエストデータの内容
+ * @param {object} params 権限チェックするためのデータ in/out
+ */
 function _onNoViewFeedRightThenRemoveValueFromSearchReq(content) {
     if ('condition' in content && 'filter') {
         _removeContainedSearchFeedCondition(content.condition.filter);
@@ -595,6 +788,11 @@ function _onNoViewFeedRightThenRemoveValueFromSearchReq(content) {
     }
 }
 
+/**
+ * つぶやきを対象に検索する権限がない場合のリクエスト加工
+ * @param  {object} content リクエストデータの内容
+ * @param {object} params 権限チェックするためのデータ in/out
+ */
 function _onNoViewMurmurRightThenRemoveValueFromSearchReq(content) {
     if ('condition' in content && 'filter') {
         _removeContainedSearchMurmurCondition(content.condition.filter);
@@ -602,6 +800,24 @@ function _onNoViewMurmurRightThenRemoveValueFromSearchReq(content) {
     }
 }
 
+/**
+ * Cubee WEB-APIもしくはWebSocketでのAPI呼び出し時の権限チェック。
+ * 必須パラメータの不足は、従来の Cubee が処理する為、エラーとはしない。
+ * @param  {object}   req      http requestが主。最低限の
+ * @param  {Function} callback コールバック関数（errがあれば第一引数で返却。構造は、コールバックを呼べる構造
+ * <pre>
+ * {
+ *     accessToken: "",
+ *     request: "",
+ *     id: "",
+ *     version: "",
+ *     errorCode: "",
+ *     content: {
+ *
+ *     }
+ * }
+ * </pre>
+ */
 function checkOnReceiveApi(req, callback) {
     LOG.connectionLog(7, "do func AuthorityChecker.checkOnReceiveApi(...");
     const _request = req.request,
@@ -616,6 +832,7 @@ function checkOnReceiveApi(req, callback) {
     const _sessionData = SessionDataMannager.getInstance().get(_token);
     const _tenant_uuid = _sessionData.getTenantUuid();
 
+    // 権限チェック問合せ用
     const _params = {
         user_id: _sessionData.getLoginAccout(),
         pre_check: null,
@@ -626,20 +843,24 @@ function checkOnReceiveApi(req, callback) {
         on_bad: null
     };
 
+    // 権限チェック内容を params に詰める
     _checkFacard(_request, _type, _content, _params);
 
     if (_params.pre_check != null) {
         _params.resource_id = _params.pre_check.resource;
         _params.pre_check.func(_tenant_uuid, req, _sessionData, _params, (err) => {
             if (!err) {
+                // Checking it
                 runCheckUserHavePolicyAndCallback(_tenant_uuid, req, _sessionData, _params, callback);
             }
         });
     } else if (_params.checks.length > 0 || _params.invalid) {
         LOG.connectionLog(7, "authority_checker::checkOnReceiveApi, checking..");
+        // Checking it
         runCheckUserHavePolicyAndCallback(_tenant_uuid, req, _sessionData, _params, callback);
     } else {
         LOG.connectionLog(7, "authority_checker::checkOnReceiveApi, no need to check..");
+        // Ignore
         process.nextTick(function() {
             callback();
         });
@@ -647,12 +868,19 @@ function checkOnReceiveApi(req, callback) {
 
 }
 
+/**
+ * XMPP通信を受信したときの権限チェック処理
+ * @param  {object}   sessionDataAry そのアカウントがマルチセッションの場合、sessionDataAryは複数存在
+ * @param  {object}   items          メッセージのリスト
+ * @param  {Function} callback       チェック結果を渡すコールバック。渡された items に have_policy プロパティを付与して返却する
+ */
 function checkOnMessage(sessionDataAry, items, callback) {
     LOG.connectionLog(7, "authority_checker::checkOnMessage");
 
     const _oneSessionData = sessionDataAry[0];
     const _tenant_uuid = _oneSessionData.getTenantUuid();
 
+    // チェックが必要な分だけ、非同期メソッドを用意する
     let _promises = [];
     let _params = [];
     let _items = {};
@@ -721,7 +949,16 @@ function checkOnMessage(sessionDataAry, items, callback) {
 
 }
 
+/**
+ * 権限を保持しているかをチェックする
+ * @param  {string}   tenant_uuid テナントUUID
+ * @param  {object}   req         Cubee API の request
+ * @param  {object}   session     sessionDdata
+ * @param  {object}   params      権限チェックを行うためのパラメータ。actions に いずれかの権限があればよい、という権限のリストを指定すること。
+ * @param  {Function} callback    本メソッドの結果を返すコールバック。エラー、権限不足があれば、第一引数に指定する。
+ */
 function runCheckUserHavePolicyAndCallback(tenant_uuid, req, session, params, callback) {
+    // 返却用
     const _res = {
         accessToken: req.accessToken,
         request: req.request,
@@ -736,6 +973,7 @@ function runCheckUserHavePolicyAndCallback(tenant_uuid, req, session, params, ca
     LOG.connectionLog(7, "authority_checker::runCheckUserHavePolicyAndCallback");
 
     if (params.invalid == true) {
+        // 何かしらの権限が必要であるが、制御対象ではない場合、FORBIDDEN で返却する
         process.nextTick(function() {
             callback(_res);
         });
@@ -743,6 +981,7 @@ function runCheckUserHavePolicyAndCallback(tenant_uuid, req, session, params, ca
         return;
     }
 
+    // チェックが必要な分だけ、非同期メソッドを用意する
     var _promises = [];
     params.checks.forEach(function(check) {
         params.action = check.action;
@@ -752,6 +991,7 @@ function runCheckUserHavePolicyAndCallback(tenant_uuid, req, session, params, ca
         );
     });
 
+    // 全て実行する
     Promise.all(_promises)
     .then(function(results) {
         let havePolicy = false;
@@ -800,6 +1040,11 @@ const _what_in_policy_id = {
 const ROOMTYPE_GROUPCHAT_IN_RESOURCEID = 'room_';
 const ROOMTYPE_COMMUNITY_IN_RESOURCEID = 'community_';
 
+/**
+ * リソースIDから、ルームタイプを取得する
+ * @param  {string} resouceId リソースID（ルームID）
+ * @return {string}           ルームタイプ
+ */
 function getRoomTypeFromResourceId(resouceId) {
     if (! _.isString(resouceId) || resouceId == '') {
         return '';
@@ -813,20 +1058,47 @@ function getRoomTypeFromResourceId(resouceId) {
     }
 }
 
+/**
+ * ポリシーIDからルームタイプを取り出す。
+ *
+ * @param  {string} policyId ポリシーID
+ *
+ * @return {string} ルームタイプ
+ */
 const getRoomTypeInPolicyId = function(policyId) {
     return getInfoInPolicyId(policyId, _what_in_policy_id.room_type);
 };
 
+/**
+ * ポリシーIDからアクションを取り出す。
+ *
+ * @param  {string} policyId ポリシーID
+ *
+ * @return {string} リソースID
+ */
 const getResourceIdInPolicyId = function(policyId) {
     return getInfoInPolicyId(policyId, _what_in_policy_id.resource_id);
 };
 
+/**
+ * ポリシーIDからアクションを取り出す。
+ *
+ * @param  {string} policyId ポリシーID
+ * @param  {string} what 問い合わせタイプ
+ *
+ * @return {string} リソースID
+ */
 function getInfoInPolicyId(policyId, what) {
     if (policyId == null || typeof policyId != 'string' || policyId == '') {
         return '';
     }
     var terms = policyId.split('_');
     if (terms.length < 4) {
+        // 0: p _
+        // 1: sendMessageToCommunity _
+        // 2: community _
+        // 3: branchou3d _   usernameに "_"が含まれればそれ以上になる
+        // 4: 4
         return '';
     }
     switch(what) {

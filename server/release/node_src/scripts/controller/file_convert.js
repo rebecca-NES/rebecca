@@ -1,18 +1,3 @@
-/*
-Copyright 2020 NEC Solution Innovators, Ltd.
-
-Licensed under the Apache License, Version 2.0 (the "License");
-you may not use this file except in compliance with the License.
-You may obtain a copy of the License at
-
-    http://www.apache.org/licenses/LICENSE-2.0
-
-Unless required by applicable law or agreed to in writing, software
-distributed under the License is distributed on an "AS IS" BASIS,
-WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-See the License for the specific language governing permissions and
-limitations under the License.
-*/
 (function() {
     var ServerLog = require('./server_log');
     var Fs = require('fs');
@@ -25,6 +10,7 @@ limitations under the License.
     function FileConvert() {
     };
 
+    //定数定義
     var CREATING_IMAGE_FILE = '../../resources/creatingImage.png';
     var DATA_DIR = '../../data/';
     var THUMBNAIL_DIR = Conf.getInstance().getConfData('THUMBNAIL_FILEPATH', 'thumbnail');
@@ -34,6 +20,7 @@ limitations under the License.
 
     var _proto = FileConvert.prototype;
 
+    // タイプによる処理を定義
     var _createTypeTable = {
         'thumbnail' : _convertThumbnail
     };
@@ -42,6 +29,12 @@ limitations under the License.
         'thumbnail' : _getThumbnailFilePath
     };
 
+    /**
+     * ファイル加工
+     * @param {string} inputFilePath : 対象のファイルパス
+     * @param {string} type : タイプ
+     * @param {callback} onCallback : 結果返却用コールバック
+     */
     _proto.preConvertProcess = function(inputFilePath, type, onCallback) {
         if (onCallback == null || typeof onCallback != 'function') {
             return false;
@@ -51,6 +44,7 @@ limitations under the License.
             return false;
         }
 
+        //　対象ファイルが存在しているかチェック
         var _absFilePath = Path.join(__dirname, DATA_DIR, inputFilePath);
         Fs.exists(_absFilePath, function (exists) {
             if(!exists) {
@@ -59,6 +53,7 @@ limitations under the License.
                 return;
             }
 
+            //　type確認
             var _callFunction = _createTypeTable[type];
             if(_callFunction == null){
                 _log.connectionLog(3, 'FileConvert.preConvertProcess:: type not found : ' + type);
@@ -71,7 +66,13 @@ limitations under the License.
         return true;
     }
 
+    /**
+     * サムネイル画像生成
+     * @param {string} absFilePath : 生成対象のファイルパス(絶対パス)
+     * @param {callback} onCallback : 結果返却用コールバック
+     */
     function _convertThumbnail(absFilePath, onCallback) {
+        //　拡張子チェック
         var _ext = _getImageFileExt(absFilePath);
         if(_ext == null){
             _log.connectionLog(7, 'convertThumbnail:: not convertable file : ' + absFilePath);
@@ -84,10 +85,12 @@ limitations under the License.
         _work = Path.dirname(absFilePath);
         var _targetDir = Path.join(_work, THUMBNAIL_DIR);
         var _targetFilePath = Path.join(_targetDir, _targetFilename);
+        //　格納ディレクトリをチェック
         Fs.exists(_targetDir, function (exists) {
             if(exists) {
                 _copyCreatingImage();
             } else {
+                //　ないので作成
                 Fs.mkdir(_targetDir, function(error) {
                     if(error){
                         _log.connectionLog(3, 'convertThumbnail:: make thumbnail dir is error : ' + error);
@@ -101,6 +104,7 @@ limitations under the License.
         });
 
         function _copyCreatingImage() {
+            // 生成中画像のコピー
             var _fromFilePath = Path.join(__dirname, CREATING_IMAGE_FILE);
             var _toFilePath = _targetFilePath;
             _log.connectionLog(7, 'copyCreatingImage:: from : ' + _fromFilePath);
@@ -134,6 +138,7 @@ limitations under the License.
             }
         }
 
+        // 生成開始
         function _startConvert(onStartConvertCallback) {
             if (onStartConvertCallback == null || typeof onStartConvertCallback != 'function') {
                 return false;
@@ -149,18 +154,20 @@ limitations under the License.
             };
             EasyImage.resize(_resizeInfo).then(
                 function (image) {
+                    // 生成中画像の削除
                     Fs.unlink(_targetFilePath, function(err){
                         if(err){
                             _log.connectionLog(3, 'startConvert:: target file remove error : ' + err);
-                            Fs.unlink(_tempFilePath, function() {       
+                            Fs.unlink(_tempFilePath, function() {       // サムネイルの削除
                                 onStartConvertCallback(false);
                             });
                             return;
                         }
+                        // 加工済みファイルのリネーム
                         Fs.rename(_tempFilePath, _targetFilePath, function(err){
                             if(err){
                                 _log.connectionLog(3, 'startConvert:: rename error : ' + err);
-                                Fs.unlink(_tempFilePath, function() {   
+                                Fs.unlink(_tempFilePath, function() {   // サムネイルの削除
                                     onStartConvertCallback(false);
                                 });
                                 return;
@@ -169,6 +176,7 @@ limitations under the License.
                         });
                     });
                 },
+                // サムネイル生成失敗
                 function (err) {
                     _log.connectionLog(3, 'startConvert:: convert error : ' + err);
                     Fs.exists(_targetFilePath, function(exists){
@@ -176,7 +184,7 @@ limitations under the License.
                             _removeTempFile();
                             return;
                         }
-                        Fs.unlink(_targetFilePath, function(){          
+                        Fs.unlink(_targetFilePath, function(){          // 生成中画像の削除
                             _log.connectionLog(7, 'startConvert:: remove targetFile');
                             _removeTempFile();
                         });
@@ -187,7 +195,7 @@ limitations under the License.
                                 onStartConvertCallback(false);
                                 return;
                             }
-                            Fs.unlink(_tempFilePath, function(){        
+                            Fs.unlink(_tempFilePath, function(){        // サムネイル画像の削除
                                 _log.connectionLog(7, 'startConvert:: remove tempFile');
                                 onStartConvertCallback(false);
                             });
@@ -199,6 +207,10 @@ limitations under the License.
         }
     }
 
+    /**
+     * 対象のファイルの場合に拡張子を返す
+     * @param {string} filePath : ファイルパス
+     */
     function _getImageFileExt(filePath) {
         var _ary = ['.jpg','.jpeg','.gif','.bmp','.png'];
         var _targetFileExt = Path.extname(filePath);
@@ -211,6 +223,12 @@ limitations under the License.
         return null;
     }
 
+    /**
+     * 加工済みファイルの取得
+     * @param {string} originalFilePath : 加工対象のファイルパス
+     * @param {string} type : タイプ
+     * @param {callback} onCallback : 結果返却用コールバック
+     */
     _proto.getConvertedFilePath = function(originalFilePath, type, onCallback) {
         if (onCallback == null || typeof onCallback != 'function') {
             return false;
@@ -220,6 +238,7 @@ limitations under the License.
             return false;
         }
 
+        //　対象ファイルが存在しているかチェック
         var _absFilePath = Path.join(__dirname, DATA_DIR, originalFilePath);
         Fs.exists(_absFilePath, function (exists) {
             if(!exists) {
@@ -229,6 +248,7 @@ limitations under the License.
             }
             _log.connectionLog(7, 'FileConvert.getConvertedFilePath:: file : ' + _absFilePath);
 
+            //　type確認
             var _callFunction = _getTypeTable[type];
             if(_callFunction == null){
                 _log.connectionLog(7, 'FileConvert.getConvertedFilePath:: type not found : ' + type);
@@ -240,7 +260,13 @@ limitations under the License.
         return true;
     }
 
+    /**
+     * サムネイル画像取得
+     * @param {string} originalFilePath : 生成対象のファイルパス
+     * @param {callback} onCallback : 結果返却用コールバック
+     */
     function _getThumbnailFilePath(originalFilePath, onCallback) {
+        //　拡張子チェック
         var _absFilePath = Path.join(__dirname, DATA_DIR, originalFilePath);
         var _ext = _getImageFileExt(_absFilePath);
         if(_ext == null){
@@ -255,6 +281,7 @@ limitations under the License.
         var _targetDir = Path.join(_work, THUMBNAIL_DIR);
         var _targetFilePath = Path.join(_targetDir, _targetFilename);
 
+        //　加工済みファイルをチェック
         Fs.exists(_targetFilePath, function (exists) {
             if(!exists) {
                 _log.connectionLog(7, 'getThumbnailFilePath:: converted file not found: ' + _targetFilePath);

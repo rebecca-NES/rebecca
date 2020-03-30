@@ -1,18 +1,3 @@
-/*
-Copyright 2020 NEC Solution Innovators, Ltd.
-
-Licensed under the Apache License, Version 2.0 (the "License");
-you may not use this file except in compliance with the License.
-You may obtain a copy of the License at
-
-    http://www.apache.org/licenses/LICENSE-2.0
-
-Unless required by applicable law or agreed to in writing, software
-distributed under the License is distributed on an "AS IS" BASIS,
-WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-See the License for the specific language governing permissions and
-limitations under the License.
-*/
 const log = require("../../../server_log").getInstance();
 const util = require('util');
 const Const = require("../../../const");
@@ -21,12 +6,22 @@ const Utils = require("../../../../utils");
 const CommunityMember ={
     STATE_NOT_JOIN: 0,
     STATE_JOIN: 1,
-    STATE_LEAVE: 2,
-    STATE_FORCE_LEAVE: 3
+    STATE_LEAVE: 2,//自分自身で退会した記録
+    STATE_FORCE_LEAVE: 3//管理者が退会した記録
 };
 
+/**
+ * 公開CommunityのDB操作クラス
+ */
 module.exports = class PublicCommunityMemberDbStore {
 
+    /**
+     * コンストラクター
+     *
+     * @param db_store globalSnsDBのインスタンス
+     * @param tenant_uuid テナントUUID
+     * @return このクラスのインスタンス
+     */
     constructor (db_store, tenant_uuid) {
         log.connectionLog(7,"do func community.public.member.dbif.constructor(...");
         const db_connect = db_store.getDBConnect();
@@ -37,6 +32,14 @@ module.exports = class PublicCommunityMemberDbStore {
         }
     }
 
+    /**
+     * ルームに参加
+     *
+     * @param roomId ルームID
+     * @param jid 追加ユーザーのJID
+     * @param role 設定ロール(1=閲覧のみ、投稿／閲覧, 2=管理者)
+     * @return Promise
+     */
     joining(roomId, jid, role){
         log.connectionLog(7,"do func community.public.member.dbif.joining(...");
         return new Promise((resolve, reject)=>{
@@ -121,6 +124,7 @@ module.exports = class PublicCommunityMemberDbStore {
                                             res_sel[1].rows[0].state :
                                             CommunityMember.STATE_NOT_JOIN;
 
+                        //権限：投稿/閲覧
                         let sql;
                         if(isAccountNew){
                             const sqlbase = "INSERT INTO community_member_store"
@@ -146,6 +150,7 @@ module.exports = class PublicCommunityMemberDbStore {
                                                              this.globalsns_connect.escape(roomId));
                                 this.globalsns_connect.query(update_sql).then((res)=>{
                                     this.getRoomInfo(jid, roomId).then((res_ri)=>{
+                                        //CommunityMember.STATE_JOIN が state に設定されている状態で更新された時 update
                                         res_ri.joinType = oldMembertype != CommunityMember.STATE_JOIN ? 'new' : 'update';
                                         resolve(res_ri);
                                         return;
@@ -192,6 +197,12 @@ module.exports = class PublicCommunityMemberDbStore {
         });
     }
 
+    /**
+     * ルームに情報取得     *
+     * @param jid 追加ユーザーのJID
+     * @param roomId ルームID
+     * @return Promise
+     */
     getRoomInfo(jid, roomId){
         log.connectionLog(7,"do func community.public.member.dbif.getRoomInfo(...");
         return new Promise((resolve, reject)=>{
@@ -259,6 +270,12 @@ module.exports = class PublicCommunityMemberDbStore {
         });
     }
 
+    /**
+     * 退会
+     * @param roomId ルームID
+     * @param jid 退会ユーザーのJID
+     * @return Promise
+     */
     leaveMember(roomId, jid){
         log.connectionLog(7,"do func community.public.member.dbif.deleteMember(...");
         return new Promise((resolve, reject)=>{
@@ -324,6 +341,14 @@ module.exports = class PublicCommunityMemberDbStore {
         });
     }
 
+    /**
+     * 参加状態更新
+     *
+     * @param roomId ルームID
+     * @param jid 追加ユーザーのJID
+     * @param role 設定ロール(1=閲覧のみ、投稿／閲覧, 2=管理者)
+     * @return Promise
+     */
     updateRole(roomId, jid, role){
         log.connectionLog(7,"do func community.public.member.dbif.updateRole(...");
         return new Promise((resolve, reject)=>{

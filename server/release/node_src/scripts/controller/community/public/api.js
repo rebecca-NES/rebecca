@@ -1,18 +1,3 @@
-/*
-Copyright 2020 NEC Solution Innovators, Ltd.
-
-Licensed under the Apache License, Version 2.0 (the "License");
-you may not use this file except in compliance with the License.
-You may obtain a copy of the License at
-
-    http://www.apache.org/licenses/LICENSE-2.0
-
-Unless required by applicable law or agreed to in writing, software
-distributed under the License is distributed on an "AS IS" BASIS,
-WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-See the License for the specific language governing permissions and
-limitations under the License.
-*/
 "use strict";
 
 const SessionDataMannager = require("../../session_data_manager");
@@ -21,17 +6,29 @@ const Const = require('../../const');
 const _log = require("../../server_log").getInstance();
 const PublicCommunityDbStore = require('./dbif');
 
+/**
+ * cubee_web_api.js のリクエストタイプで分岐された状態で実行されるAPIベース
+ *
+ * @param _globalSnsDB globalSnsDBのインスタンス
+ * @param socket ソケット
+ * @param request リクエストJSON
+ * @param processCallback 上位で設定のコールバック
+ * @param callBackResponse レスポンスコールバック
+ */
 exports.receive = (_globalSnsDB, socket, request, processCallback, callBackResponse) => {
     _log.connectionLog(7, 'do func community.public.api.request(...');
     const _content = request.content;
     const _type = _content.type;
+    //typeが正しくない場合などのデフォルト値
     let _ret = {
+        //errorCode エラーコード（9=トークンが無効,1=必要パラメーターが無い場合,0=その他）
         errorCode : 1,
         content : {
             result: false,
             reason: Const.API_STATUS.NOT_FOUND
         }
     };
+    //トークンが無効
     if(typeof _content != 'object' ||
        typeof _type != 'string' ||
        !Validation.accessTokenValidationCheck(request.accessToken, true)){
@@ -46,9 +43,13 @@ exports.receive = (_globalSnsDB, socket, request, processCallback, callBackRespo
     }else{
         switch(_type){
         case 'getRoomList':
+                //_content.startId,_content.count
+                //はnullも許容するのでDBないで値チェック
+                //登録実行
             _ret = getRoomList(_globalSnsDB, request.accessToken,
                                    _content.startId, _content.count)
                     .then((res)=>{
+                        //httpレスポンスをここで実行
                         callBackResponse(
                             processCallback,
                             request.accessToken,
@@ -60,6 +61,7 @@ exports.receive = (_globalSnsDB, socket, request, processCallback, callBackRespo
                     })
                 .catch((err)=>{
                     _log.connectionLog(3, '  community.public.api.request getRoomList catch err:'+JSON.stringify(err));
+                    //httpレスポンスをここで実行
                     callBackResponse(
                         processCallback,
                         request.accessToken,
@@ -72,6 +74,7 @@ exports.receive = (_globalSnsDB, socket, request, processCallback, callBackRespo
             break;
         default:
             _log.connectionLog(3, '  community.public.api.request not type');
+                //httpレスポンスをここで実行
             callBackResponse(
                     processCallback,
                     request.accessToken,
@@ -85,6 +88,14 @@ exports.receive = (_globalSnsDB, socket, request, processCallback, callBackRespo
     }
 };
 
+/**
+ *公開ルームのリストを取得
+ *
+ * @param globalSnsDB globalSnsDBのインスタンス
+ * @param accessToken アクセストークン
+ * @param startId 検索開始ID
+ * @param count 検索取得数
+ */
 const getRoomList = (globalSnsDB, accessToken, startId, count) => {
     _log.connectionLog(7, 'do func community.public.api.getRoomList(...');
     return new Promise((resolve, reject) => {

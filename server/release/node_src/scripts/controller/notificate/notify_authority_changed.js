@@ -1,18 +1,7 @@
-/*
-Copyright 2020 NEC Solution Innovators, Ltd.
-
-Licensed under the Apache License, Version 2.0 (the "License");
-you may not use this file except in compliance with the License.
-You may obtain a copy of the License at
-
-    http://www.apache.org/licenses/LICENSE-2.0
-
-Unless required by applicable law or agreed to in writing, software
-distributed under the License is distributed on an "AS IS" BASIS,
-WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-See the License for the specific language governing permissions and
-limitations under the License.
-*/
+/**
+ * Notification of authority changed to session via websocket
+ * @module  src/scripts/controller/notificate/notify_authority_changed
+ */
 
 'use strict';
 
@@ -27,6 +16,12 @@ const SessionDataMannager = require('../session_data_manager');
 const RequestData = require('../../model/request_data').RequestData;
 
 
+/**
+ * 権限変更の通知を行う
+ * @param  {string} tenant_uuid テナントUUID
+ * @param  {object} user_ids    通知対象のユーザ（ログインアカウント）の配列
+ * @param  {object} content     通知する内容
+ */
 function notifyAuthorityChanged(tenant_uuid, user_ids, content) {
     if (! _.isString(tenant_uuid)) {
         _log.connectionLog(3, 'notify_authority_changed#notifyAuthorityChanged: invalid argument (tenant_uuid)');

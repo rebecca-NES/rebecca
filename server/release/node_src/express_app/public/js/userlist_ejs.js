@@ -1,37 +1,27 @@
-/*
-Copyright 2020 NEC Solution Innovators, Ltd.
-
-Licensed under the Apache License, Version 2.0 (the "License");
-you may not use this file except in compliance with the License.
-You may obtain a copy of the License at
-
-    http://www.apache.org/licenses/LICENSE-2.0
-
-Unless required by applicable law or agreed to in writing, software
-distributed under the License is distributed on an "AS IS" BASIS,
-WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-See the License for the specific language governing permissions and
-limitations under the License.
-*/
 $(function(){
+    //tableエレメント取得
     var _tableObj = $('table');
 
+    //利用停止チェックボックスのclickイベント登録
     _tableObj.on('click', 'input[type=checkbox]', function(){
         $(this).prop('disabled',true);
         _updateUserAccountStatus($(this));
     });
 
+    //利用停止チェックボックスのsuspendイベント登録(独自イベント)
     _tableObj.on('suspend', 'input[type=checkbox]', function(){
         var _userItemElm = $(this).parent().parent();
         _makeUserItemSuspend(_userItemElm);
     });
 
+    //利用停止チェックボックスのactiveイベント登録(独自イベント)
     _tableObj.on('active', 'input[type=checkbox]', function(){
         var _userItemElm = $(this).parent().parent();
         _makeUserItemElmActive(_userItemElm);
     });
 
 
+    //ユーザアカウントステータスの更新
     function _updateUserAccountStatus(checkBoxElm){
         var _url = checkBoxElm.attr('action');
         var _accessTokenHash = checkBoxElm.attr('ATH');
@@ -41,6 +31,7 @@ $(function(){
         $.post(_url, _reqJsonData, _onUpdateStatusCallBack, _responseDataType);
         return;
 
+        //ステータス更新応答のコールバック
         function _onUpdateStatusCallBack(data){
             var _result = data.result;
             if(!_result){
@@ -51,10 +42,12 @@ $(function(){
             var _status = _content.status;
             _onUpdateUserAccountStatus(_status, checkBoxElm);
 
+            //ステータス変更による登録可能ユーザの表示変更処理
             location.reload();
             return;
         }
 
+        //チェックボックスの表示をロールバックする
         function _rollback(){
             var _rollbackStatus = _getStatus(!_check);
             _onUpdateUserAccountStatus(_rollbackStatus, checkBoxElm);
@@ -62,6 +55,7 @@ $(function(){
         }
     }
 
+    //リクエスト用のJSONデータ取得
     function _getReqJsonDataForUpdateStatus(flg, accessTokenHash){
         return {
             status : _getStatus(flg),
@@ -69,11 +63,13 @@ $(function(){
         }
     }
 
+    //ステータスの値を取得
     function _getStatus(flg){
         return (!flg)? 0 : 2;
     }
 
 
+    //利用停止ステータス変更のコールバック
     function _onUpdateUserAccountStatus(status, checkBoxElm){
         if(status == 2){
             checkBoxElm.trigger('suspend');
@@ -82,6 +78,7 @@ $(function(){
         }
     }
 
+    //ユーザ一覧の要素をアクティブ化する
     function _makeUserItemElmActive(userItemElm){
         var _accountElm = $(userItemElm).children('td.user-list-account');
         var _nicknameElm = $(userItemElm).children('td.user-list-nickname');
@@ -92,6 +89,7 @@ $(function(){
         _stausElm.prop('disabled',false);
     }
 
+    //ユーザをユーザ一覧の要素を休止化する
     function _makeUserItemSuspend(userItemElm){
         var _accountElm = $(userItemElm).children('td.user-list-account');
         var _nicknameElm = $(userItemElm).children('td.user-list-nickname');

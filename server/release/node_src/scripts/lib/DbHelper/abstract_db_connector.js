@@ -1,25 +1,15 @@
-/*
-Copyright 2020 NEC Solution Innovators, Ltd.
-
-Licensed under the Apache License, Version 2.0 (the "License");
-you may not use this file except in compliance with the License.
-You may obtain a copy of the License at
-
-    http://www.apache.org/licenses/LICENSE-2.0
-
-Unless required by applicable law or agreed to in writing, software
-distributed under the License is distributed on an "AS IS" BASIS,
-WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-See the License for the specific language governing permissions and
-limitations under the License.
-*/
 (function() {
+    //DB接続用抽象クラス
 
+    // どのDBを使用するか（Settingファイルから本来は読み込む)
     var db_type = "pg";
     var mysql = require('mysql');
 
     var PgConnector = require('./pg_connector');
 
+    /**
+     * AbstractDbConnectorコンストラクタ
+     */
     function AbstractDbConnector(dbConfig) {
         if(db_type === "pg") {
             this._dbConfig = dbConfig;
@@ -32,6 +22,11 @@ limitations under the License.
 
     var _proto = AbstractDbConnector.prototype;
 
+    /**
+     * DBへ接続
+     * @param {function} onResultCallBack 実行結果後のコールバック
+     * @returns {boolean} true : 処理成功 / false : 処理失敗
+     */
     _proto.getConnection = function(onResultCallBack) {
         if(onResultCallBack == null || typeof onResultCallBack != 'function') {
             return false;
@@ -51,6 +46,11 @@ limitations under the License.
         }      
         return true;
     };
+    /**
+     * トランザクションコネクションオブジェクトの取得
+     * @param {function} onResultCallBack 実行結果後のコールバック
+     * @returns {Object} トランザクションコネクションオブジェクト
+     */
     _proto.getTransaction = function() {
         var _self = this;
         if(db_type === "pg") {
@@ -63,6 +63,11 @@ limitations under the License.
         }
         return _tran;
     };
+    /**
+     * トランザクションコネクションオブジェクトの設定
+     * @param {function} onResultCallBack 実行結果後のコールバック
+     * @returns {Object} トランザクションコネクションオブジェクト
+     */
     _proto.initTransactionSetting = function(transaction) {
         if(transaction == null || typeof transaction != 'object') {
             return false;
@@ -123,6 +128,15 @@ limitations under the License.
             });
         }
     };
+    /**
+     * SQLのエスケープ処理
+     * @param {Object} sql sql文に使われるデータ
+     * @returns {String} エスケープ後の文字列
+     * @exsample
+     *    var baseSql = 'SELECT * FROM hoge WHERE name = ';
+     *    var name = 'hogehoge';
+     *    var sql = baseSql + 【継承先クラス】.getInstance().escapeSqlStr(name);
+     */
     _proto.escapeSqlStr = function(sql) {
         return mysql.escape(sql);
     };

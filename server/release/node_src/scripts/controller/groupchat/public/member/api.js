@@ -1,18 +1,3 @@
-/*
-Copyright 2020 NEC Solution Innovators, Ltd.
-
-Licensed under the Apache License, Version 2.0 (the "License");
-you may not use this file except in compliance with the License.
-You may obtain a copy of the License at
-
-    http://www.apache.org/licenses/LICENSE-2.0
-
-Unless required by applicable law or agreed to in writing, software
-distributed under the License is distributed on an "AS IS" BASIS,
-WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-See the License for the specific language governing permissions and
-limitations under the License.
-*/
 "use strict";
 
 const SessionDataMannager = require("../../../session_data_manager");
@@ -23,17 +8,29 @@ const NotificateApi = require('../../../notificate/api');
 const PublicGroupMemberDbStore = require('./dbif');
 const RoleApiController = require("../../../../controller/authority/controller");
 
+/**
+ * cubee_web_api.js のリクエストタイプで分岐された状態で実行されるAPIベース
+ *
+ * @param _globalSnsDB globalSnsDBのインスタンス
+ * @param socket ソケット
+ * @param request リクエストJSON
+ * @param processCallback 上位で設定のコールバック
+ * @param callBackResponse レスポンスコールバック
+ */
 exports.receive = (_globalSnsDB, socket, request, processCallback, callBackResponse) => {
     _log.connectionLog(7, 'do func groupchat.public.member.api.request(...');
     const _content = request.content;
     const _type = _content.type;
+    //typeが正しくない場合などのデフォルト値
     let _ret = {
+        //errorCode エラーコード（9=トークンが無効,1=必要パラメーターが無い場合,0=その他）
         errorCode : 1,
         content : {
             result: false,
             reason: Const.API_STATUS.NOT_FOUND
         }
     };
+    //トークンが無効
     if(typeof _content != 'object' ||
        typeof _type != 'string' ||
        !Validation.accessTokenValidationCheck(request.accessToken, true)){
@@ -51,6 +48,7 @@ exports.receive = (_globalSnsDB, socket, request, processCallback, callBackRespo
         const _myJid = _sessionData.getJid();
         switch(_type){
         case 'Joining':
+                //リクエスト値をチェック
             if(typeof _content.roomId != 'string' ||
                    !Validation.roomIdValidationCheck(_content.roomId, true)){
                 _log.connectionLog(4, '  groupchat.public.member.api.request Joining invalid _content.roomId:'
@@ -69,11 +67,13 @@ exports.receive = (_globalSnsDB, socket, request, processCallback, callBackRespo
                     });
                 break;
             }
+                //登録実行
             _ret = joining(_globalSnsDB, request.accessToken,
                                _content.roomId)
                     .then((res)=>{
 
 
+                        //通知はここで処理
                         try{
                             let userNames = [];
                             let memberItems = [];
@@ -88,6 +88,7 @@ exports.receive = (_globalSnsDB, socket, request, processCallback, callBackRespo
                                 memberItems.push(ulist[i]);
                             }
                             _log.connectionLog(7, '  groupchat.public.member.api.request Joining notificate userNames:'+userNames);
+                            //ルーム追加を追加メンバーに通知
                             let jsonCreateGroup = Object.assign(
                                 {
                                     type: "GroupChatRoom",
@@ -105,6 +106,7 @@ exports.receive = (_globalSnsDB, socket, request, processCallback, callBackRespo
                             delete jsonCreateGroup.items[0].members;
                             delete jsonCreateGroup.joinType;
 
+                            //追加ユーザ（自分自身）へルームの追加を通知
                             NotificateApi.notifyPush(request.accessToken,
                                                      [],
                                                      'CreateGroup',
@@ -118,6 +120,7 @@ exports.receive = (_globalSnsDB, socket, request, processCallback, callBackRespo
                             delete res.content.items[0].updatedAt;
                             delete res.content.items[0].updatedBy;
 
+                            //httpレスポンスをここで実行
                             callBackResponse(
                                 processCallback,
                                 request.accessToken,
@@ -127,6 +130,7 @@ exports.receive = (_globalSnsDB, socket, request, processCallback, callBackRespo
                                 res.errorCode,
                                 Object.assign({type: _type},res.content));
 
+                            //メンバー追加をメンバー全員に通知
                             NotificateApi.notifyPush(request.accessToken,
                                                      userNames,
                                                      (
@@ -143,6 +147,7 @@ exports.receive = (_globalSnsDB, socket, request, processCallback, callBackRespo
                     })
                     .catch((err)=>{
                         _log.connectionLog(3, '  groupchat.public.member.api.request Joining catch err:'+JSON.stringify(err));
+                        //httpレスポンスをここで実行
                         callBackResponse(
                             processCallback,
                             request.accessToken,
@@ -154,6 +159,7 @@ exports.receive = (_globalSnsDB, socket, request, processCallback, callBackRespo
                     });
             break;
         case 'Withdraw':
+                //リクエスト値をチェック
             if(typeof _content.roomId != 'string' ||
                    !Validation.roomIdValidationCheck(_content.roomId, true)){
                 _log.connectionLog(4, '  groupchat.public.member.api.request Withdraw invalid _content.roomId:'
@@ -172,10 +178,13 @@ exports.receive = (_globalSnsDB, socket, request, processCallback, callBackRespo
                     });
                 break;
             }
+                //登録実行
             _ret = withdraw(_globalSnsDB, request.accessToken,
                                 _content.roomId)
                     .then((res)=>{
+                        //通知はここで処理
                         try{
+                            //メンバー削除を通知
                             let userNames = [];
                             let ulist = Object.keys(res.content.items[0].personInfo);
                             for(let i=0;i<ulist.length;i++){
@@ -195,6 +204,7 @@ exports.receive = (_globalSnsDB, socket, request, processCallback, callBackRespo
                             delete res.content.items[0].updatedAt;
                             delete res.content.items[0].updatedBy;
 
+                            //httpレスポンスをここで実行
                             callBackResponse(
                                 processCallback,
                                 request.accessToken,
@@ -204,6 +214,7 @@ exports.receive = (_globalSnsDB, socket, request, processCallback, callBackRespo
                                 res.errorCode,
                                 Object.assign({type: _type},res.content));
 
+                            //ユーザー削除をメンバーに通知
                             NotificateApi.notifyPush(request.accessToken,
                                                      userNames,
                                                      'RemoveMember',
@@ -229,6 +240,7 @@ exports.receive = (_globalSnsDB, socket, request, processCallback, callBackRespo
                         }else{
                             _log.connectionLog(3, '  groupchat.public.member.api.request Withdraw catch err:'+JSON.stringify(err));
                         }
+                        //httpレスポンスをここで実行
                         callBackResponse(
                             processCallback,
                             request.accessToken,
@@ -241,6 +253,7 @@ exports.receive = (_globalSnsDB, socket, request, processCallback, callBackRespo
             break;
         default:
             _log.connectionLog(3, '  groupchat.public.member.api.request not type');
+                //httpレスポンスをここで実行
             callBackResponse(
                     processCallback,
                     request.accessToken,
@@ -254,6 +267,13 @@ exports.receive = (_globalSnsDB, socket, request, processCallback, callBackRespo
     }
 };
 
+/**
+ * メンバー追加のAPI実行処理
+ *
+ * @param globalSnsDB globalSnsDBのインスタンス
+ * @param accessToken アクセストークン
+ * @param roomId ルームID
+ */
 const joining = (globalSnsDB, accessToken, roomId) => {
     _log.connectionLog(7, 'do func groupchat.public.member.api.joining(...');
     return new Promise((resolve, reject) => {
@@ -266,7 +286,9 @@ const joining = (globalSnsDB, accessToken, roomId) => {
             publicGroupMemberDb.joining(
                 roomId,
                 myJid).then((res)=>{
+                    //権限設定(投稿閲覧権を設定)
                     let _policy_id = "p_sendMessageToGroupchat_" + roomId;
+                    //メンバーが最初の一人目の時は管理者権限でユーザーを追加する
                     if(Object.keys(res.items[0].personInfo).length <= 1){
                         _policy_id = "p_manageGroupchat_" + roomId;
                     }
@@ -289,6 +311,7 @@ const joining = (globalSnsDB, accessToken, roomId) => {
                         });
                     }).catch((err_role)=>{
                         _log.connectionLog(3, '  groupchat.public.member.api.joining set role err_role:'+ JSON.stringify(err_role));
+                        // ユーザーを削除
                         try{
                             publicGroupMemberDb.leaveMember(roomId, myJid);
                         }catch(e){
@@ -322,6 +345,13 @@ const joining = (globalSnsDB, accessToken, roomId) => {
     });
 };
 
+/**
+ * メンバー削除のAPI実行処理
+ *
+ * @param globalSnsDB globalSnsDBのインスタンス
+ * @param accessToken アクセストークン
+ * @param roomId ルームID
+ */
 const withdraw = (globalSnsDB, accessToken, roomId) => {
     _log.connectionLog(7, 'do func groupchat.public.member.api.withdraw(...');
     return new Promise((resolve, reject) => {
@@ -345,6 +375,7 @@ const withdraw = (globalSnsDB, accessToken, roomId) => {
                     for(let i=0;i<res_role_sel.users.length;i++){
                         if(res_role_sel.users[i].user == loginAccount){
                             for(let j=0;j<res_role_sel.users[i].policies.length;j++){
+                                //削除する権限をリスト化
                                 deleteRights.push(res_role_sel.users[i].policies[j].id);
                                 for(let k=0;k<res_role_sel.users[i].policies[j].rights.length;k++){
                                     if(!isMyManager &&
@@ -370,6 +401,9 @@ const withdraw = (globalSnsDB, accessToken, roomId) => {
                     if(countOtherManager != 0 &&
                        isMyManager &&
                        !hasOtherManager){
+                        //自分以外に管理者が存在しない + 一般ユーザがメンバーとしてまだ存在している
+                        //のでその旨をレスポンスしてUIでアラート表示
+                        //mess の 'NOT_FOUND_OTHER_MANAGER'で判断している
                         _log.connectionLog(4, '  groupchat.public.member.api.withdraw not found other manager');
                         reject({
                             errorCode : 1,
@@ -384,6 +418,7 @@ const withdraw = (globalSnsDB, accessToken, roomId) => {
                     publicGroupMemberDb.leaveMember(
                         roomId,
                         myJid).then((res)=>{
+                            //メンバーで登録されていなかった
                             if(res.res && res.res[1].rowCount == 0){
                                 _log.connectionLog(4, '  groupchat.public.member.api.withdraw not joining member error');
                                 reject({
@@ -395,6 +430,7 @@ const withdraw = (globalSnsDB, accessToken, roomId) => {
                                 });
                                 return;
                             }
+                            //権限削除
                             let doUnassignPolicy = [];
                             for(let i=0;i<deleteRights.length;i++){
                                 doUnassignPolicy.push(
@@ -435,6 +471,7 @@ const withdraw = (globalSnsDB, accessToken, roomId) => {
                                 });
                             }).catch((err_role)=>{
                                 _log.connectionLog(3, '  groupchat.public.member.api.withdraw set role err_role:'+ JSON.stringify(err_role));
+                                // ユーザーを削除
                                 try{
                                     publicGroupMemberDb.leaveMember(roomId, myJid);
                                 }catch(e){

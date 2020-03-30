@@ -1,25 +1,20 @@
-/*
-Copyright 2020 NEC Solution Innovators, Ltd.
-
-Licensed under the Apache License, Version 2.0 (the "License");
-you may not use this file except in compliance with the License.
-You may obtain a copy of the License at
-
-    http://www.apache.org/licenses/LICENSE-2.0
-
-Unless required by applicable law or agreed to in writing, software
-distributed under the License is distributed on an "AS IS" BASIS,
-WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-See the License for the specific language governing permissions and
-limitations under the License.
-*/
 (function() {
+    /**
+    * tenant_store モデルクラス
+    */
     function AccessRelationData() {
+        // redis でのデータ型の名称
         this.REDIS_DATA_TYPE = 'string';
+        // redis でのキー名
         this.REDIS_KEY_NAME = null;
+        // 保持するデータ
         this._hostName = null;
     }
 
+    /**
+    * CacheCheff で使用する場合の生成メソッド
+    * @param {string} hostName ホスト名
+    */
     AccessRelationData.createDish = function(hostName) {
         if (!hostName || typeof hostName != 'string') {
             return null;
@@ -33,12 +28,14 @@ limitations under the License.
 
     var _proto = AccessRelationData.prototype;
 
+    // キー名
     _proto.setKeyName = function(keyName) {
         this.REDIS_KEY_NAME = keyName;
     };
     _proto.getKeyName = function() {
         return this.REDIS_KEY_NAME;
     }
+    // ホスト名
     _proto.setHostName = function(hostName) {
         this._hostName = hostName;
     };
@@ -46,6 +43,7 @@ limitations under the License.
         return this._hostName;
     }
 
+    // 保持データ
     _proto.getData = function() {
         return this._hostName;
     }

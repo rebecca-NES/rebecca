@@ -1,18 +1,3 @@
-/*
-Copyright 2020 NEC Solution Innovators, Ltd.
-
-Licensed under the Apache License, Version 2.0 (the "License");
-you may not use this file except in compliance with the License.
-You may obtain a copy of the License at
-
-    http://www.apache.org/licenses/LICENSE-2.0
-
-Unless required by applicable law or agreed to in writing, software
-distributed under the License is distributed on an "AS IS" BASIS,
-WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-See the License for the specific language governing permissions and
-limitations under the License.
-*/
 (function() {
     var CubeeWebApi = require('./cubee_web_api');
     var SessionData = require('../model/session_data');
@@ -32,7 +17,9 @@ limitations under the License.
 
     var _proto = SessionDataMannager.prototype;
 
+    // add
     _proto.add = function(sessionData) {
+        // 引数チェック
         if(sessionData == null) {
             return false;
         }
@@ -59,6 +46,7 @@ limitations under the License.
             return false;
         }
         if(this._mapAccessTokenToSessionData[_accessToken] != undefined) {
+            // 既にある場合は失敗
             return false;
         }
         this._mapAccessTokenToSessionData[_accessToken] = sessionData;
@@ -75,6 +63,7 @@ limitations under the License.
         return true;
     }
 
+    // remove
     _proto.remove = function(accessToken) {
         if(accessToken == null) {
             return null;
@@ -82,6 +71,7 @@ limitations under the License.
         if(typeof accessToken != 'string') {
             return null;
         }
+        // 探す
         if(this._mapAccessTokenToSessionData[accessToken] == undefined) {
             return null;
         }
@@ -104,11 +94,14 @@ limitations under the License.
                 }
             }
         }
+        // Redisの中継先情報を削除する
+        // コールバックは判定しない
         StoreVolatileChef.getInstance().discard(accessToken, null);
 
         return _ret;
     };
 
+    // get
     _proto.get = function(accessToken) {
         if(accessToken == null) {
             return null;
@@ -116,12 +109,14 @@ limitations under the License.
         if(typeof accessToken != 'string') {
             return null;
         }
+        // 探す
         if(this._mapAccessTokenToSessionData[accessToken] == undefined) {
             return null;
         }
         return this._mapAccessTokenToSessionData[accessToken];
     };
 
+    // getBySocketIoSock
     _proto.getBySocketIoSock = function(socketIoSock) {
         var _self = this;
         if(socketIoSock == null) {
@@ -130,6 +125,7 @@ limitations under the License.
         if(typeof socketIoSock != 'object') {
             return null;
         }
+        // 探す
         var _ret = null
         for(var _accessToken in _self._mapAccessTokenToSessionData) {
             var _sessionData = _self._mapAccessTokenToSessionData[_accessToken];
@@ -144,6 +140,7 @@ limitations under the License.
         return _ret;
     };
 
+    // getByOpenfireSock
     _proto.getByOpenfireSock = function(openfireSock) {
         var _self = this;
         var _ret = [];
@@ -153,6 +150,7 @@ limitations under the License.
         if(typeof openfireSock != 'object') {
             return _ret;
         }
+        // 探す
         for(var _accessToken in _self._mapAccessTokenToSessionData) {
             var _sessionData = _self._mapAccessTokenToSessionData[_accessToken];
             if(_sessionData == undefined || _sessionData == null) {
@@ -165,6 +163,7 @@ limitations under the License.
         return _ret;
     };
 
+    // getByLoginAccountInTenant
     _proto.getByLoginAccountInTenant = function(tenantUuid, loginAccount) {
         var _ret = [];
         if(tenantUuid == null || typeof tenantUuid != 'string') {
@@ -180,6 +179,7 @@ limitations under the License.
         }
         return _ret;
     }
+    // removeAll
     _proto.removeAll = function() {
         for(var _key in this._mapAccessTokenToSessionData) {
             var _independentClientNumber = this._mapAccessTokenToSessionData[_key].getIndependentClientNumber();
@@ -187,6 +187,8 @@ limitations under the License.
                 delete this._mapIndependetClientNumber['' + _independentClientNumber];
             }
             delete this._mapAccessTokenToSessionData[_key];
+            // Redisの中継先情報を削除する
+            // コールバックは判定しない
             StoreVolatileChef.getInstance().discard(_key, null);
         }
         for(var _key in this._mapLoginAccountToSessionData) {
@@ -194,6 +196,7 @@ limitations under the License.
         }
     };
 
+    // notifyDisconnect
     _proto.notifyDisconnect = function(accessToken, keepSessinDataTime) {
         var _self = this;
         if(accessToken == null) {
@@ -219,8 +222,11 @@ limitations under the License.
             return;
         }
         var _disconnectTime = new Date();
+        // 接続時刻の登録
         _sessinData.setDisconnectDatetime(_disconnectTime);
+        // クライアントソケットの初期化
         _sessinData.setSocketIoSock(null);
+        // 指定時間後にXMPPサーバから切断
         setTimeout(function() {
             var _removeSessinData = _self.get(accessToken);
             if(_removeSessinData == null) {
@@ -228,11 +234,14 @@ limitations under the License.
             }
             var _removeDisconnectTime = _removeSessinData.getDisconnectDatetime();
             if(_removeDisconnectTime == null) {
+                // 再接続により復活のため削除しない
                 return;
             }
             if(_removeDisconnectTime.getTime() > _disconnectTime.getTime()) {
+                // 切断時刻が更新されているため削除しない
                 return;
             }
+            // セッションデータを削除
             var _xsConn = _removeSessinData.getOpenfireSock();
             if (_xsConn != null) {
                 var _sessionDataAry = _self.getByOpenfireSock(_xsConn);
@@ -241,8 +250,10 @@ limitations under the License.
                     return;
                 }
                 if(_sessionDataAry.length > 1){
+                    //multi session
                     _log.connectionLog(7, 'SessionDataMannager notifyDisconnect :: keep openfire session, detect sessionData.');
                 }else{
+                    // ログイン処理中でない場合に切断
                     var _user = _removeSessinData.getLoginAccout();
                     var _tenantUuid = _removeSessinData.getTenantUuid();
                     var _status = CubeeWebApi.getInstance().isLoginSequenceLocked(_tenantUuid, _user);
@@ -259,6 +270,7 @@ limitations under the License.
         }, _removeTime * 1000);
     };
 
+    // 再接続によるセッション活性化
     _proto.notifyReconnect = function(accessToken, clientSock) {
         var _self = this;
         if(accessToken == null || typeof accessToken != 'string') {
@@ -274,11 +286,14 @@ limitations under the License.
         if(_sessinData.setDisconnectDatetime == null || typeof _sessinData.setDisconnectDatetime != 'function') {
             return;
         }
+        // 切断時刻を初期化
         _sessinData.setDisconnectDatetime(null);
+        // クライアントソケットの登録
         _sessinData.setSocketIoSock(clientSock);
     };
 
     _proto._createAccessToken = function() {
+        // 16桁の文字列を生成
         var _ret = '';
         for(var _i = 0; _i < 16; _i++) {
             var _num6bit = Utils.getRandomNumber(0, 63);
@@ -290,12 +305,16 @@ limitations under the License.
     _proto.createUniqueAccessToken = function() {
         var _self = this;
         var _ret = '';
+        // 最大100回トライする
         for(var _i = 0; _i < 100; _i++) {
             var _accessToken = _self._createAccessToken();
             if(_accessToken == null || typeof _accessToken != 'string' || _accessToken.length != 16) {
+                // 値が不正なのでリトライ
                 continue;
             }
+            // 探す
             if(_self._mapAccessTokenToSessionData[_accessToken] != undefined) {
+                // 既にあるのでリトライ
                 continue;
             }
             _ret = _accessToken;
@@ -307,9 +326,12 @@ limitations under the License.
     _proto.createIndependentClientNumber = function() {
         var _self = this;
         var _ret = 0;
+        // 最大100回トライする
         for(var _i = 0; _i < 100; _i++) {
             var _independentClientNumber = Utils.getRandomNumber(0, Math.pow(2, 31) - 1);
+            // 探す
             if(_self._mapIndependetClientNumber['' + _independentClientNumber] != undefined) {
+                // 既にあるのでリトライ
                 continue;
             }
             _ret = _independentClientNumber;

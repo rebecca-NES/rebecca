@@ -1,22 +1,9 @@
-/*
-Copyright 2020 NEC Solution Innovators, Ltd.
-
-Licensed under the Apache License, Version 2.0 (the "License");
-you may not use this file except in compliance with the License.
-You may obtain a copy of the License at
-
-    http://www.apache.org/licenses/LICENSE-2.0
-
-Unless required by applicable law or agreed to in writing, software
-distributed under the License is distributed on an "AS IS" BASIS,
-WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-See the License for the specific language governing permissions and
-limitations under the License.
-*/
 
 (function() {
     function RequestData() {}
 
+    // 要求情報のデータ
+    // 定数定義
     RequestData.GET_PERSON_LIST_TYPE_CONTACT_LIST = 'ContactList';
     RequestData.GET_PERSON_LIST_TYPE_SEARCH = 'Search';
     RequestData.GET_PERSON_LIST_TYPE_SEARCH_SUB_TYPE_ALL_USERS = 'AllUsers';
@@ -58,6 +45,10 @@ limitations under the License.
     RequestData.UPDATE_MESSAGE_TYPE_MURMUR = 'Murmur';
 
     RequestData.DELETE_MESSAGE_TYPE_DELETE = 'Delete';
+    /**
+     * 管理者によるメッセージを削除するXMPPに使用する
+     * @type {String}
+     */
     RequestData.DELETE_MESSAGE_TYPE_ADMIN_DELETE = 'AdminDelete';
 
     RequestData.MESSAGE_OPTION_TYPE_ADD_GOOD_JOB = 'AddGoodJob';
@@ -91,7 +82,15 @@ limitations under the License.
     RequestData.MURMUR_GET_COLUMN_NAME = 'GetColumnName';
     RequestData.MURMUR_SET_COLUMN_NAME = 'SetColumnName';
 
+    /**
+     * GroupChatを削除するXMPPに使用する
+     * @type {String}
+     */
     RequestData.DELETE_GROUP_TYPE_GROUP_CHAT_ROOM = 'DeleteChatRoom';
+    /**
+     * Communityを削除するXMPPに使用する
+     * @type {String}
+     */
     RequestData.DELETE_GROUP_TYPE_COMMUNITY_ROOM = 'DeleteCommunityRoom';
 
     RequestData.ADD_MEMBER_TYPE_GROUP_CHAT_ROOM = 'GroupChatRoom';
@@ -112,6 +111,10 @@ limitations under the License.
 
     RequestData.GET_COUNT_TYPE_MESSAGE = 'Message';
 
+    /**
+     * Noteを削除するXMPPに使用する
+     * @type {String}
+     */
     RequestData.DELETE_NOTE = 'DeleteNote';
 
     RequestData.NOTIFY_MESSAGE_TYPE_PUBLIC = 'Public';
@@ -145,6 +148,10 @@ limitations under the License.
 
     RequestData.NOTIFY_MESSAGE_AUTHORIY_CHANGED = 'AuthorityDataChanged';
 
+    /**
+     * Noteを削除する通知に使用する
+     * @type {String}
+     */
     RequestData.NOTIFY_DELETE_NOTE = 'DeleteNote';
 
     RequestData.XMPP_NOTIFY_NAMESPACE_MESSAGE_OPTION = 'http://necst.nec.co.jp/protocol/messageoption';

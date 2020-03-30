@@ -1,23 +1,25 @@
-/*
-Copyright 2020 NEC Solution Innovators, Ltd.
-
-Licensed under the Apache License, Version 2.0 (the "License");
-you may not use this file except in compliance with the License.
-You may obtain a copy of the License at
-
-    http://www.apache.org/licenses/LICENSE-2.0
-
-Unless required by applicable law or agreed to in writing, software
-distributed under the License is distributed on an "AS IS" BASIS,
-WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-See the License for the specific language governing permissions and
-limitations under the License.
-*/
+/**
+ * API入力値のデータのフォーマット変換の関数を定義
+ *
+ *
+ * @module  src/scripts/controller/dataformatting
+ */
 
 'use strict';
 
 const Log = require('./server_log').getInstance();
 
+/**
+ * 前後のスペース文字を削除
+ * base64のデータをデコードして値リフォームする。
+ * 前提条件）
+ *   base64は ecodeURIComponentでコード化されている
+ *   元データの文字コードはUTF8
+ * ※変換できない値の指定は元の値を戻します。
+ *
+ * @param value リフォームする値
+ * @return 返還された値
+ */
 exports.exTrim = (value) => {
     Log.connectionLog(7, 'do func Fotmatting.exTrim(...');
     if(value == undefined ||
@@ -30,6 +32,7 @@ exports.exTrim = (value) => {
     try{
         _value = decodeURIComponent(value.trim());
     }catch(e){
+        //デコードできないフォーマットが却って来た場合は
         Log.connectionLog(5,"Fotmatting.exTrim error decodeURIComponent undecode data inputed.");
          _value = value;
     }

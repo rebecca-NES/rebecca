@@ -1,23 +1,16 @@
-/*
-Copyright 2020 NEC Solution Innovators, Ltd.
-
-Licensed under the Apache License, Version 2.0 (the "License");
-you may not use this file except in compliance with the License.
-You may obtain a copy of the License at
-
-    http://www.apache.org/licenses/LICENSE-2.0
-
-Unless required by applicable law or agreed to in writing, software
-distributed under the License is distributed on an "AS IS" BASIS,
-WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-See the License for the specific language governing permissions and
-limitations under the License.
-*/
 const libxml = require('libxmljs');
 const Utils = require('../../utils');
 let log = require("../server_log").getInstance();
 
+/**
+ * XMPPリクエストXML作成関数 controller/xmpp.js内と同様の処理内容)
+ */
 
+/**
+ * リクエストXmpp作成関数
+ * ノート削除時に通知を送るためにOpenfireへ接続
+ *
+ */
 exports.makeDeleteNoteForXmpp = (xmppServerHostName, fromJid, noteInfoData) => {
     log.connectionLog(7,"do func codimd.xmpp.js makeDeleteNoteForXmpp(");
     var _doc = libxml.Document();
@@ -31,16 +24,20 @@ exports.makeDeleteNoteForXmpp = (xmppServerHostName, fromJid, noteInfoData) => {
         'from' : _fromJid,
         'to' : xmppServerHostName,
     });
+    // <note>
     var _noteElem = _iqElem.node('note');
     _noteElem.namespace('http://necst.nec.co.jp/protocol/deletenote');
+    // <item>
     var _itemElem = _noteElem.node('item');
     _itemElem.attr(noteInfoData);
+    // created_at_longtime
     let created_at_longtime = Date.parse(noteInfoData.created_at);
     _itemElem.attr("created_at_longtime", (
         (created_at_longtime &&
          typeof created_at_longtime == "number" &&
          !isNaN(created_at_longtime)
         ) ? created_at_longtime : ""));
+    // updated_at_longtime
     let updated_at_longtime = Date.parse(noteInfoData.updated_at);
     _itemElem.attr("updated_at_longtime",(
         (updated_at_longtime &&
@@ -51,6 +48,11 @@ exports.makeDeleteNoteForXmpp = (xmppServerHostName, fromJid, noteInfoData) => {
     return [ _iqElem.toString(), _id ];
 };
 
+/**
+ * リクエストXmpp作成関数
+ * ノート情報更新時除時に通知を送るためにOpenfireへ接続
+ *
+ */
 exports.makeUpdateNoteInfoForXmpp = (xmppServerHostName, fromJid, noteInfoData) => {
     log.connectionLog(7,"do func codimd.xmpp.js makeUpdateNoteInfoForXmpp(");
     var _doc = libxml.Document();
@@ -64,22 +66,28 @@ exports.makeUpdateNoteInfoForXmpp = (xmppServerHostName, fromJid, noteInfoData) 
         'from' : _fromJid,
         'to' : xmppServerHostName,
     });
+    // <note>
     var _noteElem = _iqElem.node('note');
     _noteElem.namespace('http://necst.nec.co.jp/protocol/updatenoteinfo');
+    // <item>
     var _itemElem = _noteElem.node('item');
+    //_itemElem.attr(noteInfoData);
     _itemElem.attr(noteInfoData);
+    // created_at_longtime
     let created_at_longtime = Date.parse(noteInfoData.created_at);
     _itemElem.attr("created_at_longtime", (
         (created_at_longtime &&
          typeof created_at_longtime == "number" &&
          !isNaN(created_at_longtime)
         ) ? created_at_longtime : ""));
+    // updated_at_longtime
     let updated_at_longtime = Date.parse(noteInfoData.updated_at);
     _itemElem.attr("updated_at_longtime",(
         (updated_at_longtime &&
          typeof updated_at_longtime == "number" &&
          !isNaN(updated_at_longtime)) ?
         updated_at_longtime : ""));
+    //
     log.connectionLog(7," codimd.xmpp.js makeUpdateNoteInfoForXmpp _iqElem.toString():"+_iqElem.toString());
     return [ _iqElem.toString(), _id ];
 };

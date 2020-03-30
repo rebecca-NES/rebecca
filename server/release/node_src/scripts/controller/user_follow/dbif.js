@@ -1,24 +1,19 @@
-/*
-Copyright 2020 NEC Solution Innovators, Ltd.
-
-Licensed under the Apache License, Version 2.0 (the "License");
-you may not use this file except in compliance with the License.
-You may obtain a copy of the License at
-
-    http://www.apache.org/licenses/LICENSE-2.0
-
-Unless required by applicable law or agreed to in writing, software
-distributed under the License is distributed on an "AS IS" BASIS,
-WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-See the License for the specific language governing permissions and
-limitations under the License.
-*/
 const log = require("../server_log").getInstance();
 const util = require('util');
 const Const = require("../const");
 
+/**
+ * ユーザーフォローのDB操作クラス
+ */
 module.exports = class UserFollowDbStore {
 
+    /**
+     * コンストラクター
+     *
+     * @param db_store globalSnsDBのインスタンス
+     * @param tenant_uuid テナントUUID
+     * @return このクラスのインスタンス
+     */
     constructor (db_store, tenant_uuid) {
         log.connectionLog(7,"do func user_follow.dbif.constructor(...");
         const db_connect = db_store.getDBConnect();
@@ -29,6 +24,12 @@ module.exports = class UserFollowDbStore {
         }
     }
 
+    /**
+     * ユーザーをフォローする
+     *
+     * @param followeeJid フォローされるユーザーJID
+     * @param followerJid フォローするユーザーJID（アクションの主語者）
+     */
     addUserFollow(followeeJid, followerJid){
         log.connectionLog(7,"do func user_follow.dbif.addUserFollow(...");
         return new Promise((resolve, reject)=>{
@@ -140,6 +141,12 @@ module.exports = class UserFollowDbStore {
         });
     }
 
+    /**
+     * ユーザーをフォロー解除
+     *
+     * @param followeeJid フォロー解除されるユーザーJID
+     * @param followerJid フォロー解除するユーザーJID（アクションの主語者）
+     */
     delUserFollow(followeeJid, followerJid){
         log.connectionLog(7,"do func user_follow.dbif.delUserFollow(...");
         return new Promise((resolve, reject)=>{
@@ -252,6 +259,11 @@ module.exports = class UserFollowDbStore {
         });
     }
 
+    /**
+     * フォローの状態（フォローされている人数、フォローしている人数）を取得
+     *
+     * @param jid 状態を取得するユーザーのJID
+     */
     getFollowInfo(jid){
         log.connectionLog(7,"do func user_follow.dbif.getFollowInfo(...");
         return new Promise((resolve, reject)=>{
@@ -316,6 +328,11 @@ module.exports = class UserFollowDbStore {
         });
     }
 
+    /**
+     * 指定ユーザーがフォローしているリストを取得
+     *
+     * @param jid フォローしているユーザーのJID(指定ユーザー)
+     */
     getFolloweeList(jid){
         log.connectionLog(7,"do func user_follow.dbif.getFolloweeList(...");
         return new Promise((resolve, reject)=>{
@@ -386,6 +403,11 @@ module.exports = class UserFollowDbStore {
         });
     }
 
+    /**
+     * 指定ユーザーがフォローされているリストを取得
+     *
+     * @param jid フォローされているユーザーのJID(指定ユーザー)
+     */
     getFollowerList(jid){
         log.connectionLog(7,"do func user_follow.dbif.getFollowerList(...");
         return new Promise((resolve, reject)=>{

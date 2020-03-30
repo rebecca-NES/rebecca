@@ -1,18 +1,3 @@
-/*
-Copyright 2020 NEC Solution Innovators, Ltd.
-
-Licensed under the Apache License, Version 2.0 (the "License");
-you may not use this file except in compliance with the License.
-You may obtain a copy of the License at
-
-    http://www.apache.org/licenses/LICENSE-2.0
-
-Unless required by applicable law or agreed to in writing, software
-distributed under the License is distributed on an "AS IS" BASIS,
-WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-See the License for the specific language governing permissions and
-limitations under the License.
-*/
 (function() {
     var GlobalSNSManagerDbConnector = require('../lib/DbHelper/global_sns_manager_db_connector');
     var ShortenURLInfo = require('../model/shorten_url_info');
@@ -25,6 +10,9 @@ limitations under the License.
     var _conf = Conf.getInstance();
 
 
+    /**
+     * ShortenURLManagerコンストラクタ
+     */
     function ShortenURLManager() {
     };
 
@@ -33,7 +21,8 @@ limitations under the License.
     ShortenURLManager.getInstance = function() {
         return _shortenURLManager;
     };
-
+    
+    //定数
     var TABLE_SHORTEN = "shorten_uri_store";
     var COLUMN_SHORTEN = "shorten_uri";
     var COLUMN_URLID = "urlid";
@@ -41,13 +30,16 @@ limitations under the License.
     var COLUMN_ORIGINAL = "original_uri";
     var COLUMN_COUNTER = "counter";
 
+    
+    var _proto = ShortenURLManager.prototype;
 
-        var _proto = ShortenURLManager.prototype;
-
+    // レコード追加
     _proto.createRecord = function(info, onCreateCallBack) {
        _log.connectionLog(7, 'enter ShortenURLManager.createRecord');
         var _self = this;
+        // コネクション接続
         return GlobalSNSManagerDbConnector.getInstance().getConnection(_onGetConnectionCallBack);
+        // 接続成功時
         function _onGetConnectionCallBack(err, connection) {
             _log.connectionLog(7, "enter ShortenURLManager#_onGetConnectionCallBack");
             if (err) {
@@ -55,8 +47,8 @@ limitations under the License.
                 onCreateCallBack(false, false);
                 return;
             }
-
-                   var sql = "insert INTO " + TABLE_SHORTEN + "(" +
+       
+            var sql = "insert INTO " + TABLE_SHORTEN + "(" +
                 COLUMN_SHORTEN + "," + COLUMN_URLID + "," + COLUMN_DISPLAYED + "," + COLUMN_ORIGINAL + "," + COLUMN_COUNTER  + ") " +
                 "VALUES(" + 
                 GlobalSNSManagerDbConnector.getInstance().escapeSqlStr(info.getShortenPath()) + "," +
@@ -67,6 +59,7 @@ limitations under the License.
                 connection.query(sql, _onCreate);
             }
             catch (e) {
+                // DB例外発生
                 _log.connectionLog(3,'[add a record] DB Error; ' + e.name + ":" + e.message);
                 _log.connectionLog(3,'SQL =' + sql);
                 onCreateCallBack(false, false);
@@ -74,9 +67,11 @@ limitations under the License.
 
             function _onCreate(err, result) {
                 _log.connectionLog(7, "enter ShortenURLManager#_onCreate");
+                // 終了処理
                 connection.end(function(endErr) {
                     _log.connectionLog(7, "in end handler");
                     if (endErr) {
+                        // コネクション切断時のエラー
                         _log.connectionLog(3,'ShortenURLManager#_onCreate : DB disconnect err :: ' + endErr.name + ":" + endErr.message);
                         onCreateCallBack(false, false);
                     }
@@ -104,7 +99,9 @@ limitations under the License.
 	_proto.getURLInfoFromURLID = function(urlid, onGetURLInfoFromURLID) {
         var _self = this;
        _log.connectionLog(7, 'enter ShortenURLManager.getURLInfoFromURLID');
+        // コネクション接続
         return GlobalSNSManagerDbConnector.getInstance().getConnection(_onGetConnectionCallBack);
+        // 接続成功時
         function _onGetConnectionCallBack(err, connection) {
             if(err){
                 _log.connectionLog(3,'ShortenURLManager#getURLInfoFromURLID DB connect: ' + err.name + ": " + err.message);
@@ -117,6 +114,7 @@ limitations under the License.
                 connection.query(sql, _onGetURLInfoFromURLID);
             }
             catch (e) {
+                // DBエラー発生
                 _log.connectionLog(3,'[search a record by urlid] DB Error; ' + e.name + ":" + e.message);
                 _log.connectionLog(3,'SQL =' + sql);
                 onGetURLInfoFromURLID(e, null);
@@ -124,16 +122,20 @@ limitations under the License.
 
             function _onGetURLInfoFromURLID(err, result) {
                 _log.connectionLog(7, "enter ShortenURLManager#_onGetURLInfoFromURLID");
+                // 終了処理
                 connection.end(function(endErr){
                     if (endErr) {
+                        // コネクション切断時のエラー
                         _log.connectionLog(3,'ShortenURLManager#_onGetURLInfoFromURLID : DB disconnect err :: ' + endErr.name + ":" + endErr.message);
                         onGetURLInfoFromURLID(endErr, null);
                     }
                     else if (err) {
+                        // 
                         _log.connectionLog(3,'ShortenURLManager#_onGetURLInfoFromURLID : ' + err.name + ": " + err.message);
                         _log.connectionLog(3,'ShortenURLManager#_onGetURLInfoFromURLID _sql : ' + sql);
                         onGetURLInfoFromURLID(err, null);
                     }
+                    // 結果が複数あっておかしい
                     else if (result.length != 1) {
                         _log.connectionLog(4,'ShortenURLManager#_onGetURLInfoFromURLID: result.length = ' + result.length);
                         onGetURLInfoFromURLID(err, null);
@@ -155,14 +157,16 @@ limitations under the License.
             }
         }
     };
-
-	    _proto.getURLInfoFromOriginalURL = function(url, onGetURLInfoFromOriginalURL) {
+	
+    _proto.getURLInfoFromOriginalURL = function(url, onGetURLInfoFromOriginalURL) {
        _log.connectionLog(7, 'enter ShortenURLManager.getURLInfoFromOriginalURL');
         var _self = this;
+        
+       _log.connectionLog(7, "ShortenUrlManager#getURLInfoFromOriginalURL: url = " + url);
 
-               _log.connectionLog(7, "ShortenUrlManager#getURLInfoFromOriginalURL: url = " + url);
-
+        // コネクション接続
         return GlobalSNSManagerDbConnector.getInstance().getConnection(_onGetConnectionCallBack);
+        // 接続成功時
         function _onGetConnectionCallBack(err, connection) {
             _log.connectionLog(7, "ShortenUrlManager#_onGetConnectionCallBack");
             if(err){
@@ -170,6 +174,7 @@ limitations under the License.
                 onGetURLInfoFromOriginalURL(err, null);
                 return;
             }
+            // 検索SQL発行
             var sql = "SELECT * FROM " + TABLE_SHORTEN + " WHERE " + COLUMN_ORIGINAL + "=" + 
                     GlobalSNSManagerDbConnector.getInstance().escapeSqlStr(url);
             _log.connectionLog(7, "sql = " + sql);
@@ -177,26 +182,32 @@ limitations under the License.
                 connection.query(sql, _onGetURLInfoFromOriginalURL);
             }
             catch (e) {
+                // DBエラー発生
                 _log.connectionLog(3,'[find a record by url] DB Error; ' + e.name + ":" + e.message);
                 _log.connectionLog(3,'SQL =' + sql);
                 onGetURLInfoFromOriginalURL(e, null);
             }
             function _onGetURLInfoFromOriginalURL(err, result) {
                 _log.connectionLog(7, "enter ShortenUrlManager#_onGetURLInfoFromOriginalURL");
+                // 終了処理
                 connection.end(function(endErr){
                     if (endErr) {
+                        // コネクション切断時のエラー
                         _log.connectionLog(3,'ShortenURLManager#_onGetURLInfoFromOriginalURL : DB disconnect err :: ' + endErr.name + ":" + endErr.message);
                         onGetURLInfoFromOriginalURL(endErr, null);
                     }
+                    // エラー発生
                     else if (err) {
                         _log.connectionLog(3,'ShortenURLManager#_onGetURLInfoFromOriginalURL : ' + err.name + ": " + err.message);
                         _log.connectionLog(3,'ShortenURLManager#_onGetURLInfoFromOriginalURL _sql : ' + sql);
                          onGetURLInfoFromOriginalURL(err, null);
                     }
+                    // 見つからなかった
                     else if (!result || result.length == 0) {
                         _log.connectionLog(7, "not found: " + url);
                         onGetURLInfoFromOriginalURL(null, null);
                     }
+                    // 正常パターン。同じオリジナルURLが複数あることを許容する
                     else {
                         _log.connectionLog(7, "result.length = " + result.length);
                         var info = ShortenURLInfo.create();

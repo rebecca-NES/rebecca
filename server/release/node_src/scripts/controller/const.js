@@ -1,19 +1,12 @@
-/*
-Copyright 2020 NEC Solution Innovators, Ltd.
+/**
+ * Cubee error code definitions
+ * @module  src/scripts/controller/const
+ */
 
-Licensed under the Apache License, Version 2.0 (the "License");
-you may not use this file except in compliance with the License.
-You may obtain a copy of the License at
-
-    http://www.apache.org/licenses/LICENSE-2.0
-
-Unless required by applicable law or agreed to in writing, software
-distributed under the License is distributed on an "AS IS" BASIS,
-WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-See the License for the specific language governing permissions and
-limitations under the License.
-*/
-
+/**
+ * API の request の定義値
+ * @type {object}
+ */
 const API_REQUEST = {
     API_LOGIN: 'Login',
     API_LOGOUT: 'Logout',
@@ -66,6 +59,10 @@ const API_REQUEST = {
     ADMIN_API_GET_LICENSE_INFO: 'GetLicenseInfo'
 };
 
+/**
+ * 通知を行う際の notify の値の定義
+ * @type {Object}
+ */
 const API_NOTIFY = {
     API_NOTIFY_MESSAGE: 'Message',
     API_NOTIFY_NOTIFICATION: 'Notification',
@@ -87,11 +84,41 @@ const API_NOTIFY = {
 };
 
 const API_STATUS = {
+    /**
+     * HTTP ステータス200相当のエラーの場合
+     * 下3桁は具体的なケース分岐用に利用
+     * @type {Number}
+     */
     SUCCESS: 200000,
+    /**
+     * HTTP ステータス400相当のエラーの場合
+     * 下3桁は具体的なケース分岐用に利用
+     * @type {Number}
+     */
     BAD_REQUEST: 400000,
+    /**
+     * HTTP ステータス401（Unauthorized）相当のエラーの場合
+     * 下3桁は具体的なケース分岐用に利用
+     * @type {Number}
+     */
     UNAUTHORIZED: 401000,
+    /**
+     * HTTP ステータス403（Forbidden）相当のエラーの場合
+     * 下3桁は具体的なケース分岐用に利用
+     * @type {Number}
+     */
     FORBIDDEN: 403000,
+    /**
+     * HTTP ステータス404相当のエラーの場合
+     * 下3桁は具体的なケース分岐用に利用
+     * @type {Number}
+     */
     NOT_FOUND: 404000,
+    /**
+     * HTTP ステータス500（Internal Server Error）相当のエラーの場合
+     * 下3桁は具体的なケース分岐用に利用
+     * @type {Number}
+     */
     INTERNAL_SERVER_ERROR: 500000,
 };
 

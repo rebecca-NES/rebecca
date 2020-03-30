@@ -1,18 +1,8 @@
-/*
-Copyright 2020 NEC Solution Innovators, Ltd.
-
-Licensed under the Apache License, Version 2.0 (the "License");
-you may not use this file except in compliance with the License.
-You may obtain a copy of the License at
-
-    http://www.apache.org/licenses/LICENSE-2.0
-
-Unless required by applicable law or agreed to in writing, software
-distributed under the License is distributed on an "AS IS" BASIS,
-WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-See the License for the specific language governing permissions and
-limitations under the License.
-*/
+/**
+ * プロファイルを管理するWeb(ネット)からのアクセスの口になるAPI
+ *
+ * @module src/scripts/controller/profile/web_api
+ */
 'use strict';
 const _ = require('underscore');
 const API = require('./api');
@@ -22,12 +12,26 @@ const SessionDataMannager = require('../session_data_manager');
 const SynchronousBridgeNodeXmpp = require('../synchronous_bridge_node_xmpp');
 const API_STATUS = require('../const').API_STATUS;
 
+/**
+ * XMPPへの問い合わせの前に実行すべきチェック処理を設定化
+ * @type {Object}
+ */
 const precheckFuncs = {
     [RequestData.SET_LOGIN_PERSON_DATA_TYPE_PASSWORD] : API.doBeforeChangePassword,
     [RequestData.SET_LOGIN_PERSON_DATA_TYPE_PROFILE]  : API.doBeforeUpdateProfile,
 };
 
+/**
+ * API を実行する
+ * @param {Object} socket - socket情報
+ * @param {Object} receiveObj - リクエスト情報
+ * @param {function} callback - クライアントへの応答CallBack
+ * @param {object} apiUtil    cubee_web_api の持つ メソッドなど
+ *
+ * @return {boolean} パラメータチェックが NG であれば、false そうでなければ、true。クライアントへの返却はこのメソッドで行う
+ */
 exports.doApi = (socket, receiveObj={}, callback, apiUtil) => {
+    // パラメータのチェック
     if(!_.has(receiveObj, 'accessToken') ||
        !_.has(receiveObj, 'content')     ||
        !_.has(receiveObj.content, 'type')
@@ -43,6 +47,7 @@ exports.doApi = (socket, receiveObj={}, callback, apiUtil) => {
 
     Log.connectionLog(7, 'profile.web_api.doApi in');
 
+    // 必要なパラメータの抽出
     const _accessToken = receiveObj.accessToken;
     const _content = receiveObj.content,
             _type = receiveObj.content.type,
@@ -50,12 +55,15 @@ exports.doApi = (socket, receiveObj={}, callback, apiUtil) => {
             _system_uuid = _session.getTenantUuid();
     let _responceContent = {};
 
+    // 処理実行前のチェック
     precheckFuncs[_type](_system_uuid, _session, _content)
     .then(() => {
         Log.connectionLog(7, `profile.web_api.doApi after precheckFunc`);
 
+        // XMPP通信実施
         let _SBNX = SynchronousBridgeNodeXmpp.getInstance();
         let _ret = _SBNX.setLoginPersonData(_accessToken, _content, (result, reason, content)=> {
+            // 応答の処置
             Log.connectionLog(7, `profile.web_api.callSbnx after`);
             if(content != null) {
                 _responceContent = content;
@@ -107,6 +115,16 @@ exports.doApi = (socket, receiveObj={}, callback, apiUtil) => {
 
 };
 
+/**
+ * APIレスポンス作成の為のコールバック関数
+ * cubee_web_api.js内で利用されているコールバックを返す
+ *
+ * @param req リクエストデータ
+ * @param callback プロセスコールバック（セッションなどの情報をセットする）
+ * @param content リクエストで受け取ったcontent
+ * @param errorCode エラーコード（9=トークンが無効,1=必要パラメーターが無い場合,0=その他）
+ * @param apiUtil cubee_web_spiで作成された使われるコールバック関数
+ */
 function executeCallback(req, callback, content=null, errorCode, apiUtil) {
     const _req = req.request,
             _id = req.id,

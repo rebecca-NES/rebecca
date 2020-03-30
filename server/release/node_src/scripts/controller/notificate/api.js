@@ -1,28 +1,27 @@
-/*
-Copyright 2020 NEC Solution Innovators, Ltd.
-
-Licensed under the Apache License, Version 2.0 (the "License");
-you may not use this file except in compliance with the License.
-You may obtain a copy of the License at
-
-    http://www.apache.org/licenses/LICENSE-2.0
-
-Unless required by applicable law or agreed to in writing, software
-distributed under the License is distributed on an "AS IS" BASIS,
-WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-See the License for the specific language governing permissions and
-limitations under the License.
-*/
 "use strict";
 
 const SessionDataMannager = require("../session_data_manager");
 const CubeeWebApi = require('../cubee_web_api');
 const _log = require("../server_log").getInstance();
 const AuthorityManager = require('../../Authority/authority_api');
+/**
+ * 通知送信
+ *
+ * 通ををDBに保存する場合はopenfireの下記の内容などを考慮すること
+ *  jp/co/nec/necst/spf/globalSNS/Data/NotificationDbData.java
+ *  DB: globalsns , Table: notification_store
+ *
+ * @param accessToken
+ * @param loginUserList (自分は含まないログインIDを設定)
+ * @param notifyType
+ * @param pushContent
+ * @param policy 権限({action: AUTHORITY_ACTIONS.MURMUR_VIEW, resource: null} など)
+ */
 exports.notifyPush = (accessToken, loginUserList, notifyType, pushContent, policy) => {
     _log.connectionLog(7, "do func notificate.api.js notifyPushMessgeToLoginList(");
     let tenantuuid = null;
     let _sessionDataMannager;
+    //何故か同じトークンで複数セッションデータが存在することがあるため
     let addAccsessTokenHash = {};
     if(!accessToken || !notifyType ||
        !pushContent || typeof pushContent != 'object'){
@@ -55,8 +54,10 @@ exports.notifyPush = (accessToken, loginUserList, notifyType, pushContent, polic
             return;
         }
         addAccsessTokenHash[accessToken] = true;
+        //自分に送信
         notifyPushMessge(_sessionDataAry, notifyType, pushContent);
 
+        //現在のテナントUUIDを取得
         for(let i=0;i<_sessionDataAry.length;i++){
             if(tenantuuid == null){
                 tenantuuid = _sessionDataAry[i].getTenantUuid() ?
@@ -128,6 +129,15 @@ exports.notifyPush = (accessToken, loginUserList, notifyType, pushContent, polic
     }
 };
 
+/**
+ * マルチ接続のユーザーにそれぞれ通知を送信
+ *
+ * @param sessionData
+ * @param notifyType
+ * @param pushContent
+ * @param addAccsessTokenHash
+ * @param sessionDataMannager
+ */
 const sessionToNotify = (sessionData, notifyType, pushContent, addAccsessTokenHash, sessionDataMannager) => {
     _log.connectionLog(7, ' notificate.api.js send user sessionData.length:' + sessionData.length);
     for(let i=0;i<sessionData.length;i++){
@@ -154,6 +164,13 @@ const sessionToNotify = (sessionData, notifyType, pushContent, addAccsessTokenHa
     }
 };
 
+/**
+ * sessionDataAryの持ち主ユーザにたいして通知送信
+ *
+ * @param sessionDataAry
+ * @param notifyType
+ * @param pushContent
+ */
 const notifyPushMessge = (sessionDataAry, notifyType, pushContent) => {
     _log.connectionLog(7, "do func notificate.api.js notifyPushMessage(");
     try{
@@ -165,6 +182,7 @@ const notifyPushMessge = (sessionDataAry, notifyType, pushContent) => {
             const _accessToken = sessionDataAry[i].getAccessToken();
             _log.connectionLog(7, ' notificate.api.js notifyPushMessage _accessToken:' + _accessToken);
 
+            //ここで通知を行う
             if(_accessToken){
                 CubeeWebApi.getInstance().pushMessage(_accessToken, notifyType, pushContent);
             }
@@ -174,6 +192,9 @@ const notifyPushMessge = (sessionDataAry, notifyType, pushContent) => {
     }
 };
 
+/**
+ * 日付フォーマット関数
+ */
 exports.formatDate = (dateString) => {
     if(!dateString){
         return "";

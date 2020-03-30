@@ -1,36 +1,27 @@
-/*
-Copyright 2020 NEC Solution Innovators, Ltd.
-
-Licensed under the Apache License, Version 2.0 (the "License");
-you may not use this file except in compliance with the License.
-You may obtain a copy of the License at
-
-    http://www.apache.org/licenses/LICENSE-2.0
-
-Unless required by applicable law or agreed to in writing, software
-distributed under the License is distributed on an "AS IS" BASIS,
-WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-See the License for the specific language governing permissions and
-limitations under the License.
-*/
 (function() {
     function ShortenURLInfo() {
         var _self = this;
 
         _self.UrlId = null;
+        // URL-ID
         _self.DisplayedURL = null;
+        // 表示用URL
         _self.ShortenPath = null;
+        // 短縮パス
         _self.OriginalURL = null;
+        // オリジナルURL
 
         _self._expandedURL = null;
+        // 今回不使用
     };
-
-        var _proto = ShortenURLInfo.prototype;
+    
+    var _proto = ShortenURLInfo.prototype;
 
     ShortenURLInfo.create = function() {
         var _shortenURLInfo = new ShortenURLInfo();
         return _shortenURLInfo;
     }
+    // URL-ID
     _proto.setUrlId = function(urlId) {
         if (urlId == null || typeof urlId != 'string') {
             return;
@@ -41,6 +32,7 @@ limitations under the License.
     _proto.getUrlId = function() {
         return this.UrlId;
     }
+    // DisplayURL
     _proto.setDisplayedURL = function(displayedURL) {
         if (displayedURL == null || typeof displayedURL != 'string') {
             return;
@@ -52,6 +44,7 @@ limitations under the License.
         return this.DisplayedURL;
     };
 
+    // ShortenPath
     _proto.setShortenPath = function(shortenPath) {
         if (shortenPath == null || typeof shortenPath != 'string') {
             return;
@@ -63,6 +56,7 @@ limitations under the License.
         return this.ShortenPath;
     };
 
+    // OriginalURL
     _proto.setOriginalURL = function(originalURL) {
         if (originalURL == null || typeof originalURL != 'string') {
             return;
@@ -74,6 +68,7 @@ limitations under the License.
         return this.OriginalURL;
     };
 
+    // ExpandedURL
     _proto.setExpandedURL = function(expandedURL) {
         if (expandedURL == null || typeof expandedURL != 'string') {
             return;

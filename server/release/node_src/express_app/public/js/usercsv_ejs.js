@@ -1,43 +1,36 @@
-/*
-Copyright 2020 NEC Solution Innovators, Ltd.
-
-Licensed under the Apache License, Version 2.0 (the "License");
-you may not use this file except in compliance with the License.
-You may obtain a copy of the License at
-
-    http://www.apache.org/licenses/LICENSE-2.0
-
-Unless required by applicable law or agreed to in writing, software
-distributed under the License is distributed on an "AS IS" BASIS,
-WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-See the License for the specific language governing permissions and
-limitations under the License.
-*/
 var ERR_NOT_CSV_FILE = 'csvファイルを選択してください';
 
+//ファイルの拡張子チェック
 function checkFileExt(fileName){
+    //ファイルの拡張子がcsvでなければ、エラーを出力
     if(!fileName.match(/\.csv$/i)){
         return false;
     }
     return true;
 };
 
+//エラー文字列
 function _getErrNotCsvHtmlStr(){
     return ' <p class="text-error">' + ERR_NOT_CSV_FILE + '</p>'
 }
 
+//fileフォームのhtml文字列
 function _getFileFormHtmlStr(){
     return '<input type="file" name="upfile" accept="text/csv">'
 }
 
 $(function(){
+    //formエレメント取得
     var _formObj = $('form');
+    //fileフォーム取得
     var _upFileObj = $('input[name=upfile]');
     var _log =  $('div.result-log');
 
+    //fileフォームのchangeイベント登録
     _formObj.on('change', 'input[name=upfile]', function(){
         var _fileName = $(this).val();
         if(!checkFileExt(_fileName)){
+            //csvファイル以外を選択されたときはエラーメッセージを出力
             $(this).replaceWith(_getFileFormHtmlStr());
             _log.html(_getErrNotCsvHtmlStr());
         }else{

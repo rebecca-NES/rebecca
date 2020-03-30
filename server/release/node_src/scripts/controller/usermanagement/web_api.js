@@ -1,18 +1,7 @@
-/*
-Copyright 2020 NEC Solution Innovators, Ltd.
-
-Licensed under the Apache License, Version 2.0 (the "License");
-you may not use this file except in compliance with the License.
-You may obtain a copy of the License at
-
-    http://www.apache.org/licenses/LICENSE-2.0
-
-Unless required by applicable law or agreed to in writing, software
-distributed under the License is distributed on an "AS IS" BASIS,
-WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-See the License for the specific language governing permissions and
-limitations under the License.
-*/
+/**
+ * 管理者用APIのIF定義
+ * @module  src/scripts/controller/usermanagement/web_api
+ */
 
 'use strict';
 
@@ -39,14 +28,31 @@ const requestMap = {
     [API_REQUEST.ADMIN_API_GET_LICENSE_INFO]: getLicenseInfo
 };
 
+/**
+ * recieve
+ *
+ * 管理系APIに関するAPIの受け口
+ * accessTokenからユーザがテナント管理者かどうか
+ * 判断した後、request先の処理に振り分ける
+ *
+ * @param {Object} socket - socket情報
+ * @param {Object} _receiveObject - リクエスト情報
+ * @param {function} processCallback - クライアントへの応答CallBack
+ * @param {function} apiUtil - APIとしての返却時のUtil関数（Cubee_web_apiから抜粋）
+ *
+ * @return {boolean}
+ */
 exports.receive = (socket, _receiveObject, processCallback, apiUtil) => {
 
     const _sessionDataMannager = SessionDataMannager.getInstance();
     const _sessionData = _sessionDataMannager.get(utils.getChildObject(_receiveObject, 'accessToken'));
     const _fromJid = _sessionData.getJid();
+    // エラー時に返却するjsonの作成
     let errorContent = {};
+    // ログインユーザがテナント管理者であるかどうかの確認callback
     function _tenantAdminCallback(xmlIqElem){
 
+        // 正常にデータが取得できていない場合
         const _userAuthorityElem = utils.getChildXmlElement(xmlIqElem, 'user_authority');
         if (_userAuthorityElem == null) {
             Log.connectionLog(3, `tenantAdmin-WEB_API receive: ` +
@@ -63,8 +69,10 @@ exports.receive = (socket, _receiveObject, processCallback, apiUtil) => {
             executeCallback(_receiveObject,  processCallback, errorContent, 0, apiUtil);
             return;
         }
+        // ログインユーザがテナント管理者である場合、リクエストの処理を実行
         const _authorityType = _typeElem.text();
         if (_authorityType == PersonData.AUTHORITY_TYPE_ADMIN) {
+            // リクエストによって処理を振り分け
             requestMap[_receiveObject.request](_receiveObject, processCallback, apiUtil);
         } else {
             Log.connectionLog(3, `tenantAdmin-WEB_API receive: ` +
@@ -74,7 +82,9 @@ exports.receive = (socket, _receiveObject, processCallback, apiUtil) => {
         }
     }
 
+    // requestごとに実行する処理の振り分け
     if (_.has(requestMap, _receiveObject.request)) {
+        // ログインユーザがテナント管理者であるかどうかを確認
         const _synchronousBridgeNodeXmpp = SynchronousBridgeNodeXmpp.getInstance();
         _synchronousBridgeNodeXmpp.getUserAuthority(utils.getChildObject(_receiveObject, 'accessToken'), _fromJid, _tenantAdminCallback);
     } else {
@@ -85,8 +95,18 @@ exports.receive = (socket, _receiveObject, processCallback, apiUtil) => {
     return true;
 };
 
+/**
+ * ユーザ登録API
+ *
+ * @param {Object} receiveObject リクエスト時に受け付けたパラメータ
+ * @param {Object} callback クライアントへの応答CallBack
+ * @param {function} apiUtil APIとしての返却時のUtil関数（Cubee_web_apiから抜粋）
+ *
+ * @return {boolean}
+ */
 function createUser(receiveObject, callback, apiUtil) {
 
+    // content内の入力値のバリデーションチェック
     let _errContent = {};
     if (!createValidationCheck(receiveObject)){
         Log.connectionLog(3, `tenantAdmin-WEB_API createUser: ` +
@@ -98,37 +118,49 @@ function createUser(receiveObject, callback, apiUtil) {
     const _accessToken = utils.getChildObject(receiveObject, 'accessToken');
     const _content = utils.getChildObject(receiveObject, 'content');
 
+    // 登録ユーザデータ作成
     const _userInfoList = setCreateUserInfo(_content);
 
+    // ライセンス情報確認
+    // confファイルから取得するユーザに含めないOpenfireアカウント名（テナント管理者）の取得
     const _adminAccount = _conf.getConfData('XMPP_SERVER_ADMIN_ACCOUNT');
     const _expect = [_adminAccount];
+    // sessionData及びtenantIdの取得
     const _sessionDataMannager = SessionDataMannager.getInstance();
     const _sessionData = _sessionDataMannager.get(_accessToken);
     const _tenantId = _sessionData.getTenantUuid();
+    // ユーザ登録数の取得
+    // 第3引数のbooleanは利用停止ユーザをユーザ数としてカウントするか否かを判断する
     return UserAccountUtils.getUserListCountForAdmintool(_sessionData,
         _tenantId, _expect, false, _getUserCountCallback);
 
+    // ユーザ登録数取得callback
     function _getUserCountCallback(allCount) {
+        // ライセンスの上限数の取得
         const _licenseManager = LicenseManager.getInstance();
         const _license = _licenseManager.getLicensedUserCount(_tenantId);
 
+        // ライセンス数の取得に失敗した場合（0が返却された場合）
         if(_license.count == 0 || !_license){
             Log.connectionLog(3, `tenantAdmin-WEB_API createUser: failed get license`);
             _errContent = createErrorReasonResponse(receiveObject, API_STATUS.INTERNAL_SERVER_ERROR);
             executeCallback(receiveObject,  callback, _errContent, 0, apiUtil);
         }
 
+        // ライセンス数の上限に達していた場合
         if ((_license.count - allCount) < _userInfoList.length) {
             Log.connectionLog(3, `tenantAdmin-WEB_API createUser: ` +
                 `User creation limit has been reached.`);
             _errContent = createErrorReasonResponse(receiveObject, API_STATUS.BAD_REQUEST);
             executeCallback(receiveObject,  callback, _errContent, 0, apiUtil);
         }else{
+            // ユーザ登録処理実行
             const _synchronousBridgeNodeXmpp = SynchronousBridgeNodeXmpp.getInstance();
             _synchronousBridgeNodeXmpp.execBatchRegistration(_accessToken, _userInfoList, _createUserCallback);
         }
     }
 
+    // ユーザ登録処理後のコールバック
     function _createUserCallback(result, reason, extras, count, items) {
         const _responseContent = {
             result,
@@ -150,8 +182,16 @@ function createUser(receiveObject, callback, apiUtil) {
     }
 }
 
+/**
+ * createUserにおけるリクエスト値のバリデーションチェック
+ *
+ * @param {object} _receiveObject リクエストパラメータ
+ *
+ * @return {boolean}
+ */
 function createValidationCheck(_receiveObject) {
     const _content = utils.getChildObject(_receiveObject, 'content');
+    // contentが存在しない場合
     if(!_content){
         return false;
     }
@@ -171,6 +211,13 @@ function createValidationCheck(_receiveObject) {
     return false;
 }
 
+/**
+ * 作成するユーザ情報の作成
+ *
+ * @param {content} object リクエストのcontentの中身
+ *
+ * @return {object} _userInfoList 作成するユーザ情報
+ */
 function setCreateUserInfo(content) {
     const _personData = PersonData.create();
     _personData.setUserName(utils.getChildObject(content, 'user'));
@@ -194,10 +241,20 @@ function setCreateUserInfo(content) {
     }];
 }
 
+/**
+ * ユーザ更新API
+ *
+ * @param {Object} receiveObject リクエスト時に受け付けたパラメータ
+ * @param {Object} callback クライアントへの応答CallBack
+ * @param {function} apiUtil APIとしての返却時のUtil関数（Cubee_web_apiから抜粋）
+ *
+ * @return {boolean}
+ */
 function updateUser(receiveObject, callback, apiUtil) {
     const _accessToken = utils.getChildObject(receiveObject, 'accessToken');
     const _content = utils.getChildObject(receiveObject, 'content');
     let _errContent = {};
+    // バリデーションチェック
     if (!updateValidationCheck(receiveObject)) {
         Log.connectionLog(3, `tenantAdmin-WEB_API updateUser: ` +
             `the value entered has problem.`);
@@ -206,6 +263,7 @@ function updateUser(receiveObject, callback, apiUtil) {
         return false;
     }
 
+    // 更新するユーザ情報の格納
     const _userInfo = {
         'account': utils.getChildObject(_content, 'user'),
         'nickname': utils.getChildObject(_content, 'nickName')
@@ -217,6 +275,7 @@ function updateUser(receiveObject, callback, apiUtil) {
         _userInfo.mailAddress = utils.getChildObject(_content, 'mailAddress');
     }
 
+    // openfire上でuser_profileテーブルの情報を更新する処理のcallback
     function _updateUserCallback (result, reason, extras, count, items) {
         const _responseContent = {
             result,
@@ -226,17 +285,21 @@ function updateUser(receiveObject, callback, apiUtil) {
             _responseContent.result = items[0].result;
             _responseContent.reason = items[0].reason;
         }
+        // 処理に成功した場合
         if (_responseContent.result){
             const _sessionDataMannager = SessionDataMannager.getInstance();
             const _sessionData = _sessionDataMannager.get(utils.getChildObject(receiveObject, 'accessToken'));
             const _tenantUuid = _sessionData.getTenantUuid();
+            // メールアドレスの更新がある場合
             if(utils.getChildObject(_content, 'mailAddress')){
+                // acount_storeのmailaddress情報を更新する
                 UserAccountUtils.updateUserAccountMailAddress(_tenantUuid, utils.getChildObject(_content, 'user'),
                     _content.mailAddress, _onUpdateUserAccountMailAddress);
             }else{
                 executeCallback(receiveObject, callback, _responseContent, 0, apiUtil);
             }
         } else {
+            // 失敗した場合（5000000）
             Log.connectionLog(3, `tenantAdmin-WEB_API updateUser:` +
                 `User update process failed. There is a possibility that the` +
                 `user does not exist or internal processing has failed.`);
@@ -245,6 +308,7 @@ function updateUser(receiveObject, callback, apiUtil) {
         }
     }
 
+    // acount_storeのmailaddress情報を更新する処理のcallback
     function _onUpdateUserAccountMailAddress(updateResult) {
         const _responseContent = {};
         if(updateResult == true) {
@@ -252,6 +316,7 @@ function updateUser(receiveObject, callback, apiUtil) {
             _responseContent.reason = 0;
             executeCallback(receiveObject, callback, _responseContent, 0, apiUtil);
         } else {
+            // 失敗した場合（5000000）
             Log.connectionLog(3, `tenantAdmin-WEB_API updateUser: `+
                 `User update process failed. There is a possibility that the `+
                 `user does not exist or internal processing has failed.`);
@@ -259,12 +324,21 @@ function updateUser(receiveObject, callback, apiUtil) {
             executeCallback(receiveObject, callback, _errContent, 0, apiUtil);
         }
     }
+    // openfire上でuser_profileテーブルの情報を更新する
     const _synchronousBridgeNodeXmpp = SynchronousBridgeNodeXmpp.getInstance();
     return _synchronousBridgeNodeXmpp.execBatchUpdate(_accessToken, [_userInfo], _updateUserCallback);
 }
 
+/**
+ * updateUserにおけるリクエスト値のバリデーションチェック
+ *
+ * @param {object} _receiveObject リクエストパラメータ
+ *
+ * @return {boolean}
+ */
 function updateValidationCheck(_receiveObject) {
     const _content = utils.getChildObject(_receiveObject, 'content');
+    // contentが存在しない場合
     if(!_content){
         return false;
     }
@@ -282,7 +356,17 @@ function updateValidationCheck(_receiveObject) {
     return false;
 }
 
+/**
+ * ユーザステータス更新API
+ *
+ * @param {Object} receiveObject リクエスト時に受け付けたパラメータ
+ * @param {Object} callback クライアントへの応答CallBack
+ * @param {function} apiUtil APIとしての返却時のUtil関数（Cubee_web_apiから抜粋）
+ *
+ * @return {boolean}
+ */
 function updateUserStatus(receiveObject, callback, apiUtil) {
+    // バリデーションチェック
     let _errContent = {};
     if (!updateUserStatusValidationCheck(receiveObject)) {
         Log.connectionLog(3, `tenantAdmin-WEB_API updateUserStatus: ` +
@@ -297,6 +381,7 @@ function updateUserStatus(receiveObject, callback, apiUtil) {
 
     const _user = utils.getChildObject(_content, 'user');
     const _status = utils.getChildObject(_content, 'status');
+    // status更新処理callback
     function _updateUserStatusCallback(result, reason) {
         const _responseContent = {
             result,
@@ -312,12 +397,21 @@ function updateUserStatus(receiveObject, callback, apiUtil) {
             executeCallback(receiveObject, callback, _errContent, 0, apiUtil);
         }
     }
+    // status更新処理の実行
     const _synchronousBridgeNodeXmpp = SynchronousBridgeNodeXmpp.getInstance();
     return _synchronousBridgeNodeXmpp.updateUserAccountStatus(_accessToken, _user, _status, _updateUserStatusCallback);
 }
 
+/**
+ * updateUserStatusにおけるリクエスト値のバリデーションチェック
+ *
+ * @param {object} _receiveObject リクエストパラメータ
+ *
+ * @return {boolean}
+ */
 function updateUserStatusValidationCheck(_receiveObject) {
     const _content = utils.getChildObject(_receiveObject, 'content');
+    // contentが存在しない場合
     if(!_content){
         return false;
     }
@@ -331,8 +425,18 @@ function updateUserStatusValidationCheck(_receiveObject) {
     return false;
 }
 
+/**
+ * ユーザ一覧参照API
+ *
+ * @param {Object} receiveObject リクエスト時に受け付けたパラメータ
+ * @param {Object} callback クライアントへの応答CallBack
+ * @param {function} apiUtil APIとしての返却時のUtil関数（Cubee_web_apiから抜粋）
+ *
+ * @return {boolean}
+ */
 function getUsers(receiveObject, callback, apiUtil) {
 
+    // バリデーションチェック
     let _errContent = {};
     if (!getUsersValidationCheck(receiveObject)) {
         Log.connectionLog(3, `tenantAdmin-WEB_API getUsers: ` +
@@ -344,17 +448,22 @@ function getUsers(receiveObject, callback, apiUtil) {
     const _accessToken = utils.getChildObject(receiveObject, 'accessToken');
     const _content = utils.getChildObject(receiveObject, 'content');
 
+    // sessionData及びtenantIdの取得
     const _sessionDataMannager = SessionDataMannager.getInstance();
     const _sessionData = _sessionDataMannager.get(_accessToken);
     const _tenantId = _sessionData.getTenantUuid();
 
+    // ライセンス情報確認
+    // confファイルから取得するユーザに含めないOpenfireアカウント名（テナント管理者）の取得
     const _adminAccount = _conf.getConfData('XMPP_SERVER_ADMIN_ACCOUNT');
     const _except = _content.except.concat();
     _except.push(_adminAccount);
 
+    // ユーザ一覧取得処理の実行
     const _synchronousBridgeNodeXmpp = SynchronousBridgeNodeXmpp.getInstance();
     return _synchronousBridgeNodeXmpp.getUserListForAdmintool(_accessToken, _tenantId, _except,
         _content.start, _content.count, _getUserCallback);
+    // ユーザ一覧取得処理後のcallback
     function _getUserCallback(ret){
         if (ret.content.result == true){
             executeCallback(receiveObject, callback, ret.content, 0, apiUtil);
@@ -368,8 +477,16 @@ function getUsers(receiveObject, callback, apiUtil) {
     }
 }
 
+/**
+ * updateUserStatusにおけるリクエスト値のバリデーションチェック
+ *
+ * @param {object} _receiveObject リクエストパラメータ
+ *
+ * @return {boolean}
+ */
 function getUsersValidationCheck(_receiveObject) {
     const _content = utils.getChildObject(_receiveObject, 'content');
+    // contentが存在しない場合
     if(!_content){
         return false;
     }
@@ -385,29 +502,47 @@ function getUsersValidationCheck(_receiveObject) {
     return false;
 }
 
+/**
+ * ライセンス情報参照
+ *
+ * @param {Object} receiveObject リクエスト時に受け付けたパラメータ
+ * @param {Object} callback クライアントへの応答CallBack
+ * @param {function} apiUtil APIとしての返却時のUtil関数（Cubee_web_apiから抜粋）
+ *
+ * @return {boolean}
+ */
 function getLicenseInfo(receiveObject, callback, apiUtil) {
 
     let _errContent = {};
     const _accessToken = utils.getChildObject(receiveObject, 'accessToken');
 
+    // ライセンス情報確認
+    // confファイルから取得するユーザに含めないOpenfireアカウント名（テナント管理者）の取得
     const _adminAccount = _conf.getConfData('XMPP_SERVER_ADMIN_ACCOUNT');
     const _expect = [_adminAccount];
+    // sessionData及びtenantIdの取得
 
     const _sessionDataMannager = SessionDataMannager.getInstance();
     const _sessionData = _sessionDataMannager.get(_accessToken);
     const _tenantId = _sessionData.getTenantUuid();
+    // ユーザ登録数の取得
+    // 第3引数のbooleanは利用停止ユーザをユーザ数としてカウントするか否かを判断する
     return UserAccountUtils.getUserListCountForAdmintool(_sessionData,
         _tenantId, _expect, false, _getUserCountCallback);
 
+    // ユーザ登録数取得callback
     function _getUserCountCallback(allCount) {
+        // allCount取得に失敗した場合
         if (allCount == null){
             _errContent = createErrorReasonResponse(receiveObject, API_STATUS.INTERNAL_SERVER_ERROR);
             executeCallback(receiveObject,  callback, _errContent, 0, apiUtil);
             return;
         }
+        // ライセンスの上限数の取得
         const _licenseManager = LicenseManager.getInstance();
         const _license = _licenseManager.getLicensedUserCount(_tenantId);
 
+        // ライセンス数の取得に失敗した場合（0が返却された場合）
         if(_license.count == 0 || !_license){
             Log.connectionLog(3, `tenantAdmin-WEB_API getLicenseInfo: failed get license`);
             _errContent = createErrorReasonResponse(receiveObject, API_STATUS.INTERNAL_SERVER_ERROR);
@@ -425,6 +560,14 @@ function getLicenseInfo(receiveObject, callback, apiUtil) {
     }
 }
 
+/**
+ * 異常終了時にcontent内へresult/reasonを追記する
+ *
+ * @param {object} _req リクエストオブジェクト
+ * @param {string} _reason content.reasonへ格納するエラーコード
+ *
+ * @return {object} _content レスポンスオブジェクトへ格納するcontent
+ */
 function createErrorReasonResponse(_req, _reason) {
     let _content = utils.getChildObject(_req, 'content');
     if (_content == null){
@@ -439,6 +582,16 @@ function createErrorReasonResponse(_req, _reason) {
     return _content;
 }
 
+/**
+ * APIレスポンス作成の為のコールバック関数
+ * cubee_web_api.js内で利用されているコールバックを返す
+ *
+ * @param {object} req リクエストオブジェクト
+ * @param {function} calback 上位から渡されてきたコールバック関数
+ * @param {object} content 返却するcontent
+ * @param {errorCode} int errorCodeへ格納する値
+ * @param {object} apiUtil cubee_web_apiで作成された使われるコールバック関数
+ */
 function executeCallback(req,  callback, content=null, errorCode, apiUtil) {
     const _id = req.id,
             _req = req.request,

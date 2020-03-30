@@ -1,18 +1,3 @@
-/*
-Copyright 2020 NEC Solution Innovators, Ltd.
-
-Licensed under the Apache License, Version 2.0 (the "License");
-you may not use this file except in compliance with the License.
-You may obtain a copy of the License at
-
-    http://www.apache.org/licenses/LICENSE-2.0
-
-Unless required by applicable law or agreed to in writing, software
-distributed under the License is distributed on an "AS IS" BASIS,
-WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-See the License for the specific language governing permissions and
-limitations under the License.
-*/
 'use strict'
 
 var authority_api = require('../../scripts/controller/authority/cubee_authority_api');
@@ -23,6 +8,20 @@ var sessionDataMannager = require('../../scripts/controller/session_data_manager
 const _ = require('underscore');
 var _log = ServerLog.getInstance();
 
+/**
+ * getRoleList
+ *
+ * ロール一覧情報を返却する
+ *
+ * <pre>
+ * {
+ *    "<role_id>" : "<role_name>",
+ *    "<role_id>" : "<role_name>",
+ *    ...
+ * } </pre>
+ * @param {string} accessToken アクセストークン
+ * @return {object} ロール一覧情報
+ */
 function getRoleList(accessToken){
     return new Promise(function(resolve, reject){
         var session = sessionDataMannager.get(accessToken);
@@ -47,6 +46,23 @@ function getRoleList(accessToken){
     })
 }
 
+/**
+ * assignRoleToUser
+ *
+ * ロールを指定されたユーザに対して紐づける。
+ * 別のロールの場合は付け替える。
+ *
+ * <pre>
+ * {
+ *    result : true,
+ *    reason : 2000000,
+ * } </pre>
+ * @param {string} accessToken アクセストークン
+ * @param {string} role ロールID
+ * @param {string} userId ユーザID
+ *
+ * @return {promise}
+ */
 function assignRoleToUser(accessToken, role, userId){
   return new Promise(function(resolve, reject){
     var params = {
@@ -64,6 +80,28 @@ function assignRoleToUser(accessToken, role, userId){
   })
 }
 
+/**
+ * getRoleAssignmentForUser
+ *
+ * ユーザに対して紐づいているロール情報を取得する。
+ * 別のロールの場合は付け替える。
+ *
+ * <pre>
+ * {
+ *    result : true,
+ *    reason : 2000000,
+ *    role:{
+ *      id: "admin",
+ *      t: {
+ *        "ja": "管理者"
+ *      }
+ *    }
+ * } </pre>
+ * @param {string} accessToken アクセストークン
+ * @param {string} userId ユーザID
+ *
+ * @return {promise}
+ */
 function getRoleAssignmentForUser(accessToken, userId){
     return new Promise(function(resolve, reject){
         var session = sessionDataMannager.get(accessToken);

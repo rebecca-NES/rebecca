@@ -1,31 +1,22 @@
-/*
-Copyright 2020 NEC Solution Innovators, Ltd.
-
-Licensed under the Apache License, Version 2.0 (the "License");
-you may not use this file except in compliance with the License.
-You may obtain a copy of the License at
-
-    http://www.apache.org/licenses/LICENSE-2.0
-
-Unless required by applicable law or agreed to in writing, software
-distributed under the License is distributed on an "AS IS" BASIS,
-WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-See the License for the specific language governing permissions and
-limitations under the License.
-*/
 (function() {
+    // TCP通信モジュールの読み込み
     var tcp = require('net');
+    // ログ出力モジュールの読み込み
     var ServerLog = require('./server_log');
+    // Factory
     function create(arg1, arg2, arg3, arg4, arg5, arg6) {
         var _xsConnector = null;
         switch(arguments.length) {
             case 4:
+                // 引数が（onConnectCallback, onDisconnectCallback, onDataReceiveCallback, onErrorOccurredCallback）の形式
                 _xsConnector = new XmppServerConnector(null, null, arg1, arg2, arg3, arg4);
                 break;
             case 5:
+                // 引数が(host, onConnectCallback, onDisconnectCallback, onDataReceiveCallback, onErrorOccurredCallback)の形式
                 _xsConnector = new XmppServerConnector(arg1, null, arg2, arg3, arg4, arg5);
                 break;
             case 6:
+                // 引数が(host, port, onConnectCallback, onDisconnectCallback, onDataReceiveCallback, onErrorOccurredCallback)の形式
                 _xsConnector = new XmppServerConnector(arg1, arg2, arg3, arg4, arg5, arg6);
                 break;
             default:
@@ -36,8 +27,11 @@ limitations under the License.
 
     exports.create = create;
 
+    // クラスの実装
+    // コンストラクタ
     function XmppServerConnector(host, port, onConnectCallback, onDisconnectCallback, onDataReceiveCallback, onErrorOccurredCallback) {
         var _self = this;
+        // 初期化が済んでいるかのフラグ
         _self.initialized = false;
         _self._host = '';
         _self._port = 0;
@@ -49,6 +43,7 @@ limitations under the License.
 
         _self._log.connectionLog(7, 'do func XmppServerConnector(');
 
+        // 引数チェック
         if(host == null) {
             _self._host = 'localhost';
         } else if( typeof host == 'string') {
@@ -87,19 +82,23 @@ limitations under the License.
         }
         _self._onErrorOccurredCallback = onErrorOccurredCallback;
 
+        // 初期化完了
         _self.initialized = true;
         _self._log.connectionLog(7, 'XmppServerConnector initialized');
 
     };
 
+    // 公開関数
     var _proto = XmppServerConnector.prototype;
 
+    // ホスト指定
     _proto.setHost = function(host) {
         this._host = host;
     }
     _proto.getHost = function() {
         return this._host;
     }
+    // ポート指定
     _proto.setPort = function(port) {
         this._port = port;
     }
@@ -107,15 +106,21 @@ limitations under the License.
         return this._port;
     }
 
+    /**
+     * XMPPサーバへの接続要求
+     **/
     _proto.connect = function() {
         var _self = this;
         _self._log.connectionLog(7, 'do func XmppServerConnector.connect(');
+        // ソケットの作成
         if(_self._socket) {
             _self.disconnect();
         }
+        // ソケットの作成
         _self._socket = tcp.createConnection(_self._port, _self._host);
         _self._socket.setTimeout(0);
 
+        // コールバックの登録
         var _onConnect = function() {
             _onConnected(_self);
         };
@@ -137,11 +142,16 @@ limitations under the License.
         var _onDisconnect = function(error) {
             _onDisconnected(_self, error);
         };
+        // コールバックの登録
         _self._socket.addListener('connect', _onConnect);
         _self._socket.addListener('error', _onError);
         _self._socket.addListener('close', _onDisconnect);
         _self._socket.addListener('data', _onReceive);
     };
+    /**
+     * XMPPサーバへの送信要求
+     *  @param {object} data 送信するデータ(文字列であることが望ましい)
+     */
     _proto.send = function(data) {
         var _self = this;
         _self._log.connectionLog(7, 'do func XmppServerConnector.send(');
@@ -157,6 +167,9 @@ limitations under the License.
             }
         }
     };
+    /**
+     * XMPPサーバへの切断要求
+     */
     _proto.disconnect = function() {
         var _self = this;
         _self._log.connectionLog(7, 'do func XmppServerConnector.disconnect(');
@@ -174,8 +187,12 @@ limitations under the License.
         }
     };
 
+    /**
+     * XMPPサーバへのハートビート開始
+     */
     _proto.startHeartbeat = function(xmppSendPing) {
         var _self = this;
+        // 10秒後に開始
         setTimeout(function() {
             function sendPing() {
                 if(_self != null && _self._socket != null) {
@@ -183,11 +200,16 @@ limitations under the License.
                     setTimeout(function() {
                         sendPing();
                     }, 150000);
+                    // 2分30秒間隔
                 }
             }
             sendPing();
         }, 10000);
     };
+    // 内部関数
+    /**
+     * 接続時の処理
+     */
     function _onConnected(_self) {
         if(_self._log) {
             _self._log.connectionLog(7, 'XMPP Server connected.');
@@ -195,6 +217,10 @@ limitations under the License.
         _self._onConnectCallback(_self);
     };
 
+    /**
+     * エラー発生時の処理
+     * この処理の後、closeイベントが発生し、接続が切れる
+     */
     function _onErrorOccurred(_self, error) {
         var _error = error.toString();
         if(_self._log) {
@@ -203,6 +229,9 @@ limitations under the License.
         _self._onErrorOccurredCallback(_self, _error);
     };
 
+    /**
+     * データ受信時の処理
+     */
     function _onReceived(_self, data) {
         _self._log.connectionLog(7, 'do func XmppServerConnector._onReceived(');
         var _message = data.toString();
@@ -212,6 +241,9 @@ limitations under the License.
         _self._onDataReceiveCallback(_self, _message);
     };
 
+    /**
+     * 切断時の処理
+     */
     function _onDisconnected(_self, error) {
         _self._log.connectionLog(7, 'do func XmppServerConnector._onDisconnected(');
         if(_self._log) {

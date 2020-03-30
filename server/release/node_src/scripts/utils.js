@@ -1,23 +1,14 @@
-/*
-Copyright 2020 NEC Solution Innovators, Ltd.
-
-Licensed under the Apache License, Version 2.0 (the "License");
-you may not use this file except in compliance with the License.
-You may obtain a copy of the License at
-
-    http://www.apache.org/licenses/LICENSE-2.0
-
-Unless required by applicable law or agreed to in writing, software
-distributed under the License is distributed on an "AS IS" BASIS,
-WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-See the License for the specific language governing permissions and
-limitations under the License.
-*/
 (function() {
     const _ = require('underscore');
     var crypto = require('crypto');
     var fs = require('fs');
 
+    /**
+     * 指定範囲の整数乱数を返す
+     *  @param {number} start 最小値
+     *  @param {number} end 最大値
+     *  @return {number} startからend間での間のランダムな数値
+     */
     function getRandomNumber(start, end) {
         return start + Math.floor(Math.random() * (end - start + 1));
     };
@@ -64,8 +55,10 @@ limitations under the License.
         }
         var _ret = null;
         if(socket.remoteAddress){
+            //HTTP通信の場合
             _ret = socket.clientIP;
         }else if(socket.request.connection.remoteAddress){
+            //soket.ioプロトコルの場合
             _ret = socket.request.connection.remoteAddress;
         }
         return _ret;
@@ -141,6 +134,7 @@ limitations under the License.
             if(_type == null || typeof _type != 'string' || _type != 'element') {
                 continue;
             }
+            // ノード名の指定がある場合はその名前がある物のみとりだす
             if(childNodeName != null) {
                 var _name = _childNode.name();
                 if(_name == null || typeof _name != 'string') {
@@ -156,26 +150,52 @@ limitations under the License.
         return _retArray;
     };
 
+    /**
+     * 文字列の部分文字列を別の文字列にすべておきかえ
+     * @param {String} expression 文字列全体
+     * @param {string} org 検索文字列
+     * @param {string} dest 置換文字列
+     * @returns {String} 置換後の文字列全体
+     */
     function replaceAll(expression, org, dest) {
         return expression.split(org).join(dest);
     };
 
+    /*
+     * 文字列データからMD5ハッシュを生成する
+     * @param {String} src 文字列データ
+     * @return {String} MD5ハッシュ文字列
+     */
     function md5Hex(src) {
         var md5 = crypto.createHash('md5');
         md5.update(src, 'utf8');
         return md5.digest('hex');
     };
 
+    /*
+     * 文字列データからSHA-256ハッシュを生成する
+     * @param {String} src 文字列データ
+     * @return {String} MD5ハッシュ文字列
+     */
     function sha256Hex(src) {
         var _sha256 = crypto.createHash('sha256');
         _sha256.update(src, 'utf8');
         return _sha256.digest('hex');
     }
 
+    /*
+     * 文字列をtrimする
+     */
     function trim(src) {
         return src.replace(/(^\s+)|(\s+$)/g, '');
     }
 
+    /**
+     * 指定文字列の値が指定正規表現を満たしているかどうかをチェックする
+     * @param {string} str 値をチェックしたい文字列
+     * @param {RegExp} regexp 正規表現リテラル
+     * @return {Boolean} 指定要素の値が指定正規表現を満たしていればtrue, そうでなければfalse
+     */
     function checkRegExp(str, regexp) {
         if (!(str.match(regexp))) {
             return false;
@@ -184,6 +204,9 @@ limitations under the License.
         }
     };
 
+    /**
+     * 指定ファイルに指定データを出力する（出力後改行する）
+     **/
     var ENCODING_UTF8 = 'utf8';
     function appendDataFile(filePath, lineData, encoding) {
         var _encoding = ENCODING_UTF8;
@@ -194,16 +217,49 @@ limitations under the License.
         fs.appendFileSync(filePath, _lineData, _encoding);
     }
 
+    /**
+     * 不要な制御文字を除去する
+     * @param {String} input 除去対象文字を含むであろう文字列
+     * @returns {String} 制御文字を除去した文字列
+     */
     function excludeControleCharacters(input) {
+        // 引数チェック
         if(input == null || typeof input != 'string' || input == '') {
             return '';
         }
         var _str = input;
+        /**
+         * 登録時に、半角スペースに置き換えるべき文字
+         * \u0009: CHARACTER TABULATION  水平タブ (HT)
+         * \u000B: VERTICAL TABULATION   垂直タブ (VT)
+         * \u000C: FORM FEED             フォームフィード (FF)
+         * \u001C: FILE SEPARATOR        ファイル分離文字 (FS)
+         * \u001D: GROUP SEPARATOR       グループ分離文字 (GS)
+         * \u001E: RECORD SEPARATOR      レコード分離文字 (RS)
+         * \u001F: UNIT SEPARATOR        ユニット分離文字 (US)
+         * \u00A0: NO-BREAK SPACE        ノーブレークスペース
+         * \u2028: LINE SEPARATOR        行区切り文字 (LS)
+         * \u2029: PARAGRAPH SEPARATOR   段落区切り文字 (PS)
+         * これらの文字を空白スペースに置換する
+         */
         _str = _str.replace(/[\u0009\u000B\u000C\u001C\u001D\u001E\u001F\u00A0\u2028\u2029]+/g, ' ');
         return _str;
     };
 
 
+    /**
+     * 入力値判定の関数群
+     *
+     * 暫定的に入力値単位などのクラス化などを行うまで、入力値判定を下記にまとめる
+     * 複数になった時ポータビリーが必要になるのでvaridieter直下にまとめた
+     *
+     * 規則：
+     *   戻り値は正しければtureを戻すこと。
+     *   値の有無は判別しない値の整合性のみチェック記述
+     *
+     * @param value 検証する値
+     * @return boolean 戻り値は正しければtureを戻すこと。
+     */
     const varidieter = {
         parentRoomId : (value) => {
             if(!_.isString(value) ||
@@ -225,20 +281,44 @@ limitations under the License.
         }
     };
 
+    /*
+     * 10進数を16進数に変換する
+     *
+     * @param number 変換する数値
+     * @return string 16進数に変換した値
+     */
     function convertDecimalToHexa(number) {
         return number.toString(16).toUpperCase();
     };
 
+    /*
+     * 16進数を10進数に変換する
+     *
+     * @param string 変換する文字
+     * @return string 10進数に変換した値
+     */
     function convertHexaToDecimal(string) {
         return parseInt(string, 16);
     };
 
+    /*
+     * 3文字を6文字に変換する
+     *
+     * @param string 3文字の文字列
+     * @return string 6文字の文字列
+     */
     function convertThreeWordToSix (string) {
         var codeArr = string.split('');
         let res = codeArr[0] + codeArr[0] + codeArr[1] + codeArr[1] + codeArr[2] + codeArr[2];
         return res;
     };
 
+    /*
+     * 削除者を確認し管理者によって削除したか確認
+     *
+     * @param string deletedBy 削除者
+     * @return boolean 管理者によって削除されていたらtrue、それ以外はfalse
+     */
     function CheckDeletedBy(deletedBy) {
         var _ret = false;
         if (deletedBy != null && deletedBy != '') {

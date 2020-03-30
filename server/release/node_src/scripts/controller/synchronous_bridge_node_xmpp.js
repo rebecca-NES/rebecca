@@ -1,18 +1,3 @@
-/*
-Copyright 2020 NEC Solution Innovators, Ltd.
-
-Licensed under the Apache License, Version 2.0 (the "License");
-you may not use this file except in compliance with the License.
-You may obtain a copy of the License at
-
-    http://www.apache.org/licenses/LICENSE-2.0
-
-Unless required by applicable law or agreed to in writing, software
-distributed under the License is distributed on an "AS IS" BASIS,
-WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-See the License for the specific language governing permissions and
-limitations under the License.
-*/
 (function() {
     const crypto = require('crypto');
     var libxml = require("libxmljs");
@@ -37,6 +22,7 @@ limitations under the License.
     var XmppServerData = require('../lib/CacheHelper/xmpp_server_data');
     var AccessRelationData = require('../lib/CacheHelper/access_relation_data');
     var AuthorityChecker = require('./authority/authority_checker');
+     // 短縮URL追加
     var ShortenURLUtils = require('./shorten_url_utils');
     var ShortenURLManager = require('./shorten_url_manager');
     var ShortenURLInfo = require('../model/shorten_url_info');
@@ -140,6 +126,7 @@ limitations under the License.
                 _xmppServerPort, xsConnectedCallback, xsDisconnectCallback,
                 xsDataReceiveCallback, xsErrorOccurredCallback);
         if (xsConn == null || !xsConn.initialized) {
+            // XMPPサーバモジュールの初期化失敗のためdisconnect
             _log.connectionLog(4, 'xsConn is not initialized');
             return false;
         }
@@ -150,6 +137,7 @@ limitations under the License.
             return false;
         }
         if(_sessionDataAry.length > 0){
+            //multi session開始
             _log.connectionLog(7, 'SynchronousBridgeNodeXmpp login :: detect user['+tenantUuid+' '+user+']. begin multi session');
             var _tempData = {
                 tenantUuid : _sessionDataAry[0].getTenantUuid(),
@@ -176,6 +164,7 @@ limitations under the License.
                     socket.xsConn = xsConn;
                     xsConn.onMultiSessionConnected = _onMultiSessionConnected;
                     xsConn.openfireSock = _tempData.openfireSock;
+                    // XMPPサーバに接続する
                     xsConn.connect();
                 }catch(e){
                     _log.connectionLog(7, 'SynchronousBridgeNodeXmpp login :: multi session failer.');
@@ -187,12 +176,16 @@ limitations under the License.
         }
         function _onMultiSessionConnected(result) {
             if(result != true){
+                // multiSession認証完了までにエラーがあった
+                // 自身がログイン処理中であるため、ログイン処理中のセッションを考慮する必要はない。
+                // そのため、既にあるセッション状況のみ考慮して切断する
                 var _sessionDataAry = SessionDataMannager.getInstance().getByOpenfireSock(xsConn.openfireSock);
                 if(_sessionDataAry == null){
                     _log.connectionLog(4, 'SynchronousBridgeNodeXmpp _onMultiSessionConnected :: _sessionDataAry is null');
                     return;
                 }
                 if(_sessionDataAry.length > 0){
+                    // 他セッションが利用中
                     _log.connectionLog(7, 'SynchronousBridgeNodeXmpp _onMultiSessionConnected :: keep openfire session, detect sessionData.');
                 }else{
                     _log.connectionLog(7, 'SynchronousBridgeNodeXmpp _onMultiSessionConnected :: close openfire session, not detect sessionData.');
@@ -201,6 +194,7 @@ limitations under the License.
                 }
                 return;
             }
+            // AccessTokenを払い出し、Redisに登録する
             var _hostName = _conf.getConfData('NODEJS_HOSTNAME');
             var _accessRelationData = AccessRelationData.createDish(_hostName);
             StoreVolatileChef.getInstance().store(_accessRelationData, _onStored);
@@ -212,6 +206,7 @@ limitations under the License.
                     return;
                 }
 
+                //multi sesssion認証完了
                 var _accessToken = _accessRelationData.getKeyName();
                 var _sessionData = SessionData.create();
                 _sessionData.setAccessToken(_accessToken);
@@ -252,6 +247,8 @@ limitations under the License.
             var _openfireAccount = userAccountData.getOpenfireAccount();
             var _tenantUuid = userAccountData.getTenantUuid();
             xsConn.socketIO = socket;
+            // Openfireのアカウント名を小文字変換しないと認証が通らない
+            // ⇒Openfire側で大文字のアカウント名を設定できないため
             xsConn.tenantUuid = _tenantUuid;
             xsConn.user = _openfireAccount.toLowerCase();
             xsConn.password = password;
@@ -266,6 +263,7 @@ limitations under the License.
             socket.xsConn = xsConn;
             xsConn.onMultiSessionConnected = null;
 
+            // Redis から xmpp_server を読み出す
             var _xmppServerData = XmppServerData.createAsOrder(_xmppServerName);
             if (_xmppServerData == null) {
                 _log.connectionLog(3, 'Internal error. Could not create order.');
@@ -292,6 +290,7 @@ limitations under the License.
             xsConn.setHost(dish.getServerName());
             xsConn.setPort(parseInt(dish.getPortClnt()));
 
+            // XMPPサーバに接続する
             xsConn.connect();
         }
     };
@@ -355,8 +354,10 @@ limitations under the License.
                 return;
             }
             if(_sessionDataAry.length > 1){
+                //multi session
                 _log.connectionLog(7, 'SynchronousBridgeNodeXmpp logout :: keep openfire session, detect user.');
             }else{
+                // ログイン処理中でない場合に切断
                 var _user = _sessionData.getLoginAccout();
                 var _tenantUuid = _sessionData.getTenantUuid();
                 var _status = CubeeWebApi.getInstance().isLoginSequenceLocked(_tenantUuid, _user);
@@ -374,6 +375,7 @@ limitations under the License.
 
     function xsConnected(xsConn) {
         _log.connectionLog(7, 'XMPP connected');
+        // ログイン
         var _xmppServerName = xsConn.getHost();
 
         setTimeout(function() {
@@ -381,6 +383,7 @@ limitations under the License.
             if (_xmlHeader == '') {
                 _log.connectionLog(4, 'getXmlHeader Data is empty');
                 if(xsConn.onMultiSessionConnected != null){
+                    // multiSession
                     xsConn.onMultiSessionConnected(false);
                 }
                 xsConn.disconnect();
@@ -394,6 +397,7 @@ limitations under the License.
             if (_openStreamXmpp == '') {
                 _log.connectionLog(4, 'getOpenStreamXmpp Data is empty');
                 if(xsConn.onMultiSessionConnected != null){
+                    // multiSession
                     xsConn.onMultiSessionConnected(false);
                 }
                 xsConn.disconnect();
@@ -448,6 +452,7 @@ limitations under the License.
         var len = xsConn.receiveBuf.length;
         if (len < 18
                 || xsConn.receiveBuf.substr(len - 18, 18) != '</stream:features>') {
+            // 完全に読み切っていないのでさらに待つ
             _log.connectionLog(7, 'onOpenAuthenticateStream : "' + data + '"');
             return;
         }
@@ -458,6 +463,7 @@ limitations under the License.
             if (_xmppAuthPlain == '') {
                 _log.connectionLog(4, 'getAuthPlainXmpp Data is empty');
                 if(xsConn.onMultiSessionConnected != null){
+                    // multiSession
                     xsConn.onMultiSessionConnected(false);
                 }
                 xsConn.disconnect();
@@ -478,6 +484,7 @@ limitations under the License.
         try {
             _doc = libxml.parseXml(xsConn.receiveBuf);
         } catch (e) {
+            // 完全に読み切っていないのでさらに待つ
             return;
         }
         xsConn.receiveBuf = '';
@@ -485,6 +492,7 @@ limitations under the License.
             if (_doc == null) {
                 _log.connectionLog(4, 'onAuthentication _doc is null');
                 if(xsConn.onMultiSessionConnected != null){
+                    // multiSession
                     xsConn.onMultiSessionConnected(false);
                 }
                 xsConn.disconnect();
@@ -494,10 +502,12 @@ limitations under the License.
                 xsConn.socketIO = null;
                 return;
             }
+            // 認証が通ったか確認
             var _rootElem = _doc.root();
             if (_rootElem.name() != 'success') {
                 _log.connectionLog(5, 'onAuthentication AUTH ERROR');
                 if(xsConn.onMultiSessionConnected != null){
+                    // multiSession
                     xsConn.onMultiSessionConnected(false);
                 }
                 xsConn.disconnect();
@@ -508,6 +518,7 @@ limitations under the License.
                 return;
             }
 
+            // multi sessionの場合は、新しいストリームは作らず、既存のストリームを使用するため終了。
             if(xsConn.onMultiSessionConnected != null){
                 xsConn.status = LOGIN_STATUS_LOGINED;
                 xsConn.onMultiSessionConnected(true);
@@ -517,6 +528,7 @@ limitations under the License.
                 return;
             }
 
+            // 通信用新しいストリームを作成
             var _xmlHeader = Xmpp.getHeaderXmpp();
             if (_xmlHeader == '') {
                 _log.connectionLog(4, 'getXmlHeader Data is empty');
@@ -548,10 +560,12 @@ limitations under the License.
         var len = xsConn.receiveBuf.length;
         if (len < 18
             || xsConn.receiveBuf.substr(len - 18, 18) != '</stream:features>') {
+            // 完全に読み切っていないのでさらに待つ
             return;
         }
         xsConn.receiveBuf = '';
         setTimeout(function() {
+            // バインドする
             var _clientBaseName = 'cubeeClient';
             var _clientName = _clientBaseName;
             if (xsConn.isIndependence) {
@@ -580,6 +594,7 @@ limitations under the License.
         try {
             _doc = libxml.parseXml(xsConn.receiveBuf);
         } catch (e) {
+            // 完全に読み切っていないのでさらに待つ
             return;
         }
         xsConn.receiveBuf = '';
@@ -641,6 +656,7 @@ limitations under the License.
                 xsConn.socketIO = null;
                 return;
             }
+            // セッションを開始する
             var _xmppSession = Xmpp.getSessionXmpp();
             if (_xmppSession == '') {
                 _log.connectionLog(4, 'getSessionXmpp Data is empty');
@@ -662,6 +678,7 @@ limitations under the License.
         try {
             _doc = libxml.parseXml(xsConn.receiveBuf);
         } catch (e) {
+            // 完全に読み切っていないのでさらに待つ
             return;
         }
         xsConn.receiveBuf = '';
@@ -703,6 +720,7 @@ limitations under the License.
                 xsConn.socketIO = null;
                 return;
             }
+            // AccessTokenを払い出し、Redisに登録する
             var _hostName = _conf.getConfData('NODEJS_HOSTNAME');
             var _accessRelationData = AccessRelationData.createDish(_hostName);
             StoreVolatileChef.getInstance().store(_accessRelationData, _onStored);
@@ -720,6 +738,7 @@ limitations under the License.
                 xsConn.onLogindCallback(true, DISCCONECT_REASON_NO, _accessToken);
                 delete xsConn.onLogindCallback;
 
+                // サーバへのハートビートの開始
                 var _xmppSendPing = XmppUtils.checkCreateXmppData(xsConn, function(){
                     return Xmpp.createSendPingXmpp(xsConn.getHost(),
                                                    xsConn.user + '@' + xsConn.getHost());
@@ -731,6 +750,7 @@ limitations under the License.
                 setTimeout(function() {
                     xsConn.startHeartbeat(_xmppSendPing[0]);
                 }, 30000);
+                // 不要データ（ポインタ）の開放
                 delete xsConn.socketIO.xsConn;
                 delete xsConn.socketIO;
                 delete xsConn.user;
@@ -742,6 +762,7 @@ limitations under the License.
         }, 10);
     }
 
+    // セッションを登録する
     function _registerSession(accessToken, socketIoSock, xsConn) {
         var _sessionDataMannager = SessionDataMannager.getInstance();
         var _sessionData = SessionData.create();
@@ -771,9 +792,11 @@ limitations under the License.
         try {
             _doc = libxml.parseXml(_processData);
         } catch (e) {
+            // 完全に読み切っていないのでさらに待つ
             return;
         }
         xsConn.receiveBuf = '';
+        // 最初のタグを確認する
         if (_doc == null) {
             _log.connectionLog(4, '_doc is null');
             return;
@@ -788,11 +811,15 @@ limitations under the License.
             var _elementName = _element.name();
             switch (_elementName) {
             case 'iq':
+                    // <iq>の場合
                 _onIq(xsConn, _element);
                 break;
             case 'presence':
+                    // <presence>の場合
+                    // (廃止済み)
                 break;
             case 'message':
+                    // <message>の場合
                 _onMessage(xsConn, _element);
                 break;
             default:
@@ -804,11 +831,13 @@ limitations under the License.
     function _onIq(xsConn, xmlRootElem) {
         _log.connectionLog(7, 'do func SynchronousBridgeNodeXmpp._onIq(');
         var _sessionDataMannager = SessionDataMannager.getInstance();
+        // pingの場合はここで処理
         var _iqTypeAttr = xmlRootElem.attr('type');
         if (_iqTypeAttr != null && _iqTypeAttr.value() == 'get') {
             var _pingElem = Utils.getChildXmlElement(xmlRootElem, 'ping');
             if (_pingElem != null
                 && _pingElem.namespace().href() == 'urn:xmpp:ping') {
+                // pingに応答する
                 _onIqPingReceived(xsConn, xmlRootElem);
                 return;
             }
@@ -851,6 +880,7 @@ limitations under the License.
         if (_iqTypeAttr == null || _iqTypeAttr.value() != 'get') {
             return;
         }
+        // pingに応答する
         var _pingFromAttr = xmlRootElem.attr('from');
         var _pingFrom = '';
         if (_pingFromAttr != null) {
@@ -872,6 +902,12 @@ limitations under the License.
         xsConn.send(_xmppStr);
     }
 
+    /**
+     * 通知用のXMPPデータを受けた時の処理
+     *
+     * @param xsConn openfireコネクション
+     * @param xmlRootElem openfireから送られてきたXMPP XMLデータ
+     */
     function _onMessage(xsConn, xmlRootElem) {
         _log.connectionLog(7, 'do func SynchronousBridgeNodeXmpp._onMessage(..');
         var _sessionDataMannager = SessionDataMannager.getInstance();
@@ -883,100 +919,118 @@ limitations under the License.
         if (_sessionDataAry.length < 1) {
             return;
         }
+        // チャット着信通知(ノーティフィケーションが実装されるまでの暫定)かどうか
         var xmlRootElemTypeAttr = xmlRootElem.attr('type');
         if (xmlRootElemTypeAttr != null) {
             var _xmlRootElemType = xmlRootElemTypeAttr.value();
             if (_xmlRootElemType == 'chat') {
+                // チャット着信の通知
                 _log.connectionLog(7, '_onMessage::_onChatNotification');
                 _onChatNotification(_sessionDataAry, xmlRootElem);
                 return;
             }
         }
+        // チャットの着信かどうか
         var _chatElem = Utils.getChildXmlElement(xmlRootElem, 'chat');
         if (_chatElem != null) {
             _log.connectionLog(7, '_onMessage::_onChatMessage');
             _onChatMessage(_sessionDataAry, xmlRootElem);
             return;
         }
+        // タスクかどうか
         var _taskElem = Utils.getChildXmlElement(xmlRootElem, 'task');
         if (_taskElem != null) {
             _log.connectionLog(7, '_onMessage::_onTaskMessage');
             _onTaskMessage(_sessionDataAry, xmlRootElem);
             return;
         }
+        // GoodJob通知かどうか
         var _goodJobElem = Utils.getChildXmlElement(xmlRootElem, 'goodjob');
         if (_goodJobElem != null) {
             _log.connectionLog(7, '_onMessage::_onGoodJobMessage');
             _onGoodJobMessage(_sessionDataAry, xmlRootElem);
             return;
         }
+        // EmotionPoint通知かどうか
         var _emotionPointElem = Utils.getChildXmlElement(xmlRootElem, 'emotionpoint');
         if (_emotionPointElem != null) {
             _log.connectionLog(7, '_onMessage::_onEmotionPointMessage');
             _onEmotionPointMessage(_sessionDataAry, xmlRootElem);
             return;
         }
+        // ThreadTitle通知かどうか
         var _threadTitleElem = Utils.getChildXmlElement(xmlRootElem, 'threadtitleupdate');
         if (_threadTitleElem != null) {
             _log.connectionLog(7, '_onMessage::_threadTitleMessage');
             _onThreadTitleMessage(_sessionDataAry, xmlRootElem);
             return;
         }
+        // Noteの削除通知かどうか
         var _noteElem = Utils.getChildXmlElement(xmlRootElem, 'notedelete');
         if (_noteElem != null) {
             _log.connectionLog(7, '_onMessage::_onDeleteNoteNotify');
             _onDeleteNoteNotify(_sessionDataAry, xmlRootElem);
             return;
         }
+        // Noteの更新かどうか
         var _noteElem = Utils.getChildXmlElement(xmlRootElem, "noteinfoupdate");
         if (_noteElem != null) {
             _log.connectionLog(7, '_onMessage::_onDeleteNoteNotify');
             _onUpdateNoteInfoNotify(_sessionDataAry, xmlRootElem);
             return;
         }
+        // システムメッセージかどうか
         var _systemElem = Utils.getChildXmlElement(xmlRootElem, 'system');
         if (_systemElem != null) {
             _log.connectionLog(7, '_onMessage::_onSystemMessage');
             _onSystemMessage(_sessionDataAry, xmlRootElem);
             return;
         }
+        // プッシュ通知かどうか
         var _notifyElem = Utils.getChildXmlElement(xmlRootElem, 'notify');
         if (_notifyElem != null) {
             var _notifyElemNamespace = _notifyElem.namespace().href();
             _log.connectionLog(7, 'SynchronousBridgeNodeXmpp#_onMessage:: _notify Elem Namespace:'+_notifyElemNamespace);
             switch (_notifyElemNamespace) {
             case RequestData.XMPP_NOTIFY_NAMESPACE_MESSAGE_OPTION:
+                    // メッセージオプション通知
                 _log.connectionLog(7, '_onMessage::_onMessageOptionNotify');
                 _onMessageOptionNotify(_sessionDataAry, xmlRootElem);
                 return;
                 break;
             case RequestData.XMPP_NOTIFY_NAMESPACE_CHANGE_PERSON_DATA:
+                    // プロフィール変更通知
                 _log.connectionLog(7, '_onMessage::_onChangePersonDataNotify');
                 _onChangePersonDataNotify(_sessionDataAry, xmlRootElem, xsConn);
                 return;
                 break;
             case RequestData.XMPP_NOTIFY_NAMESPACE_MESSAGE:
             case RequestData.XMPP_NOTIFY_NAMESPACE_UPDATE_MESSAGE_BODY:
+                    // メッセージ通知
                 _log.connectionLog(7, '_onMessage::_onMessageNotify');
                 _onMessageNotify(_sessionDataAry, xmlRootElem);
                 return;
                 break;
             case RequestData.XMPP_NOTIFY_NAMESPACE_MESSAGE_DELETE:
+                    // メッセージ削除
                 _log.connectionLog(7, '_onMessage::_onMessageDeleteNotify');
                 _onMessageDeleteNotify(_sessionDataAry, xmlRootElem);
                 return;
                 break;
             case RequestData.XMPP_NOTIFY_NAMESPACE_CREATE_CHAT_ROOM:
+                    // チャットルーム作成通知
                 _log.connectionLog(7, '_onMessage::_onCreateChatRoomNotify');
                 _onCreateChatRoomNotify(_sessionDataAry, xmlRootElem);
                 return;
                 break;
             case RequestData.XMPP_NOTIFY_NAMESPACE_ADD_CHAT_ROOM_MEMBER:
+                    // チャットルームメンバー追加通知
                 _log.connectionLog(7, '_onMessage::_onAddChatRoomMemberNotify');
                 _onAddChatRoomMemberNotify(_sessionDataAry, xmlRootElem);
                 return;
                 break;
             case RequestData.XMPP_NOTIFY_NAMESPACE_UPDATE_CHATROOM_INFO:
+                    // チャットルーム情報更新通知
                 _log.connectionLog(7, '_onMessage::_onUpdateChatRoomInfoNotify');
                 _onUpdateChatRoomInfoNotify(_sessionDataAry, xmlRootElem);
                 return;
@@ -1062,13 +1116,17 @@ limitations under the License.
         }
         _sessionData.setCallback(_id, onGetVCardCallBack);
         setTimeout(function() {
+            // 5秒以内に帰ってこない場合はタイムアウトして返却する
             var _callbackFunc = _sessionData.getCallback(_id);
             _sessionData.unsetCallback(_id);
             if (_callbackFunc == undefined || _callbackFunc == null
                 || typeof _callbackFunc != 'function') {
+                // 既に処理済みのため処理なし
                 return;
             }
+            // コールバック情報を外す
             _sessionData.unsetCallback(_id);
+            // タイムアウトのため、空のデータを返す
             _log.connectionLog(6, 'getVCard timeout!');
             var _result = true;
             var _reason = DISCCONECT_REASON_NO;
@@ -1086,6 +1144,7 @@ limitations under the License.
 
     function getVCardDataFromOnGetVCard(responceXmlRootElem) {
         var _responceData = null;
+        // <vCard>
         var _vCardElem = Utils.getChildXmlElement(responceXmlRootElem, 'vCard');
         if (_vCardElem == null) {
             var _vCardElem = Utils.getChildXmlElement(responceXmlRootElem,
@@ -1097,6 +1156,7 @@ limitations under the License.
             }
         }
         _responceData = {};
+        // ニックネーム
         var _nickName = '';
         var _nickNameElem = Utils.getChildXmlElement(_vCardElem, 'NICKNAME');
         if (_nickNameElem == null) {
@@ -1107,6 +1167,7 @@ limitations under the License.
         }
         _responceData.nickName = Utils.replaceAll(_nickName, '\n', '');
 
+        // <group>
         let _gropArray = Utils.getChildXmlElement(_vCardElem, 'group');
         let _groupItems = [];
         if(_gropArray != null){
@@ -1120,6 +1181,7 @@ limitations under the License.
         }
         _responceData.group =_groupItems
 
+        // アバタータイプ・アバターデータ
         var _avatarType = '';
         var _avatarData = '';
         var _photoElem = Utils.getChildXmlElement(_vCardElem, 'PHOTO');
@@ -1145,6 +1207,7 @@ limitations under the License.
         }
         _responceData.avatarType = Utils.replaceAll(_avatarType, '\n', '');
         _responceData.avatarData = Utils.replaceAll(_avatarData, '\n', '');
+        //拡張属性情報
         var _extras = '';
         var _extrasElem = Utils.getChildXmlElement(_vCardElem, 'EXTRAS');
         if (_extrasElem == null) {
@@ -1152,6 +1215,7 @@ limitations under the License.
         }
         if (_extrasElem != null) {
             _extras = _extrasElem.text();
+            // decodeURIComponent する
             _extras = decodeURIComponent(_extras);
         }
 
@@ -1159,6 +1223,7 @@ limitations under the License.
         return _responceData;
     }
 
+    // コンタクトリストの取得
     _proto.getRoster = function(accessToken, onGetRosterCallBackFunc) {
         var _self = this;
         if (accessToken == null || typeof accessToken != 'string') {
@@ -1193,11 +1258,14 @@ limitations under the License.
         var _id = _xmppGetRoster[1];
         function onGetRosterCallBack(responceXmlRootElem) {
             var _responseData = onGetRoster(responceXmlRootElem);
+            // 人情報を取得する
             var _responseCount = _responseData.length;
             if (_responseCount == 0) {
+                // コンタクトリストに誰もいない場合は応答を返す
                 onGetRosterCallBackFunc(true, DISCCONECT_REASON_NO,
                                         _responseCount, _responseData);
             } else {
+                // jidのArrayを生成
                 var _jidList = new Array();
                 for ( var _i = 0; _i < _responseCount; _i++) {
                     _jidList[_i] = _responseData[_i].jid;
@@ -1208,10 +1276,12 @@ limitations under the License.
                 function _onGetUserAccountDataCallBack(mapData) {
                     var _loginAccountMapData = mapData;
                     for ( var _i = 0; _i < _responseCount; _i++) {
+                        // ユーザ名(ログインアカウントの再設定)
                         if (_loginAccountMapData) {
                             _responseData[_i].userName = _loginAccountMapData[_responseData[_i].jid];
                         }
                     }
+                    // 応答を返す
                     onGetRosterCallBackFunc(true, DISCCONECT_REASON_NO,
                                             _responseCount, _responseData);
                 }
@@ -1225,12 +1295,14 @@ limitations under the License.
 
     function onGetRoster(responceXmlRootElem) {
         var _responceData = [];
+        // <query>
         var _queryElem = Utils.getChildXmlElement(responceXmlRootElem, 'query');
         if (_queryElem == null) {
             _log.connectionLog(3, '_queryElem is null - '
                                 + responceXmlRootElem.toString());
             return _responceData;
         }
+        // <item>
         var _itemArray = Utils.getChildXmlElementArray(_queryElem, 'item');
         var _itemCount = 0;
         if (_itemArray != null) {
@@ -1248,6 +1320,7 @@ limitations under the License.
                 if (_subscriptionAttr != null) {
                     _subscription = _subscriptionAttr.value();
                 }
+                // <group>
                 var _gropArray = Utils.getChildXmlElementArray(_itemElem,
                                                                'group');
                 var _groupCount = 0;
@@ -1259,32 +1332,38 @@ limitations under the License.
                         _groupItems[_j] = _groupElem.text();
                     }
                 }
+                // nickName
                 var _nickNameAttr = _itemElem.attr('nickname');
                 var _nickName = '';
                 if (_nickNameAttr != null) {
                     _nickName = _nickNameAttr.value();
                 }
+                // avatarType
                 var _avatarTypeAttr = _itemElem.attr('avatartype');
                 var _avatarType = '';
                 if (_avatarTypeAttr != null) {
                     _avatarType = _avatarTypeAttr.value();
                 }
+                // avatarData
                 var _avatarDataAttr = _itemElem.attr('avatardata');
                 var _avatarData = '';
                 if (_avatarDataAttr != null) {
                     _avatarData = _avatarDataAttr.value();
                 }
+                // presence
                 var _presenceAttr = _itemElem.attr('presence');
                 var _presence = 0;
                 if (_presenceAttr != null) {
                     var _presenceStr = _presenceAttr.value();
                     _presence = parseInt(_presenceStr);
                 }
+                // myMemo
                 var _myMemoAttr = _itemElem.attr('mymemo');
                 var _myMemo = '';
                 if (_myMemoAttr != null) {
                     _myMemo = _myMemoAttr.value();
                 }
+                // status
                 var _statusAttr = _itemElem.attr('status');
                 var _status = 0;
                 if (_statusAttr != null) {
@@ -1292,6 +1371,9 @@ limitations under the License.
                     _status = parseInt(_statusStr);
                 }
 
+                // ユーザ統計データ
+                //var _devoteData = Utils.getStatisticsDataFromXmlAttr(_itemElem);
+                // データを詰める
                 _responceData[_i] = {
                     jid : _jid,
                     userName : _userName,
@@ -1310,6 +1392,7 @@ limitations under the License.
         return _responceData;
     }
 
+    // ユーザ検索
     _proto.searchPerson = function(accessToken, requestData,
                                    onSearchPersonCallBackFunc) {
         var _self = this;
@@ -1378,6 +1461,7 @@ limitations under the License.
             var _extras = {};
             var _items = null;
             if (_result == true) {
+                // <person>
                 var _personElem = Utils.getChildXmlElement(responceXmlRootElem,
                                                            'person');
                 if (_personElem == null) {
@@ -1388,6 +1472,7 @@ limitations under the License.
                                                _items);
                     return;
                 }
+                // <content>
                 var _contentElem = Utils.getChildXmlElement(_personElem,
                                                             'content');
                 if (_contentElem == null) {
@@ -1401,6 +1486,7 @@ limitations under the License.
                 var _extras = _getSearchPersonExtrasFromContentElem(_contentElem);
                 var _items = _getPersonItemsFromContentElem(_contentElem);
                 var _count = _items.length;
+                // jidのArrayを生成
                 var _jidList = new Array();
                 for ( var _i = 0; _i < _count; _i++) {
                     _jidList[_i] = _items[_i].jid;
@@ -1416,10 +1502,12 @@ limitations under the License.
             function _onGetUserAccountDataCallBack(mapData) {
                 var _loginAccountMapData = mapData;
                 for ( var _i = 0; _i < _count; _i++) {
+                    // ユーザ名(ログインアカウントの再設定)
                     if (_loginAccountMapData) {
                         _items[_i].userName = _loginAccountMapData[_items[_i].jid];
                     }
                 }
+                // 応答を返す
                 onSearchPersonCallBackFunc(_result, _reason, _extras, _count, _items);
             }
         }
@@ -1428,14 +1516,17 @@ limitations under the License.
 
         return true;
     };
+    // ユーザ検索応答用<content>エレメントからレスポンス用のextrasデータを生成
     function _getSearchPersonExtrasFromContentElem(contentElem) {
         var _extras = {};
+        // <extras>
         var _extrasElem = Utils.getChildXmlElement(contentElem, 'extras');
         if (_extrasElem == null) {
             _log.connectionLog(3, '_extrasElem is null - '
                                 + contentElem.toString());
             return _extras;
         }
+        // <all_item_count>
         var _allItemCountElem = Utils.getChildXmlElement(_extrasElem,
                                                          'all_item_count');
         var _allItemCount = 0;
@@ -1443,20 +1534,24 @@ limitations under the License.
             var _allItemCountStr = _allItemCountElem.text();
             _allItemCount = parseInt(_allItemCountStr);
         }
+        // データを詰める
         _extras = {
             allItemCount : _allItemCount
         };
         return _extras;
     }
 
+    // <content>エレメントからレスポンス用のPersonItemsデータを生成
     function _getPersonItemsFromContentElem(contentElem) {
         var _itemsArray = [];
+        // <items>
         var _itemsElem = Utils.getChildXmlElement(contentElem, 'items');
         if (_itemsElem == null) {
             _log.connectionLog(3, '_itemsElem is null - '
                                 + contentElem.toString());
             return _itemsArray;
         }
+        // <item>
         var _itemArray = Utils.getChildXmlElementArray(_itemsElem, 'item');
         _itemsArray = _getPersonItemsFromElementArray(_itemArray);
         return _itemsArray;
@@ -1472,6 +1567,7 @@ limitations under the License.
         for( var _i = 0; _i < _itemCount; _i++){
             var _itemElem = elementArray[_i];
             var _item = _getPersonItemFromElement(_itemElem);
+            // データを詰める
             _itemsArray[_i] = _item;
         }
         return _itemsArray;
@@ -1489,18 +1585,22 @@ limitations under the License.
             var _idStr = _idElem.text();
             _id = parseInt(_idStr);
         }
+        // <jid>
         var _jidElem = Utils.getChildXmlElement(element, 'jid');
         var _jid = '';
         if (_jidElem != null) {
             _jid = _jidElem.text();
         }
+        // <subscription>
         var _subscriptionElem = Utils.getChildXmlElement(element,
                                                          'subscription');
         var _subscription = '';
         if (_subscriptionElem != null) {
             _subscription = _subscriptionElem.text();
         }
+        // <groups>
         var _groupsElem = Utils.getChildXmlElement(element, 'groups');
+        // <group>
         var _gropArray = Utils.getChildXmlElementArray(_groupsElem,
                                                        'group');
         var _groupCount = 0;
@@ -1512,24 +1612,28 @@ limitations under the License.
                 _groupItems[_j] = _groupElem.text();
             }
         }
+        // <nickName>
         var _nickNameElem = Utils.getChildXmlElement(element,
                                                      'nickname');
         var _nickName = '';
         if (_nickNameElem != null) {
             _nickName = _nickNameElem.text();
         }
+        // <avatarType>
         var _avatarTypeElem = Utils.getChildXmlElement(element,
                                                        'avatartype');
         var _avatarType = '';
         if (_avatarTypeElem != null) {
             _avatarType = _avatarTypeElem.text();
         }
+        // <avatarData>
         var _avatarDataElem = Utils.getChildXmlElement(element,
                                                        'avatardata');
         var _avatarData = '';
         if (_avatarDataElem != null) {
             _avatarData = _avatarDataElem.text();
         }
+        // <presence>
         var _presenceElem = Utils.getChildXmlElement(element,
                                                      'presence');
         var _presence = 0;
@@ -1537,11 +1641,13 @@ limitations under the License.
             var _presenceStr = _presenceElem.text();
             _presence = parseInt(_presenceStr);
         }
+        // <myMemo>
         var _myMemoElem = Utils.getChildXmlElement(element, 'mymemo');
         var _myMemo = '';
         if (_myMemoElem != null) {
             _myMemo = _myMemoElem.text();
         }
+        // <status>
         var _statusElem = Utils.getChildXmlElement(element, 'status');
         var _status = 0;
         if (_statusElem != null) {
@@ -1549,6 +1655,8 @@ limitations under the License.
             _status = parseInt(_statusStr);
         }
 
+        // <statistics>
+        //var _devoteData = Utils.getStatisticsDataFromXmlElement(element);
 
         _ret = {
             id : _id,
@@ -1566,6 +1674,7 @@ limitations under the License.
         return _ret;
     }
 
+    // 人の情報の変更
     _proto.setLoginPersonData = function(accessToken, requestData,
                                          onSetLoginPersonDataCallBackFunc) {
         var _self = this;
@@ -1598,7 +1707,7 @@ limitations under the License.
         var _avatarDataFileList = new Array();
         var _xmppSetLoginPersonData = null;
         var _type = requestData.type;
-        var _sendFileType = requestData.avatarType; 
+        var _sendFileType = requestData.avatarType; // 更新失敗時に元からあるファイルを削除しないために
         var _xmppServerHostName = _sessionData.getXmppServerName();
         var _tenantUuid = _sessionData.getTenantUuid();
         switch (_type) {
@@ -1612,11 +1721,13 @@ limitations under the License.
         case RequestData.SET_LOGIN_PERSON_DATA_TYPE_PROFILE:
             if (requestData.avatarType != '') {
                 var _imageFileUtils = ImageFileUtils.getInstance();
+                    // 現在設定されている画像があればファイル名を取得しておく(用途：avatar)
                 _avatarDataFileList = _imageFileUtils.getUserFilePathList(
                         _tenantUuid, _sessionData.getJid(), ImageFileUtils.USE_TYPE_AVATER,
                         ImageFileUtils.PREFIX_ORIGINAL);
                 var _imagePath = '';
                 if (requestData.avatarType != RequestData.SET_LOGIN_PERSON_DATA_AVATAR_TYPE_IMAGEPATH) {
+                        // 画像データをファイルに変換して保存
                     _imagePath = _imageFileUtils.createUserFile(_tenantUuid, _sessionData
                             .getJid(), requestData.avatarType,
                                                                     requestData.avatarData,
@@ -1637,28 +1748,35 @@ limitations under the License.
                 requestData.avatarData = _imagePath;
             }
             if (requestData.extras != null && requestData.extras != '') {
+                    // 上限を超えていないかをチェックする
                 var _extraMaxBytes = _conf.getConfData('USER_PROFILE_EXTRAS_DATA_MAX_BYTE', '20971520');
                 if (_extraMaxBytes == null || typeof _extraMaxBytes != 'string' || isNaN(Number(_extraMaxBytes))) {
                     _extraMaxBytes = 20971520;
                 }
                 var _extraBytes = encodeURIComponent(requestData.extras).replace(/%../g, "x").length;
                 if (_extraBytes > _extraMaxBytes) {
+                        // 上限をこえているため失敗
                     _log.connectionLog(4, 'extras key is over USER_PROFILE_EXTRAS_DATA_MAX_BYTE');
                     var _result = false;
                     var _reason = ERROR_REASON_ERROR_PARAM;
                     onSetLoginPersonDataCallBackFunc(_result, _reason);
+                        // 返却先で callback されるのを防止するため、true で返却する
                     return true;
                 }
+                    // JSON形式であるかをチェック
                 var _jsonCheck = '';
                 try {
                     _jsonCheck = JSON.parse(requestData.extras);
                 } catch (e){
+                        // json 形式でないため失敗
                     _log.connectionLog(4, 'extras is not json');
                     var _result = false;
                     var _reason = ERROR_REASON_ERROR_PARAM;
                     onSetLoginPersonDataCallBackFunc(_result, _reason);
+                        // 返却先で callback されるのを防止するため、true で返却する
                     return true;
                 }
+                    // URIEncode する
                 requestData.extras = encodeURIComponent(requestData.extras);
             }
             if(!Validation.affiliationCheck(requestData.group, false)){
@@ -1685,6 +1803,7 @@ limitations under the License.
             var _notificationService = requestData.notificationService;
             var _result = false;
             var _reason = ERROR_REASON_ERROR_PARAM;
+                // デバイスIDの確認
             if (_deviceId == null || typeof _deviceId != 'string'
                     || _deviceId == "") {
                 _log.connectionLog(4, 'deviceId is invalid');
@@ -1695,6 +1814,7 @@ limitations under the License.
                 }
                 return false;
             }
+                // 通知先サービスの確認
             if (_notificationService == null
                     || typeof _notificationService != 'number') {
                 _log.connectionLog(4, 'notificationService is invalid');
@@ -1719,6 +1839,7 @@ limitations under the License.
             var _deviceId = requestData.deviceId;
             var _result = false;
             var _reason = ERROR_REASON_ERROR_PARAM;
+                // デバイスIDの確認
             if (_deviceId == null || typeof _deviceId != 'string'
                     || _deviceId == "") {
                 _log.connectionLog(4, 'deviceId is invalid');
@@ -1755,15 +1876,17 @@ limitations under the License.
             var _result = false;
             var _reason = ERROR_REASON_XMPP_SERVER;
             var _iqTypeAttr = responceXmlRootElem.attr('type');
-            var _isResponse = true; 
+            var _isResponse = true; // すぐに結果を応答してよいか
             if (_iqTypeAttr != null && _iqTypeAttr.value() == 'result') {
                 _result = true;
                 _reason = DISCCONECT_REASON_NO;
             }
+            // プロフィール更新の場合
             if (_type == RequestData.SET_LOGIN_PERSON_DATA_TYPE_PROFILE) {
                 var _imageFileUtils = ImageFileUtils.getInstance();
                 var _ret = true;
                 if (_result == true) {
+                    // 前回設定されていたのファイルを削除
                     for ( var _i = 0; _i < _avatarDataFileList.length; _i++) {
                         if (_avatarDataFileList[_i] == requestData.avatarData) {
                             continue;
@@ -1773,16 +1896,20 @@ limitations under the License.
                     }
                 } else {
                     if (_sendFileType != RequestData.SET_LOGIN_PERSON_DATA_AVATAR_TYPE_IMAGEPATH) {
+                        // 新しく変換したファイルを削除
                         _ret = _imageFileUtils
                             .deleteFile(requestData.avatarData);
                     }
                 }
                 if (!_ret) {
+                    // 不要ファイル削除失敗
                     _log.connectionLog(3, 'delete file is failed');
                 }
+                // メールアドレスの設定変更あった場合は、情報を更新する
                 if(_result && requestData.mailAddress != null) {
                     var _loginAccount = _sessionData.getLoginAccout();
                     var _updateRet = UserAccountUtils.updateUserAccountMailAddress(_tenantUuid, _loginAccount, requestData.mailAddress, _onUpdateUserAccountMailAddress);
+                    // この処理の延長でコールバックは呼ばないようにする
                     if(_updateRet) {
                         _isResponse = false;
                     } else {
@@ -1795,6 +1922,7 @@ limitations under the License.
             } else if (_type == RequestData.SET_LOGIN_PERSON_DATA_TYPE_DELETE_DEVICE_INFO) {
                 _log.connectionLog(6, 'DeleteDeviceInfo request has been proceeded: ' + _result);
             }
+            // パスワード変更の場合は変更成功で新しいパスワード（のハッシュ）を覚える
             if (_type == RequestData.SET_LOGIN_PERSON_DATA_TYPE_PASSWORD) {
                 if (_result == true) {
                     _sessionData.setPassword(Utils
@@ -1842,6 +1970,7 @@ limitations under the License.
         return true;
     };
 
+    // メッセージの取得
     _proto.getMessage = function(accessToken, requestData,
                                  onGetMessageCallBackFunc) {
         _log.connectionLog(7, 'do func Synchronousbridgenodexmpp.getMessage(...');
@@ -1873,12 +2002,14 @@ limitations under the License.
         var _xmppGetMessage = null;
         var _requestType = requestData.type;
         var _xmppServerHostName = _sessionData.getXmppServerName();
+        //メッセージ取得時のレスポンスに分析データを付加するためのフラグ
         let isAnalizeAccsess = false;
         switch (_requestType) {
         case RequestData.GET_MESSAGE_TYPE_MY_FEED:
             var _fromJid = _sessionData.getJid();
             var _baseId = requestData.startId;
             var _count = requestData.count;
+            // 簡易的な分析アクセス
             if(requestData.analizeAccsess != undefined &&
                requestData.analizeAccsess != null &&
                _conf._confData.ANALIZE_ACCSESS_PASSWORD != undefined &&
@@ -1900,6 +2031,7 @@ limitations under the License.
             var _baseId = requestData.startId;
             var _count = requestData.count;
             var _condition = requestData.condition;
+            // 簡易的な分析アクセス
             if(requestData.analizeAccsess != undefined &&
                requestData.analizeAccsess != null &&
                _conf._confData.ANALIZE_ACCSESS_PASSWORD != undefined &&
@@ -1960,6 +2092,7 @@ limitations under the License.
             var _startId = requestData.startId;
             var _count = requestData.count;
             var _condition = requestData.condition;
+            // 簡易的な分析アクセス
             if(requestData.analizeAccsess != undefined &&
                requestData.analizeAccsess != null &&
                _conf._confData.ANALIZE_ACCSESS_PASSWORD != undefined &&
@@ -2140,19 +2273,24 @@ limitations under the License.
             }
             var _exodusNamespace = _exodusElem.namespace().href();
             if (_exodusNamespace == 'task_list') {
+                // タスクの場合は未完了数と子タスク一覧を取得する
+                // unfinishedTaskCount
                 var _itemsElem = Utils.getChildXmlElement(_exodusElem, 'items');
                 if (_itemsElem != null) {
                     var _unfinishedTaskCountAttr = _itemsElem
                         .attr('unfinished_task_count');
                     if (_unfinishedTaskCountAttr != null) {
+                        // 未完了タスク
                         _ret.unfinishedTaskCount = parseInt(_unfinishedTaskCountAttr
                             .value());
                     }
                 }
+                // childrenItems
                 _childrenItemsElem = Utils.getChildXmlElement(_exodusElem,
                                                               'children_items');
             }
         } else {
+            // 検索のXMPPの場合は形式が異なる
             var _messageElem = Utils.getChildXmlElement(responceXmlRootElem,
                                                         'message');
             if (_messageElem == null) {
@@ -2170,11 +2308,14 @@ limitations under the License.
                 _callback(null);
                 return true;
             }
+            // all_item_count
             var _allItemCountElem = Utils.getChildXmlElement(_extrasElem,
                                                              'all_item_count');
             if (_allItemCountElem != null) {
+                // フィルター条件にマッチした数
                 _ret.allItemCount = parseInt(_allItemCountElem.text());
             }
+            // childrenItems
             _childrenItemsElem = Utils.getChildXmlElement(_extrasElem,
                                                           'children_items');
         }
@@ -2220,6 +2361,20 @@ limitations under the License.
         return true;
     }
 
+    /**
+     * メッセージのItemのXMPP配列からJSONオブジェクトを取得する
+     *
+     * XMPPのXMLデータからjsonデータを生成
+     * 第3引数のコールバックに返す。
+     *
+     * @param tenantUuid テナントUUID
+     * @param responceXmlRootElem XMPPのXMLデータ
+     * @param requestType リクエストタイプ
+     * @param onGetMessageListCallBack レスポンスを返すためのコールバック
+     * @param isAnalizeAccsess 分析用アクセスかどうか
+     *
+     * @return 処理が正しく終了したかのboolean
+     */
     function _onGetMessageList(tenantUuid, responceXmlRootElem, requestType,
                                onGetMessageListCallBack, isAnalizeAccsess) {
         _log.connectionLog(7, 'do func SynchronousBridgeNodeXmpp._onGetMessageList');
@@ -2244,6 +2399,7 @@ limitations under the License.
             }
             _itemsElem = Utils.getChildXmlElement(_exodusElem, 'items');
         } else {
+            // 検索やメール本文取得やスレッド取得のXMPPの場合は形式が異なる
             var _messageElem = Utils.getChildXmlElement(responceXmlRootElem,
                                                         'message');
             if (_messageElem == null) {
@@ -2304,6 +2460,7 @@ limitations under the License.
                     var _itemElem = _itemElemArray[_i];
                     var _itemData = null;
                     if (requestType == RequestData.GET_MESSAGE_TYPE_MAIL_BODY) {
+                        // メール本文の場合は形式が異なる
                         _itemData = _getItemDataFromMailBodyItemElem(_itemElem);
                     }
                     if (_itemData == null) {
@@ -2322,6 +2479,19 @@ limitations under the License.
         }
     }
 
+    /**
+     * メッセージのItemのXMPP配列からJSONオブジェクトを取得する
+     *
+     * XMPPのXMLデータからjsonデータを生成
+     * 第3引数のコールバックに返す。
+     *
+     * @param tenantUuid テナントUUID
+     * @param itemElem XMPPのXMLデータ
+     * @param onGetItemDataCallBack レスポンスを返すためのコールバック
+     * @param isAnalizeAccsess 分析用アクセスかどうか
+     *
+     * @return 処理が正しく終了したかのboolean
+     */
     function _getMessageItemsFromMessageItemElementArray(tenantUuid, messegeItemsArray,
                                                          onGetMessageItemsCallBack, isAnalizeAccsess) {
         _log.connectionLog(7, "do func  SynchronousBridgeNodeXmpp._getMessageItemsFromMessageItemElementArray");
@@ -2374,6 +2544,17 @@ limitations under the License.
     }
 
 
+    /**
+     * XMPPのXMLデータからjsonデータを生成
+     * 第3引数のコールバックに返す。
+     *
+     * @param tenantUuid テナントUUID
+     * @param itemElem XMPPのXMLデータ
+     * @param onGetItemDataCallBack レスポンスを返すためのコールバック
+     * @param isAnalizeAccsess 分析用アクセスかどうか
+     *
+     * @return 処理が正しく終了したかのboolean
+     */
     function _getItemDataFromMessageItemElem(tenantUuid, itemElem, onGetItemDataCallBack, isAnalizeAccsess) {
         _log.connectionLog(7, "do func  SynchronousBridgeNodeXmpp._getItemDataFromMessageItemElem");
         if(isAnalizeAccsess == undefined ||
@@ -2398,26 +2579,31 @@ limitations under the License.
 
         function _createItem() {
             _log.connectionLog(7, "do func  SynchronousBridgeNodeXmpp._getItemDataFromMessageItemElem._createItem(...");
+            // id
             var _idElem = Utils.getChildXmlElement(_itemElem, 'id');
             if (_idElem == null) {
                 _log.connectionLog(7, 'Message : id');
                 return false;
             }
             _itemData.id = parseInt(_idElem.text());
+            // itemId
             var _itemIdElem = Utils.getChildXmlElement(_itemElem, 'item_id');
             if (_itemIdElem == null) {
                 _log.connectionLog(7, 'Message : itemId');
                 return false;
             }
             _itemData.itemId = _itemIdElem.text();
+            // from
             var _fromElem = Utils.getChildXmlElement(_itemElem, 'msgfrom');
             if (_fromElem != null) {
                 _itemData.from = _fromElem.text();
             }
+            // to
             var _toElem = Utils.getChildXmlElement(_itemElem, 'msgto');
             if (_toElem != null) {
                 _itemData.to = _toElem.text();
             }
+            // type
             var _typeElem = Utils.getChildXmlElement(_itemElem, 'msgtype');
             if (_typeElem == null) {
                 _log.connectionLog(7, 'Message : type');
@@ -2425,50 +2611,62 @@ limitations under the License.
             }
             _itemData.type = parseInt(_typeElem.text());
 
+            // roomname
             var _roomNameElem = Utils.getChildXmlElement(_itemElem, 'roomname');
             if (_roomNameElem != null) {
                 _itemData.roomName = _roomNameElem.text();
             }
 
+            //============================================
+            // roomType
             var _roomTypeElem = Utils.getChildXmlElement(_itemElem, 'roomType');
             if (_roomTypeElem != null) {
                 _itemData.roomType = _roomTypeElem.text();
             }
 
+            // roomid
             var _roomIdElem = Utils.getChildXmlElement(_itemElem, 'roomId');
             if (_roomIdElem != null) {
                 _itemData.roomId = _roomIdElem.text();
             }
 
+            // roomName
             var _roomNameElem = Utils.getChildXmlElement(_itemElem, 'roomName');
             if (_roomNameElem != null) {
                 _itemData.roomName = _roomNameElem.text();
             }
 
+            // voteFlag
             var _voteFlagElem = Utils.getChildXmlElement(_itemElem, 'voteFlag');
             if (_voteFlagElem != null) {
                 _itemData.voteFlag = parseInt(_voteFlagElem.text(), 10);
             }
 
+            // inputType
             var _inputTypeElem = Utils.getChildXmlElement(_itemElem, 'inputType');
             if (_inputTypeElem != null) {
                 _itemData.inputType = parseInt(_inputTypeElem.text(), 10);
             }
+            // resultVisible
             var _resultVisibleElem = Utils.getChildXmlElement(_itemElem, 'resultVisible');
             if (_resultVisibleElem != null) {
                 _itemData.resultVisible = parseInt(_resultVisibleElem.text(),10);
             }
+            // graphType
             var _graphTypeElem = Utils.getChildXmlElement(_itemElem, 'graphType');
             if (_graphTypeElem != null) {
                 _itemData.graphType = parseInt(_graphTypeElem.text(), 10);
             }
+            // optionCount
             var _optionCountElem = Utils.getChildXmlElement(_itemElem, 'optionCount');
             if (_optionCountElem != null) {
                 _itemData.optionCount = _optionCountElem.text();
             }
+            // optionItems
             var _optionItemsElem = Utils.getChildXmlElement(_itemElem, 'optionItems');
             if(_optionItemsElem !=null){
                 var _optionItemsElemElemArray  = Utils.getChildXmlElementArray(_optionItemsElem, 'optionItem');
+                //optionCount optionItems
                 _itemData.optionCount = 0;
                 _itemData.optionItems = [];
 
@@ -2477,14 +2675,17 @@ limitations under the License.
                     for(var _j = 0; _j < _itemData.optionCount; _j++) {
                         var _optionItemElem = _optionItemsElemElemArray[_j];
                         var _optionItemData = {};
+                        // optionid
                         var _optionIdAttr = Utils.getChildXmlElement(_optionItemElem, 'optionId');
                         if(_optionIdAttr != null) {
                             _optionItemData.optionId = _optionIdAttr.text();
                         }
+                        // option
                         var _optionAttr = Utils.getChildXmlElement(_optionItemElem, 'option');
                         if(_optionAttr != null) {
                             _optionItemData.option = _optionAttr.text();
                         }
+                        // optionValue
                         var _optionValueAttr = Utils.getChildXmlElement(_optionItemElem, 'optionValue');
                         if(_optionAttr != null) {
                             _optionItemData.optionValue = parseInt(_optionValueAttr.text(), 10);
@@ -2493,14 +2694,18 @@ limitations under the License.
                     }
                 }
             }
+            //============================================
 
+            // グループチャットのみの処理
             if(_itemData.type == 3 ||
                _itemData.type == 10){
+                // parentroomid
                 var _parentRoomIdElem = Utils.getChildXmlElement(_itemElem, 'parentroomid');
                 if (_parentRoomIdElem != null) {
                     _itemData.parentRoomId = _parentRoomIdElem.text();
                 }
 
+                // privacytype
                 var _privacyTypeElem = Utils.getChildXmlElement(_itemElem, 'privacytype');
                 if (_privacyTypeElem != null) {
                     _itemData.privacyType = parseInt(_privacyTypeElem.text());
@@ -2508,160 +2713,194 @@ limitations under the License.
             }
             var _entryElem = Utils.getChildXmlElement(_itemElem, 'entry');
             if (_entryElem != null) {
+                // title
                 var _titleElem = Utils.getChildXmlElement(_entryElem, 'title');
                 if (_titleElem != null) {
                     _itemData.title = _titleElem.text();
                 }
+                // body
                 var _bodyElem = Utils.getChildXmlElement(_entryElem, 'body');
                 if (_bodyElem != null) {
                     _itemData.body = _bodyElem.text();
                 }
+                // triggerAction
                 var _triggerActionElem = Utils.getChildXmlElement(_entryElem,
                                                                   'trigger_action');
                 if (_triggerActionElem != null) {
                     _itemData.triggerAction = parseInt(_triggerActionElem
                         .text());
                 }
+                // progress
                 var _progressElem = Utils.getChildXmlElement(_entryElem,
                                                              'progress');
                 if (_progressElem != null) {
                     _itemData.progress = parseInt(_progressElem.text());
                 }
+                // spentTime
                 var _spentTimeElem = Utils.getChildXmlElement(_entryElem,
                                                               'spent_time');
                 if (_spentTimeElem != null) {
                     _itemData.spentTime = parseInt(_spentTimeElem.text());
                 }
+                // estimatedTime
                 var _estimatedTimeElem = Utils.getChildXmlElement(_entryElem,
                                                                   'estimated_time');
                 if (_estimatedTimeElem != null) {
                     _itemData.estimatedTime = parseInt(_estimatedTimeElem
                         .text());
                 }
+                // remainingTime
                 var _remainingTimeElem = Utils.getChildXmlElement(_entryElem,
                                                                   'remaining_time');
                 if (_remainingTimeElem != null) {
                     _itemData.remainingTime = parseInt(_remainingTimeElem
                         .text());
                 }
+                // goal
                 var _goalElem = Utils.getChildXmlElement(_entryElem, 'goal');
                 if (_goalElem != null) {
                     _itemData.goal = _goalElem.text();
                 }
+                // alert
                 var _alertElem = Utils.getChildXmlElement(_entryElem, 'alert');
                 if (_alertElem != null) {
                     _itemData.alert = parseInt(_alertElem.text());
                 }
             }
+            // bodyType
             var _bodyTypeElem = Utils.getChildXmlElement(_itemElem,
                                                          'body_type');
             if (_bodyTypeElem != null) {
                 _itemData.bodyType = parseInt(_bodyTypeElem.text());
             }
+            // nodeName
             var _nodeNameElem = Utils.getChildXmlElement(_itemElem,
                                                          'publish_nodename');
             if (_nodeNameElem != null) {
                 _itemData.nodeName = _nodeNameElem.text();
             }
+            // parentItemId
             var _parentItemIdElem = Utils.getChildXmlElement(_itemElem,
                                                              'parent_item_id');
             if (_parentItemIdElem != null) {
                 _itemData.parentItemId = _parentItemIdElem.text();
             }
+            // priority
             var _priorityElem = Utils.getChildXmlElement(_itemElem, 'priority');
             if (_priorityElem != null) {
                 _itemData.priority = parseInt(_priorityElem.text());
             }
+            // createdAt
             var _createdAtElem = Utils.getChildXmlElement(_itemElem,
                                                           'created_at');
             if (_createdAtElem != null) {
                 _itemData.createdAt = _createdAtElem.text();
             }
+            // replyId
             var _replyIdElem = Utils.getChildXmlElement(_itemElem, 'reply_id');
             if (_replyIdElem != null) {
                 _itemData.replyId = _replyIdElem.text();
             }
+            // replyTo
             var _replyToElem = Utils.getChildXmlElement(_itemElem, 'reply_to');
             if (_replyToElem != null) {
                 _itemData.replyTo = _replyToElem.text();
             }
+            // threadTitle
             var _threadTitleElem = Utils.getChildXmlElement(_itemElem, 'thread_title');
             if (_threadTitleElem != null) {
                 _itemData.threadTitle = _threadTitleElem.text();
             }
+            // threadRootId
             var _threadRootIdElem = Utils.getChildXmlElement(_itemElem, 'thread_root_id');
             if (_threadRootIdElem != null) {
                 _itemData.threadRootId = _threadRootIdElem.text();
             }
+            // startDate
             var _startDateElem = Utils.getChildXmlElement(_itemElem,
                                                           'start_date');
             if (_startDateElem != null) {
                 _itemData.startDate = _startDateElem.text();
             }
+            // dueDate
             var _dueDateElem = Utils.getChildXmlElement(_itemElem, 'due_date');
             if (_dueDateElem != null) {
                 _itemData.dueDate = _dueDateElem.text();
             }
+            // completeDate
             var _completeDateElem = Utils.getChildXmlElement(_itemElem,
                                                              'complete_date');
             if (_completeDateElem != null) {
                 _itemData.completeDate = _completeDateElem.text();
             }
+            // owner
             var _ownerElem = Utils.getChildXmlElement(_itemElem, 'owner');
             if (_ownerElem != null) {
                 _itemData.owner = _ownerElem.text();
             }
+            // group
             var _groupElem = Utils.getChildXmlElement(_itemElem, 'group');
             if (_groupElem != null) {
                 _itemData.group = _groupElem.text();
             }
+            // groupName
             var _groupNameElem = Utils.getChildXmlElement(_itemElem,
                                                           'groupname');
             if (_groupNameElem != null) {
                 _itemData.groupName = _groupNameElem.text();
             }
+            // column_name
             var _columnNameElem = Utils.getChildXmlElement(_itemElem,
                                                           'column_name');
             if (_columnNameElem != null) {
                 _itemData.columnName = _columnNameElem.text();
             }
+            // client
             var _clientElem = Utils.getChildXmlElement(_itemElem, 'client');
             if (_clientElem != null) {
                 _itemData.client = _clientElem.text();
             }
+            // status
             var _statusElem = Utils.getChildXmlElement(_itemElem, 'status');
             if (_statusElem != null) {
                 _itemData.status = parseInt(_statusElem.text());
             }
+            // updatedAt
             var _updatedAtElem = Utils.getChildXmlElement(_itemElem,
                                                           'updated_at');
             if (_updatedAtElem != null) {
                 _itemData.updatedAt = _updatedAtElem.text();
             }
+            // updatedBy
             var _updatedByElem = Utils.getChildXmlElement(_itemElem,
                                                           'updated_by');
             if (_updatedByElem != null) {
                 _itemData.updatedBy = _updatedByElem.text();
             }
+            // mailMessageId
             var _mailMessageIdElem = Utils.getChildXmlElement(_itemElem,
                                                               'mail_message_id');
             if (_mailMessageIdElem != null) {
                 _itemData.mailMessageId = _mailMessageIdElem.text();
             }
+            // mailInReplyTo
             var _mailInReplyToElem = Utils.getChildXmlElement(_itemElem,
                                                               'mail_in_reply_to');
             if (_mailInReplyToElem != null) {
                 _itemData.mailInReplyTo = _mailInReplyToElem.text();
             }
+            // deleteFlag
             var _deleteFlagElem = Utils.getChildXmlElement(_itemElem,
                                                            'delete_flag');
             if (_deleteFlagElem != null) {
                 _itemData.deleteFlag = parseInt(_deleteFlagElem.text());
             }
+            // note
             var _noteElem = Utils.getChildXmlElement(_itemElem, 'note');
             if (_noteElem != null) {
                 var _noteItemElemArray = Utils.getChildXmlElementArray(
                     _noteElem, 'item');
+                // noteCount noteItems
                 _itemData.noteCount = 0;
                 _itemData.noteItems = [];
                 if (_noteItemElemArray != null) {
@@ -2669,41 +2908,48 @@ limitations under the License.
                     for ( var _j = 0; _j < _itemData.noteCount; _j++) {
                         var _noteItemElem = _noteItemElemArray[_j];
                         var _noteData = {};
+                        // senderJid
                         var _noteSenderJidAttr = _noteItemElem
                             .attr('senderjid');
                         if (_noteSenderJidAttr != null) {
                             _noteData.senderJid = _noteSenderJidAttr.value();
                         }
+                        // date
                         var _noteDateAttr = _noteItemElem.attr('date');
                         if (_noteDateAttr != null) {
                             _noteData.date = _noteDateAttr.value();
                         }
+                        // body
                         _noteData.body = _noteItemElem.text();
                         _itemData.noteItems[_j] = _noteData;
                     }
                 }
             }
 
+            // reminder
             var _reminderElem = Utils.getChildXmlElement(_itemElem, 'reminder');
             if (_reminderElem != null) {
                 var _remingerItemElemArray = Utils.getChildXmlElementArray(
                     _reminderElem, 'item');
+                // reminderCount reminderItems
                 _itemData.reminderCount = 0;
                 _itemData.reminderItems = [];
                 if (_remingerItemElemArray != null) {
                     _itemData.reminderCount = _remingerItemElemArray.length;
                     for ( var _j = 0; _j < _itemData.reminderCount; _j++) {
                         var _reminderItemElem = _remingerItemElemArray[_j];
-                        _itemData.reminderItems[_j] = _reminderItemElem.text(); 
+                        _itemData.reminderItems[_j] = _reminderItemElem.text(); // 仕様が決まるまでの暫定
                     }
                 }
             }
 
+            // attached
             var _attachedElem = Utils.getChildXmlElement(_itemElem,
                                                          'attached_items');
             if (_attachedElem != null) {
                 var _attachedItemElemArray = Utils.getChildXmlElementArray(
                     _attachedElem, 'item');
+                // attachedCount attachedItems
                 _itemData.attachedCount = 0;
                 _itemData.attachedItems = [];
                 if (_attachedItemElemArray != null) {
@@ -2715,23 +2961,27 @@ limitations under the License.
                 }
             }
 
+            // context
             var _contextElem = Utils.getChildXmlElement(_itemElem, 'context');
             if (_contextElem != null) {
                 _itemData.context = _contextElem.text();
             }
 
+            // demandStatus
             var _demandStatusElem = Utils.getChildXmlElement(_itemElem,
                                                              'demand_status');
             if (_demandStatusElem != null) {
                 _itemData.demandStatus = parseInt(_demandStatusElem.text());
             }
 
+            // demandDate
             var _demandDateElem = Utils.getChildXmlElement(_itemElem,
                                                            'demand_date');
             if (_demandDateElem != null) {
                 _itemData.demandDate = _demandDateElem.text();
             }
 
+            // Quotation
             if(_itemData.type == MESSAGE_TYPE_PUBLIC_ID ||
                _itemData.type == MESSAGE_TYPE_CHAT_ID ||
                _itemData.type == MESSAGE_TYPE_GROUP_CHAT_ID ||
@@ -2746,29 +2996,36 @@ limitations under the License.
                    _quotationItemIdElem != null &&
                    _quotationItemIdElem.text() != ""){
                     const _idElem = Utils.getChildXmlElement(_quotationElem,'id');
+                    // id
                     if(_idElem != null){
                         _quotationJson.id = parseInt(_idElem.text());
                     }
+                    // shareItemId (値はmsgfromによる匿名状態にチェック後に設定)
                     _quotationJson.shareItemId = "";
+                    // msgtype
                     const _msgtypeElem = Utils.getChildXmlElement(_quotationElem,'msgtype');
                     if(_msgtypeElem != null){
                         _quotationJson.msgtype = parseInt(_msgtypeElem.text());
                     }
+                    // body
                     const _entryElem = Utils.getChildXmlElement(_quotationElem,'entry');
                     const _bodyElem = Utils.getChildXmlElement(_entryElem,'body');
                     if(_bodyElem != null){
                         _quotationJson.body = _bodyElem.text();
                     }
+                    // createdAt
                     const _createdAtElem = Utils.getChildXmlElement(_quotationElem,'created_at');
                     if( _createdAtElem != null){
                         _quotationJson.createdAt = _createdAtElem.text();
                     }
+                    // updatedAt
                     const _updatedAtElem = Utils.getChildXmlElement(_quotationElem,'updated_at');
                     if(_updatedAtElem != null){
                         _quotationJson.updatedAt = _updatedAtElem.text();
                     }
 
                     let isPublicFlg = false;
+                    //公開扱いのフラグを立てる
                     const _msgfromElem = Utils.getChildXmlElement(_quotationElem,'msgfrom');
                     const _userNameElem = Utils.getChildXmlElement(_quotationElem,'user_name');
                     const _privateFlagElem = Utils.getChildXmlElement(_quotationElem,'private_flag');
@@ -2780,12 +3037,16 @@ limitations under the License.
                         isPublicFlg = true;
                     }
 
+                    // shareItemId <= quotationItemId (分析アクセスには開示)
                     if(isPublicFlg && _quotationItemIdElem != null){
+                        //_quotationJson.quotationItemId = _quotationItemIdElem.text();
                         _quotationJson.shareItemId = _quotationItemIdElem.text();
                     }
+                    // msgfrom(分析アクセスには開示)
                     if(isPublicFlg && _msgfromElem != null){
                         _quotationJson.msgfrom = _msgfromElem.text();
                     }
+                    // msgto(分析アクセスには開示)
                     const _msgtoElem = Utils.getChildXmlElement(_quotationElem,'msgto');
                     if(isPublicFlg &&
                        _msgtypeElem != null &&
@@ -2801,27 +3062,33 @@ limitations under the License.
 
                     _quotationJson["personInfo"] = {};
                     if(isPublicFlg){
+                        //匿名時で無い時だけ引用元のPersonInfoをJsonに加える
                         const msgfrom = _msgfromElem.text();
                         _quotationJson["personInfo"][msgfrom] = {};
+                        //user_name(uid)
                         if(_userNameElem != null && _userNameElem.text().length > 4){
                             let _user_name = _userNameElem.text().substr(0, _userNameElem.text().length - 4);
                             _quotationJson["personInfo"][msgfrom]["userName"] = _user_name;
                         }else if(_userNameElem.text().length == 0){
                             _quotationJson["personInfo"][msgfrom]["userName"] = "";
                         }
+                        //nickname
                         const _nicknameElem = Utils.getChildXmlElement(_quotationElem,'nickname');
                         if(_nicknameElem != null){
                             _quotationJson["personInfo"][msgfrom]["nickName"] = _nicknameElem.text();
                         }
+                        //photo_type
                         const _photoTypeElem = Utils.getChildXmlElement(_quotationElem,'photo_type');
                         if(_photoTypeElem != null){
                             _quotationJson["personInfo"][msgfrom]["avatarType"] = _photoTypeElem.text();
                         }
+                        //photo_data
                         const _photoDataElem = Utils.getChildXmlElement(_quotationElem,'photo_data');
                         if(_photoDataElem != null){
                             _quotationJson["personInfo"][msgfrom]["avatarData"] = _photoDataElem.text();
                         }
                     }
+                    //
                     if(_quotationJson.body != null){
                         _getShortenUrlInfo(_quotationJson, false);
                     }
@@ -2829,12 +3096,15 @@ limitations under the License.
                 _itemData.quotation = _quotationJson;
             }
 
+            // EmotionPoint(非同期処理が必要なのでここで)
             _getEmotionPointData();
             function _getEmotionPointData() {
                 _log.connectionLog(7, "do func  SynchronousBridgeNodeXmpp._getItemDataFromMessageItemElem._createItem._getEmotionPointData(...");
+                // emotionPoint
                 let _emotionPointElem = Utils.getChildXmlElement(_itemElem, 'emotionpoint');
                 if(_emotionPointElem != null) {
                     var _emotionPointItemElemArray = Utils.getChildXmlElementArray(_emotionPointElem, 'item');
+                    // emotionPointCount emotionPointItems
                     _itemData.emotionPointCount = 0;
                     _itemData.emotionPointItems = [];
                     _itemData.emotionPointIcons = JSON.parse(EMOTION_POINT_BASIC_ICON);
@@ -2848,38 +3118,47 @@ limitations under the License.
                         for(var _j = 0; _j < _itemData.emotionPointCount; _j++) {
                             var _emotionPointItemElem = _emotionPointItemElemArray[_j];
                             var _emotionPointData = {};
+                            // emotion_point
                             var _emotionPointEmotionPointAttr = _emotionPointItemElem.attr('emotion_point');
                             if(_emotionPointEmotionPointAttr != null) {
                                 _emotionPointData.emotionPoint = parseInt(_emotionPointEmotionPointAttr.value());
                             }
+                            // fromJid
                             var _emotionPointFromJidAttr = _emotionPointItemElem.attr('fromjid');
                             if(_emotionPointFromJidAttr != null) {
                                 _emotionPointData.fromJid = _emotionPointFromJidAttr.value();
                             }
+                            // fromName
                             var _emotionPointFromNameAttr = _emotionPointItemElem.attr('fromname');
                             if(_emotionPointFromNameAttr != null) {
                                 _emotionPointData.fromName = _emotionPointFromNameAttr.value();
                             }
+                            // created_at
                             var _emotionPointCreatedAtAttr = _emotionPointItemElem.attr('created_at');
                             if(_emotionPointCreatedAtAttr != null) {
                                 _emotionPointData.createdAt = _emotionPointCreatedAtAttr.value();
                             }
+                            // updated_at
                             var _emotionPointUpdatedAtAttr = _emotionPointItemElem.attr('updated_at');
                             if(_emotionPointUpdatedAtAttr != null) {
                                 _emotionPointData.updatedAt = _emotionPointUpdatedAtAttr.value();
                             }
+                            // nickName
                             var _nickNameElem = Utils.getChildXmlElement(_emotionPointItemElem, 'nickname');
                             if(_nickNameElem != null) {
                                 _emotionPointData.nickName = _nickNameElem.text();
                             }
+                            // avatarData
                             var _avatarDataElem = Utils.getChildXmlElement(_emotionPointItemElem, 'avatardata');
                             if(_avatarDataElem != null) {
                                 _emotionPointData.avatarData = _avatarDataElem.text();
                             }
+                            // avatarType
                             var _avatarTypeElem = Utils.getChildXmlElement(_emotionPointItemElem, 'avatartype');
                             if(_avatarTypeElem != null) {
                                 _emotionPointData.avatarType = _avatarTypeElem.text();
                             }
+                            // status
                             var _statusElem = Utils.getChildXmlElement(_emotionPointItemElem, 'status');
                             if(_statusElem != null) {
                                 _emotionPointData.status = parseInt(_statusElem.text());
@@ -2887,9 +3166,11 @@ limitations under the License.
                             _jidList.push(_emotionPointData.fromJid);
                             _itemData.emotionPointItems[_j] = _emotionPointData;
                         }
+                        // アカウントを取得する
                         if(_jidList.length > 0) {
                             UserAccountUtils.getLoginAccountListByJidList(_jidList, _onGetUserAccountDataCallBackForEmotionPoint);
                         } else {
+                            // jid一覧がない場合はEmotionPoint項目終了
                             _onGetEmotionPoint();
                             return;
                         }
@@ -2907,10 +3188,12 @@ limitations under the License.
                     _onGetEmotionPoint();
                 }
                 function _onGetEmotionPoint(){
+                    //感情ポイントはタスクにはつけない
                     if(_itemData.type == MESSAGE_TYPE_PUBLIC_ID ||
                        _itemData.type == MESSAGE_TYPE_CHAT_ID ||
                        _itemData.type == MESSAGE_TYPE_GROUP_CHAT_ID ||
                        _itemData.type == MESSAGE_TYPE_COMMUNITY_ID){
+                        //qmotion_point_icon
                         let _emotionPointIconJsonElem = Utils.getChildXmlElement(_itemElem,'emotion_point_icon');
                         try{
                             if(_emotionPointIconJsonElem == undefined ||
@@ -2928,16 +3211,20 @@ limitations under the License.
                             _itemData.emotionPointIcons = {};
                         }
                     }
+                    // 次は兄弟GoodJob情報()
                     _getGoodJobData();
                 }
             }
 
 
+            // GoodJob(非同期処理が必要なのでここで)
             function _getGoodJobData() {
                 _log.connectionLog(7, "do func  SynchronousBridgeNodeXmpp._getItemDataFromMessageItemElem._createItem._getGoodJobData(...");
+                // goodJob
                 var _goodJobElem = Utils.getChildXmlElement(_itemElem, 'goodjob');
                 if(_goodJobElem != null) {
                     var _goodJobItemElemArray = Utils.getChildXmlElementArray(_goodJobElem, 'item');
+                    // goodJobCount goodJobItems
                     _itemData.goodJobCount = 0;
                     _itemData.goodJobItems = [];
 
@@ -2951,30 +3238,37 @@ limitations under the License.
                         for(var _j = 0; _j < _itemData.goodJobCount; _j++) {
                             var _goodJobItemElem = _goodJobItemElemArray[_j];
                             var _goodJobData = {};
+                            // fromJid
                             var _goodJobFromJidAttr = _goodJobItemElem.attr('fromjid');
                             if(_goodJobFromJidAttr != null) {
                                 _goodJobData.fromJid = _goodJobFromJidAttr.value();
                             }
+                            // fromName
                             var _goodJobFromNameAttr = _goodJobItemElem.attr('fromname');
                             if(_goodJobFromNameAttr != null) {
                                 _goodJobData.fromName = _goodJobFromNameAttr.value();
                             }
+                            // date
                             var _goodJobDateAttr = _goodJobItemElem.attr('date');
                             if(_goodJobDateAttr != null) {
                                 _goodJobData.date = _goodJobDateAttr.value();
                             }
+                            // nickName
                             var _nickNameElem = Utils.getChildXmlElement(_goodJobItemElem, 'nickname');
                             if(_nickNameElem != null) {
                                 _goodJobData.nickName = _nickNameElem.text();
                             }
+                            // avatarData
                             var _avatarDataElem = Utils.getChildXmlElement(_goodJobItemElem, 'avatardata');
                             if(_avatarDataElem != null) {
                                 _goodJobData.avatarData = _avatarDataElem.text();
                             }
+                            // avatarType
                             var _avatarTypeElem = Utils.getChildXmlElement(_goodJobItemElem, 'avatartype');
                             if(_avatarTypeElem != null) {
                                 _goodJobData.avatarType = _avatarTypeElem.text();
                             }
+                            // status
                             var _statusElem = Utils.getChildXmlElement(_goodJobItemElem, 'status');
                             if(_statusElem != null) {
                                 _goodJobData.status = parseInt(_statusElem.text());
@@ -2983,9 +3277,11 @@ limitations under the License.
 
                             _itemData.goodJobItems[_j] = _goodJobData;
                         }
+                        // アカウントを取得する
                         if(_jidList.length > 0) {
                             UserAccountUtils.getLoginAccountListByJidList(_jidList, _onGetUserAccountDataCallBackForGoodJob);
                         } else {
+                            // jid一覧がない場合はGoodJob項目終了
                             _onGetGoodJob();
                             return;
                         }
@@ -3003,15 +3299,19 @@ limitations under the License.
                     _onGetGoodJob();
                 }
                 function _onGetGoodJob(){
+                    // 次は兄弟タスク情報
                     _getNoteData();
                 }
             }
 
+            // Note(非同期処理が必要なのでここで)
             function _getNoteData() {
                 _log.connectionLog(7, "do func  SynchronousBridgeNodeXmpp._getItemDataFromMessageItemElem._createItem._getNoteData(...");
+                // note
                 let _noteElem = Utils.getChildXmlElement(_itemElem, 'note_codimd');
                 if(_noteElem != null) {
                     var _noteItemElemArray = Utils.getChildXmlElementArray(_noteElem, 'item');
+                    // noteCount noteItems
                     _itemData.noteCount = 0;
                     _itemData.noteItems = [];
                     if(_noteItemElemArray != null) {
@@ -3024,26 +3324,32 @@ limitations under the License.
                         for(var _j = 0; _j < _itemData.noteCount; _j++) {
                             var _noteItemElem = _noteItemElemArray[_j];
                             var _noteData = {};
+                            // note_title
                             var _noteTitleAttr = _noteItemElem.attr('note_title');
                             if(_noteTitleAttr != null) {
                                 _noteData.noteTitle = _noteTitleAttr.value();
                             }
+                            // note_url
                             var _noteUrlAttr = _noteItemElem.attr('note_url');
                             if(_noteUrlAttr != null) {
                                 _noteData.noteUrl = _noteUrlAttr.value();
                             }
+                            // thread_root_id
                             var _threadRoorIdAttr = _noteItemElem.attr('thread_root_id');
                             if(_threadRoorIdAttr != null) {
                                 _noteData.threadRoorId = _threadRoorIdAttr.value();
                             }
+                            // ownjid
                             var _ownJidAttr = _noteItemElem.attr('ownjid');
                             if(_ownJidAttr != null) {
                                 _noteData.ownJid = _ownJidAttr.value();
                             }
+                            // created_at
                             var _noteCreatedAtAttr = _noteItemElem.attr('created_at');
                             if(_noteCreatedAtAttr != null) {
                                 _noteData.createdAt = _noteCreatedAtAttr.value();
                             }
+                            // updated_at
                             var _noteUpdatedAtAttr = _noteItemElem.attr('updated_at');
                             if(_noteUpdatedAtAttr != null) {
                                 _noteData.updatedAt = _noteUpdatedAtAttr.value();
@@ -3051,6 +3357,7 @@ limitations under the License.
                             _jidList.push(_noteData.fromJid);
                             _itemData.noteItems[_j] = _noteData;
                         }
+                        // Note項目終了
                         _onGetNote();
                         return;
                     }
@@ -3059,16 +3366,20 @@ limitations under the License.
                     return;
                 }
                 function _onGetNote(){
+                    // 次は_getSiblingItems()
                     _getSiblingItems();
                 }
             }
 
+            // sibling(非同期処理が必要なのでここで)
             function _getSiblingItems() {
                 _log.connectionLog(7, "do func  SynchronousBridgeNodeXmpp._getItemDataFromMessageItemElem._createItem._getSiblingItems(...");
                 doGetSibling = true;
+                // sibling
                 var _siblingElem = Utils.getChildXmlElement(_itemElem, 'sibling');
                 if(_siblingElem != null) {
                     var _siblingItemElemArray = Utils.getChildXmlElementArray(_siblingElem, 'item');
+                    // siblingCount siblingItems
                     _itemData.siblingCount = 0;
                     _itemData.siblingItems = [];
                     if(_siblingItemElemArray != null) {
@@ -3081,34 +3392,42 @@ limitations under the License.
                         for(var _j = 0; _j < _itemData.siblingCount; _j++) {
                             var _siblingItemElem = _siblingItemElemArray[_j];
                             var _siblingData = {};
+                            // siblingItemId
                             var _siblingItemIdAttr = _siblingItemElem.attr('siblingitemid');
                             if(_siblingItemIdAttr != null) {
                                 _siblingData.siblingItemId = _siblingItemIdAttr.value();
                             }
+                            // ownerJid
                             var _siblingOwnerJidAttr = _siblingItemElem.attr('ownerjid');
                             if(_siblingOwnerJidAttr != null) {
                                 _siblingData.ownerJid = _siblingOwnerJidAttr.value();
                             }
+                            // ownerName
                             var _siblingOwnerNameAttr = _siblingItemElem.attr('ownername');
                             if(_siblingOwnerNameAttr != null) {
                                 _siblingData.ownerName = _siblingOwnerNameAttr.value();
                             }
+                            // status
                             var _siblingStatusAttr = _siblingItemElem.attr('status');
                             if(_siblingStatusAttr != null) {
                                 _siblingData.status = parseInt(_siblingStatusAttr.value());
                             }
+                            // nickName
                             var _nickNameElem = Utils.getChildXmlElement(_siblingItemElem, 'nickname');
                             if(_nickNameElem != null) {
                                 _siblingData.nickName = _nickNameElem.text();
                             }
+                            // avatarData
                             var _avatarDataElem = Utils.getChildXmlElement(_siblingItemElem, 'avatardata');
                             if(_avatarDataElem != null) {
                                 _siblingData.avatarData = _avatarDataElem.text();
                             }
+                            // avatarType
                             var _avatarTypeElem = Utils.getChildXmlElement(_siblingItemElem, 'avatartype');
                             if(_avatarTypeElem != null) {
                                 _siblingData.avatarType = _avatarTypeElem.text();
                             }
+                            // status
                             var _userStatusElem = Utils.getChildXmlElement(_siblingItemElem, 'status');
                             if(_userStatusElem != null) {
                                 _siblingData.userStatus = parseInt(_userStatusElem.text());
@@ -3117,9 +3436,11 @@ limitations under the License.
 
                             _itemData.siblingItems[_j] = _siblingData;
                         }
+                        // アカウントを取得する
                         if(_jidList.length > 0) {
                             UserAccountUtils.getLoginAccountListByJidList(_jidList, _onGetUserAccountDataCallBackForSibling);
                         } else {
+                            // jid一覧がない場合はsibling項目終了
                             _onGetSiblingItems();
                             return;
                         }
@@ -3137,16 +3458,20 @@ limitations under the License.
                     _onGetSiblingItems();
                 }
                 function _onGetSiblingItems(){
+                    // 次は既読情報
                     _getReadItemsData();
                 }
             }
 
+            // readItems(非同期処理が必要なのでここで)
             function _getReadItemsData() {
                 _log.connectionLog(7, "do func  SynchronousBridgeNodeXmpp._getItemDataFromMessageItemElem._createItem._getReadItemsData(...");
+                // readflg
                 var _readFlgElem = Utils.getChildXmlElement(_itemElem, 'readflg');
                 if(_readFlgElem != null) {
                     _itemData.readFlg = parseInt(_readFlgElem.text());
                 }
+                //readItems
                 var _readItemsElem = Utils.getChildXmlElement(_itemElem, 'readItems');
                 if(_readItemsElem != null) {
                     var _readItemElemArray = Utils.getChildXmlElementArray(_readItemsElem, 'item');
@@ -3162,12 +3487,15 @@ limitations under the License.
                     if(items != null){
                         _itemData.readItems = items;
                     }
+                    // 次はコンタクトリスト改善 PERSON_INFO対応
                     _getPersonInfo();
                 }
             }
 
+            // personInfo(非同期処理が必要なのでここで)
             function _getPersonInfo() {
                 _log.connectionLog(7, "do func  SynchronousBridgeNodeXmpp._getItemDataFromMessageItemElem._createItem._getPersonInfo(...");
+                // コンタクトリスト改善 PERSON_INFO対応
                 var _personInfoElem = Utils.getChildXmlElement(_itemElem, 'person_info');
                 _getPersonInfoItemsFromPersonInfoElement(_personInfoElem, _onGetPersonInfoItemsFromPersonInfoElement);
                 function _onGetPersonInfoItemsFromPersonInfoElement(personInfoItems){
@@ -3178,8 +3506,15 @@ limitations under the License.
                 }
             }
 
+            /**
+             * 短縮URI情報を取得する(非同期処理が必要なのでここで)
+             *
+             * @param {object} _m_itemData APIレスポンスで返すJsonの値、前段階でデータが入っている条件で利用
+             * @param {bool} isNext 関数の最後で連続関数実行を標準とするためそれ以外の用途の為に次の関数の実行をスイッチ化した
+             */
             function _getShortenUrlInfo(_m_itemData, isNext) {
                 _log.connectionLog(7, "do func  SynchronousBridgeNodeXmpp._getItemDataFromMessageItemElem._createItem._getShortenUrlInfo(...");
+                // 短縮URL情報
                 var _urlObj = _getURLs(_m_itemData.body);
                 var _shortenURLInfoArray = new Array();
                 if (_urlObj == null) {
@@ -3198,11 +3533,13 @@ limitations under the License.
                         if (_iURL >= _maxURL) {
                             _log.connectionLog(7, 'leave loopShortenURL');
                             _log.connectionLog(7, 'shortenURLInfo.length=' + _shortenURLInfoArray.length);
+                            // 全てデータを取ったので次へ
                             _onGetShortenUrlInfo(_shortenURLInfoArray);
                             return;
                         }
                         ShortenURLUtils.getURLInfoFromOriginalURL(_urlObj[_iURL], cbLoopShortenURL);
 
+                        // 短縮URL登録のコールバック
                         function cbLoopShortenURL(err, shortenObj) {
                             _log.connectionLog(7, 'enter cbLoopShortenURL');
                             if (err != null) {
@@ -3212,13 +3549,16 @@ limitations under the License.
                                     _log.connectionLog(3, 'SynchronouseBridgeNode#cbLoopShortenURL detect error: ' + err.name + ":" + err.message);
                                 }
                             } else if (shortenObj == null) {
+                                // DBに当該短縮URL情報がなかったら、次のURLを調べる
                                 _log.connectionLog(7, 'leave cbLoopShortenURL; not found ' + _urlObj[_iURL]);
                             } else {
+                                // 短縮URL情報を付加
                                 _log.connectionLog(7, 'cbLoopShortenURL get url information:' + shortenObj.getOriginalURL());
                                 _shortenURLInfoArray.push(shortenObj);
                             }
                             _iURL++;
                             _log.connectionLog(7, 'call loopShortenURL');
+                            // 次のループへ
                             loopShortenURL();
                         }
                     }
@@ -3227,12 +3567,14 @@ limitations under the License.
                     _log.connectionLog(7, 'shortenURLInfo.length=' + shortenURLInfoArray.length);
                     _m_itemData.shortenItems = shortenURLInfoArray;
                     _m_itemData.shortenUrlCount = shortenURLInfoArray.length;
+                    // 次へ
                     if(isNext){
                         _getConvertFileInfo();
                     }
                 }
             }
 
+            // 加工ファイル情報
             function _getConvertFileInfo(){
                 _log.connectionLog(7, "do func  SynchronousBridgeNodeXmpp._getItemDataFromMessageItemElem._createItem._getConvertFileInfo(...");
                 var _urlObj = _getAttachedURLs(_itemData.body);
@@ -3252,10 +3594,12 @@ limitations under the License.
                 function _loopConvertFileInfo(){
                     if (_iURL >= _maxURL) {
                         _log.connectionLog(7, 'loopConvertFileInfo : convertFileInfo.length=' + _convertFileInfoAry.length);
+                        // 全てデータを取ったので次へ
                         _onGetConvertFileInfo();
                         return;
                     }
                     _log.connectionLog(7, 'loopConvertFileInfo:URL=' + _urlObj[_iURL]);
+                    // 加工済みファイル情報の取得
                     _getConvertFileItem(tenantUuid, _urlObj[_iURL], _onGetConvertFileItem);
                 }
 
@@ -3274,6 +3618,7 @@ limitations under the License.
                     _log.connectionLog(7, '_onGetConvertFileInfo:' + _convertFileInfoAry);
                     _itemData.convertFileItems = _convertFileInfoAry;
                     _itemData.convertFileItemCount = _convertFileInfoAry.length;
+                    // 次へ
                     _returnCallback();
                 }
             }
@@ -3295,6 +3640,7 @@ limitations under the License.
         return true;
     }
 
+    // 既読者ItemのXMPP配列からJSONオブジェクトを取得する
     function _getExistingReaderItemsFromExistingReaderElementArray(
         existingReaderItemsArray, onGetExistingReaderItemsCallBack) {
         _log.connectionLog(7, "do func  SynchronousBridgeNodeXmpp._getExistingReaderItemsFromExistingReaderElementArray(...");
@@ -3354,6 +3700,7 @@ limitations under the License.
         return true;
     }
 
+    // 既読者情報をXMPPから取得する
     function _getMessageExistingReaderItemFromItemElement(itemElem,
                                                           onGetItemDataCallBack) {
         if (itemElem == null) {
@@ -3372,22 +3719,27 @@ limitations under the License.
         }
         var _itemElem = itemElem;
         var _itemData = {};
+        // jid
         var _jidElem = Utils.getChildXmlElement(_itemElem, 'jid');
         if (_jidElem != null) {
             _itemData.jid = _jidElem.text();
         }
+        // nickName
         var _nickNameElem = Utils.getChildXmlElement(_itemElem, 'nickname');
         if (_nickNameElem != null) {
             _itemData.nickName = _nickNameElem.text();
         }
+        // avatarData
         var _avatarDataElem = Utils.getChildXmlElement(_itemElem, 'avatardata');
         if (_avatarDataElem != null) {
             _itemData.avatarData = _avatarDataElem.text();
         }
+        // avatarType
         var _avatarTypeElem = Utils.getChildXmlElement(_itemElem, 'avatartype');
         if (_avatarTypeElem != null) {
             _itemData.avatarType = _avatarTypeElem.text();
         }
+        // date
         var _dateElem = Utils.getChildXmlElement(_itemElem, 'date');
         if (_dateElem != null) {
             _itemData.date = _dateElem.text();
@@ -3398,6 +3750,7 @@ limitations under the License.
         return true;
     }
 
+    // XMPPのperson_infoエレメントからpersonInfo項目を取り出す。
     function _getPersonInfoItemsFromPersonInfoElement(personInfoElement, onGetPersonInfoItemsCallBack){
         var _ret = {};
         function _returnCallBack() {
@@ -3410,6 +3763,7 @@ limitations under the License.
             }
         }
         if(personInfoElement == null) {
+            // ない場合はなにもしない
             _log.connectionLog(6, '_getPersonInfoItemsFromPersonInfoElement :: personInfoElement is null');
             _returnCallBack();
             return;
@@ -3419,24 +3773,29 @@ limitations under the License.
         var _jidList = [];
         for(var _i = 0; _i < _count; _i++) {
             var _itemElem = _personInfoDataArray[_i];
+            // jid
             var _jidElem = Utils.getChildXmlElement(_itemElem, 'jid');
             if(_jidElem == null) {
                 continue;
             }
             var _jidStr = _jidElem.text();
             var _personInfoData = {};
+            // nickName
             var _nickNameElem = Utils.getChildXmlElement(_itemElem, 'nickname');
             if(_nickNameElem != null) {
                 _personInfoData.nickName = _nickNameElem.text();
             }
+            // avatarData
             var _avatarDataElem = Utils.getChildXmlElement(_itemElem, 'avatardata');
             if(_avatarDataElem != null) {
                 _personInfoData.avatarData = _avatarDataElem.text();
             }
+            // avatarType
             var _avatarTypeElem = Utils.getChildXmlElement(_itemElem, 'avatartype');
             if(_avatarTypeElem != null) {
                 _personInfoData.avatarType = _avatarTypeElem.text();
             }
+            // status
             var _statusElem = Utils.getChildXmlElement(_itemElem, 'status');
             if(_statusElem != null) {
                 _personInfoData.status = parseInt(_statusElem.text());
@@ -3448,6 +3807,7 @@ limitations under the License.
         if(_jidList.length > 0) {
             UserAccountUtils.getLoginAccountListByJidList(_jidList, _onGetUserAccountDataCallBack);
         } else {
+            // jid一覧がない場合は応答する
             _returnCallBack();
             return;
         }
@@ -3457,6 +3817,7 @@ limitations under the License.
                 var _jidDataStr = _jidList[_i];
                 var _personInfoData = _ret[_jidDataStr];
                 if(_personInfoData == null) {
+                    // 戻りのデータとして存在しないので次へ（異常系）
                     continue;
                 }
                 _personInfoData.userName = mapData[_jidDataStr];
@@ -3465,12 +3826,14 @@ limitations under the License.
         }
     }
 
+    // メッセージ取得時の応答および、通知でitemsの情報にcubeeアカウント情報を付ける
     function _appendCubeeAccountForGetMessageResponseOrNotification(items,
                                                                     callbackFunc) {
         if (items == null) {
             _returnCallback();
             return;
         }
+        // 取得するアカウントのjid一覧を作成する
         var _jidList = [];
         var _jidHash = {};
         var _itemCount = items.length;
@@ -3482,10 +3845,12 @@ limitations under the License.
                 _jidHash[_jid] = true;
             }
         }
+        // jid一覧からアカウント情報を取得して応答データに付ける
         if (_jidList.length > 0) {
             UserAccountUtils.getLoginAccountListByJidList(_jidList,
                                                           _onGetUserAccountDataCallBack);
         } else {
+            // jid一覧がない場合は応答する
             _returnCallback();
             return;
         }
@@ -3511,6 +3876,7 @@ limitations under the License.
             return null;
         }
         var _itemElem = itemElem;
+        // id
         var _idElem = Utils.getChildXmlElement(_itemElem, 'id');
         if (_idElem == null) {
             _log.connectionLog(7, 'Message : id');
@@ -3518,18 +3884,21 @@ limitations under the License.
         }
         var _itemData = {};
         _itemData.id = parseInt(_idElem.text());
+        // itemId
         var _itemIdElem = Utils.getChildXmlElement(_itemElem, 'item_id');
         if (_itemIdElem == null) {
             _log.connectionLog(7, 'Message : itemId');
             return null;
         }
         _itemData.itemId = _itemIdElem.text();
+        // jid
         var _jidElem = Utils.getChildXmlElement(_itemElem, 'jid');
         if (_jidElem == null) {
             _log.connectionLog(7, 'Message : jid');
             return null;
         }
         _itemData.jid = _jidElem.text();
+        // mailBody
         var _mailBodyElem = Utils.getChildXmlElement(_itemElem, 'mail_body');
         if (_mailBodyElem == null) {
             _log.connectionLog(7, 'Message : mailBody');
@@ -3539,6 +3908,7 @@ limitations under the License.
         return _itemData;
     }
 
+    // メッセージの送信
     _proto.sendMessage = function(accessToken, requestData,
                                   onSendMessageCallBackFunc) {
         _log.connectionLog(7, 'do func SynchronousBridgeNodeXmpp.sendMessage');
@@ -3572,8 +3942,10 @@ limitations under the License.
         var _iURL = 0;
         var _urlObj = null;
         if(_type == RequestData.SEND_MESSAGE_TYPE_MAIL) {
+            // メールの場合はすぐにOpenfireに登録送信
             _ret = _onRegisterShortenUrl();
         } else {
+            // 短縮URLの登録
             _log.connectionLog(7, '***requestData.body = ' + requestData.body);
             _urlObj = _getURLs(requestData.body);
             if (_urlObj != null) {
@@ -3583,9 +3955,11 @@ limitations under the License.
             var _ret = true;
             if (_urlObj != null) {
                 setTimeout(function() {
+                    // 短縮URL登録LOOP
                     _loopGetURLIDSend();
                 }, 1);
             } else {
+                // 短縮URLの登録が不要な場合はそのまま処理を続行する
                 _ret = _onRegisterShortenUrl();
             }
         }
@@ -3595,11 +3969,13 @@ limitations under the License.
             _log.connectionLog(7, 'do func SynchronousBridgeNodeXmpp.sendMessage._loopGetURLIDSend(..');
             _log.connectionLog(7, 'enter _loopGetURLIDSend, _iURL = ' + _iURL);
             if (_iURL >= _maxURL) {
+                // 登録完了
                 _onRegisterShortenUrl();
                 return;
             }
             ShortenURLUtils.getURLID(_urlObj[_iURL], onGetURLIDSend);
 
+            // 短縮URL登録のコールバック
             function onGetURLIDSend(err, urlid) {
                 if (err != null) {
                     if (typeof err == 'string') {
@@ -3616,6 +3992,7 @@ limitations under the License.
                     _log.connectionLog(7, 'enter _loopGetURLIDSend, urlid = null' );
                 }
                 _iURL++;
+                // 次のループへ
                 _loopGetURLIDSend();
             }
         }
@@ -3627,12 +4004,15 @@ limitations under the License.
                 _log.connectionLog(3, '_xsConn is null');
                 return false;
             }
+            //threadTitleの値チェック(空または値のフォーマットが適切でない)
             requestData.threadTitle = Formatting.exTrim(requestData.threadTitle);
             if(!Validation.threadTitleValidationCheck(requestData.threadTitle, false)){
                 _log.connectionLog(7, 'SynchronousBridgeNodeXmpp.sendMessage._onRegisterShortenUrl(.. '
                                     + 'threadTitle is invalid:' + requestData.threadTitle);
                 return false;
             }
+            //引用メッセージ元のitemId である quotationItemIdをチェック
+            //通常のメッセーじのためkeyが存在しない場合はそのまま通し、キーがある場合は値をチェック
             requestData.quotationItemId = undefined;
             if(requestData.shareItemId != undefined &&
                requestData.shareItemId != null &&
@@ -3822,6 +4202,7 @@ limitations under the License.
                     }
                     break;
                 case RequestData.SEND_MESSAGE_TYPE_MAIL:
+                        /* DO NOTHING */
                     break;
                 case RequestData.SEND_MESSAGE_TYPE_PUBLIC:
                 case RequestData.SEND_MESSAGE_TYPE_CHAT:
@@ -3974,6 +4355,12 @@ limitations under the License.
         }
     };
 
+    /**
+     * メッセージ本文、 添付の更新
+     *
+     * @param acessToken
+     * @param requestData
+     */
     _proto.updateMessageBody = function(accessToken, requestData,
                                         onSendMessageCallBackFunc, apiUtil) {
         _log.connectionLog(7, 'do func SynchronousBridgeNodeXmpp.updateMessageBody');
@@ -4032,6 +4419,7 @@ limitations under the License.
         var _iURL = 0;
         var _urlObj = null;
 
+        // 短縮URLの登録
         _log.connectionLog(7, '***requestData.body = ' + requestData.body);
         _urlObj = _getURLs(requestData.body);
         if (_urlObj != null) {
@@ -4041,9 +4429,11 @@ limitations under the License.
         var _ret = true;
         if (_urlObj != null) {
             setTimeout(function() {
+                // 短縮URL登録LOOP
                 _ret = _loopGetURLIDSend();
             }, 1);
         } else {
+            // 短縮URLの登録が不要な場合はそのまま処理を続行する
             _ret = _onRegisterShortenUrl();
         }
 
@@ -4053,11 +4443,13 @@ limitations under the License.
             _log.connectionLog(7, 'do func SynchronousBridgeNodeXmpp.updateMessageBody._loopGetURLIDSend(..');
             _log.connectionLog(7, 'enter _loopGetURLIDSend, _iURL = ' + _iURL);
             if (_iURL >= _maxURL) {
+                // 登録完了
                 _onRegisterShortenUrl();
                 return;
             }
             ShortenURLUtils.getURLID(_urlObj[_iURL], onGetURLIDSend);
 
+            // 短縮URL登録のコールバック
             function onGetURLIDSend(err, urlid) {
                 if (err != null) {
                     if (typeof err == 'string') {
@@ -4074,6 +4466,7 @@ limitations under the License.
                     _log.connectionLog(7, 'enter _loopGetURLIDSend, urlid = null' );
                 }
                 _iURL++;
+                // 次のループへ
                 _loopGetURLIDSend();
             }
         }
@@ -4218,6 +4611,7 @@ limitations under the License.
             }
         }
     };
+    // メッセージ送信応答からcontentエレメントを抽出する
     function _getContentElemFromSendOrUpdateMessageResponse(
             responceXmlRootElem, namespace) {
         var _ret = null;
@@ -4227,6 +4621,7 @@ limitations under the License.
                             '_getContentElemFromSendOrUpdateMessageResponse :: xmlRootElem is null');
             return _ret;
         }
+        // <messasge>
         var _messageElem = Utils.getChildXmlElement(responceXmlRootElem,
                 'message');
         if (_messageElem == null) {
@@ -4243,6 +4638,7 @@ limitations under the License.
                             '_getContentElemFromSendOrUpdateMessageResponse :: _messgeElemNamespace is not "send"');
             return _ret;
         }
+        // <content>
         var _contentElem = Utils.getChildXmlElement(_messageElem, 'content');
         if (_contentElem == null) {
             _log
@@ -4264,6 +4660,7 @@ limitations under the License.
                             '_getItemsFromSendOrUpdateMessageResponceContent :: contentElem is null');
             return _ret;
         }
+        // <items>
         var _itemsElem = Utils.getChildXmlElement(contentElem, 'items');
         if (_itemsElem == null) {
             _log
@@ -4271,6 +4668,7 @@ limitations under the License.
                             '_getItemsFromSendOrUpdateMessageResponceContent :: _itemsElem is null');
             return _ret;
         }
+        // <item>
         var _itemElemArray = Utils.getChildXmlElementArray(_itemsElem, 'item');
         if (_itemElemArray == null) {
             _log
@@ -4290,18 +4688,21 @@ limitations under the License.
                 3,'_getItemsFromSendOrUpdateMessageResponceContent :: contentElem is null');
             return _ret;
         }
+        // <items>
         var _itemsElem = Utils.getChildXmlElement(contentElem, 'items');
         if (_itemsElem == null) {
             _log.connectionLog(
                 3,'_getItemsFromSendOrUpdateMessageResponceContent :: _itemsElem is null');
             return _ret;
         }
+        // <item>
         var _itemElemArray = Utils.getChildXmlElement(_itemsElem, 'item');
         if (_itemElemArray == null) {
             _log.connectionLog(
                 3,'_getItemsFromSendOrUpdateMessageResponceContent :: _itemElemArray is null');
             return _ret;
         }
+        // <item_id>
         var _itemIdElemArray = Utils.getChildXmlElement(_itemElemArray, 'item_id');
         if (_itemIdElemArray == null) {
             _log.connectionLog(
@@ -4312,6 +4713,7 @@ limitations under the License.
         return _itemIdElemArray;
     }
 
+    // タスク追加応答のExtras項目の作成
     function _getExtrasFromTaskAddOrUpdateResponceContent(tenantUuid, contentElem,
             onGetExtrasFromTaskAddOrUpdateCallBack) {
         var _ret = false;
@@ -4329,6 +4731,7 @@ limitations under the License.
                             '_getExtrasFromTaskAddOrUpdateResponceContent :: onGetExtrasFromTaskAddOrUpdateCallBack is invalid');
             return false;
         }
+        // <extras>
         var _extrasElem = Utils.getChildXmlElement(contentElem, 'extras');
         if (_extrasElem == null) {
             _log
@@ -4336,6 +4739,7 @@ limitations under the License.
                             '_getExtrasFromTaskAddOrUpdateResponceContent :: _itemsElem is null');
             return _ret;
         }
+        // <children_items>
         var _childrenItemsElem = Utils.getChildXmlElement(_extrasElem,
                 'children_items');
         if (_childrenItemsElem == null) {
@@ -4362,6 +4766,7 @@ limitations under the License.
         }
     }
 
+    // メッセージの更新
     _proto.updateMessage = function(accessToken, requestData,
             onUpdateMessageCallBackFunc) {
         _log.connectionLog(7, 'do func SynchronousBridgeNodeXmpp.updateMessage');
@@ -4398,6 +4803,7 @@ limitations under the License.
         switch (_type) {
         case RequestData.UPDATE_MESSAGE_TYPE_TASK:
             var _taskData = requestData;
+             // 短縮URLの登録
             var _maxURL = 0;
             var _iURL = 0;
             var _urlObj= _getURLs(_taskData.body);
@@ -4413,6 +4819,7 @@ limitations under the License.
                 _log.connectionLog(7, 'enter _loopGetURLIDUpdate, _iURL = ' + _iURL);
                 if (_iURL >= _maxURL) {
                     _log.connectionLog(7, 'leave _loopGetURLIDUpdate');
+                    // URL登録完了なのでOpenfireに更新要求を送信
                     _xmppUpdateMessage = XmppUtils.checkCreateXmppData(_xsConn, function() {
                         return Xmpp.createUpdateMessageXmpp(_xmppServerHostName, _fromJid, _taskData);
                     });
@@ -4421,6 +4828,7 @@ limitations under the License.
                 }
                 ShortenURLUtils.getURLID(_urlObj[_iURL], _onGetURLIDUpdate);
 
+                // 短縮URL登録のコールバック
                 function _onGetURLIDUpdate(err, result) {
                     _log.connectionLog(7, 'enter _onGetURLIDUpdate: _iURL = ' + _iURL);
                     if (err != null) {
@@ -4448,6 +4856,7 @@ limitations under the License.
         }
         var _ret = true;
         if(_xmppUpdateMessage != null) {
+            // 同期型で送信XMPPを作成している場合はすぐに呼ぶ
             _ret = _onCreateUpdateMessageXmpp(_xmppUpdateMessage);
         }
         function _onCreateUpdateMessageXmpp(xmppUpdateMessage) {
@@ -4474,6 +4883,7 @@ limitations under the License.
                 if (_result == true) {
                     switch (_type) {
                         case RequestData.UPDATE_MESSAGE_TYPE_QUESTIONNAIRE:
+                            /* DO NOTHING */
                             break;
                         case RequestData.UPDATE_MESSAGE_TYPE_TASK:
                             var _contentElem = _getContentElemFromSendOrUpdateMessageResponse(
@@ -4523,6 +4933,8 @@ limitations under the License.
                 } else {
                     _count = _items.length;
                 }
+                //子タスクのXMLのJSON生成のレスポンスで親タスクの処理を終える前にレスポンスを返却してしまうため
+                //下の分岐で親タスク[items]の取得をもってレスポンス処理を行う。
                 if(_type != RequestData.UPDATE_MESSAGE_TYPE_TASK ||
                    (_type == RequestData.UPDATE_MESSAGE_TYPE_TASK && _items.length != 0)){
                     _finishInnerCallBackFuncs();
@@ -4531,16 +4943,16 @@ limitations under the License.
                     onUpdateMessageCallBackFunc(_result, _reason, _extras, _count,
                                                 _items);
                 }
-
-                                function _onGetExtrasCallBack(extras, onCallback) {
+                
+                function _onGetExtrasCallBack(extras, onCallback) {
                     _extras = extras;
                     if (_extras == null) {
                         _extras = {};
                     }
                     onCallback();
                 }
-
-                                function _onGetItemsCallBack(items, onCallback) {
+                
+                function _onGetItemsCallBack(items, onCallback) {
                     _items = items;
                     if (_items == null) {
                         _log
@@ -4565,6 +4977,7 @@ limitations under the License.
         return _ret;
     };
 
+    // メッセージの削除
     _proto.deleteMessage = function(accessToken, requestData,
             onDeleteMessageCallBackFunc) {
         if (accessToken == null || typeof accessToken != 'string') {
@@ -4633,6 +5046,7 @@ limitations under the License.
         return true;
     };
 
+    // MessageOption
     _proto.setMessageOption = function(accessToken, requestData,
             onSetMessageOptionCallBackFunc) {
         if (accessToken == null || typeof accessToken != 'string') {
@@ -4679,6 +5093,7 @@ limitations under the License.
                 return false;
             }
             let _emotionPoint = 0;
+            //値が不正な場合は0が入る
             if(Validation.emotionPointValidationCheck(requestData.emotionPoint, true)){
                 _emotionPoint = parseInt(requestData.emotionPoint);
             }else if(requestData.emotionPoint !== undefined &&
@@ -4898,6 +5313,7 @@ limitations under the License.
             }
             var _items = null;
             if (_result == true) {
+                //レスポンス処理
                 switch (_type) {
                 case RequestData.MESSAGE_OPTION_TYPE_GET_EXISTING_READER_LIST:
                     var _itemsElem = _getItemsElemFromMessageOptionResponce(responceXmlRootElem);
@@ -5017,6 +5433,7 @@ limitations under the License.
         return true;
     };
 
+    // MessageOotion応答XMPPからItemsエレメントを取り出す
     function _getItemsElemFromMessageOptionResponce(xmlRootElem) {
         if (xmlRootElem == null) {
             _log
@@ -5024,6 +5441,7 @@ limitations under the License.
                             '_getItemsElemFromMessageOptionResponce :: xmlRootElem is null');
             return null;
         }
+        // <message >
         var _messageElem = Utils.getChildXmlElement(xmlRootElem, 'message');
         if (_messageElem == null) {
             _log
@@ -5039,6 +5457,7 @@ limitations under the License.
                             '_getItemsElemFromMessageOptionResponce :: _messageElemNamespace is not "messageoption"');
             return null;
         }
+        // <content>
         var _contentElem = Utils.getChildXmlElement(_messageElem, 'content');
         if (_contentElem == null) {
             _log
@@ -5046,6 +5465,7 @@ limitations under the License.
                             '_getItemsElemFromMessageOptionResponce :: _contentElem is invalid');
             return null;
         }
+        // <items>
         var _itemsElem = Utils.getChildXmlElement(_contentElem, 'items');
         if (_itemsElem == null) {
             _log
@@ -5056,6 +5476,7 @@ limitations under the License.
         return _itemsElem;
     }
 
+    // 既読者一覧のitemsエレメントからitemsデータを生成
     function _getItemsFromGetExistingReaderListItemsElem(itemsElem,
             onGetItemsCallBack) {
         if (itemsElem == null) {
@@ -5074,6 +5495,7 @@ limitations under the License.
         }
     }
 
+    // MessageOptionのSetからitemsエレメントからitemsデータを生成
     function _getItemsFromMessageOptionSetItemsElem(itemsElem) {
         if (itemsElem == null) {
             return null;
@@ -5087,6 +5509,7 @@ limitations under the License.
         for ( var _i = 0; _i < _count; _i++) {
             var _itemElem = _itemElemArray[_i];
             var _itemData = {};
+            // itemId
             var _itemIdElem = Utils.getChildXmlElement(_itemElem, 'item_id');
             if (_itemIdElem != null) {
                 _itemData.itemId = _itemIdElem.text();
@@ -5096,6 +5519,7 @@ limitations under the License.
         return _items;
     }
 
+    // CreateGroup
     _proto.createGroup = function(accessToken, requestData,
             onCreateGroupCallBackFunc) {
         if (accessToken == null || typeof accessToken != 'string') {
@@ -5140,8 +5564,10 @@ limitations under the License.
                     communityColor = communityColor.slice(1);
                 }
                 if (communityColor == 0 || communityColor == 1) {
+                    //コミュニティのデフォルトカラー
                     communityColor = '2A98E9';
                 }
+                //コミュニティカラーのバリデーションチェック
                 if (!Utils.varidieter.memberEntryType(communityColor)) {
                     _log.connectionLog(3, 'memberEntryType is invalid');
                     var _result = false;
@@ -5149,6 +5575,7 @@ limitations under the License.
                     onCreateGroupCallBackFunc(_result, _reason);
                     return false;
                 }
+                //コミュニティカラー3桁のとき、6桁に変換する
                 if (communityColor.length == 3) {
                     communityColor = Utils.convertThreeWordToSix(communityColor);
                 }
@@ -5182,7 +5609,7 @@ limitations under the License.
             }
             var _extras = {};
             var _items = null;
-            var _isResponse = true;   
+            var _isResponse = true;   // すぐにコールバック関数を読んでよいか
             if(_result == true) {
                 switch(_type) {
                 case RequestData.CREATE_GROUP_TYPE_GROUP_CHAT_ROOM:
@@ -5233,6 +5660,7 @@ limitations under the License.
         return true;
     };
 
+    // グループチャットルーム作成応答XMPPからItemsエレメントを取り出す
     function _getItemsElemFromCreateGroupChatRoomResponce(xmlRootElem) {
         if (xmlRootElem == null) {
             _log
@@ -5240,6 +5668,7 @@ limitations under the License.
                             '_getItemsElemFromCreateGroupChatRoomResponce :: xmlRootElem is null');
             return null;
         }
+        // <group>
         var _groupElem = Utils.getChildXmlElement(xmlRootElem, 'group');
         if (_groupElem == null) {
             _log
@@ -5255,6 +5684,7 @@ limitations under the License.
                             '_getItemsElemFromCreateGroupChatRoomResponce :: _groupElemNamespace is not "createchatroom"');
             return null;
         }
+        // <content>
         var _contentElem = Utils.getChildXmlElement(_groupElem, 'content');
         if (_contentElem == null) {
             _log
@@ -5262,6 +5692,7 @@ limitations under the License.
                             '_getItemsElemFromCreateGroupChatRoomResponce :: _contentElem is invalid');
             return null;
         }
+        // <items>
         var _itemsElem = Utils.getChildXmlElement(_contentElem, 'items');
         if (_itemsElem == null) {
             _log
@@ -5271,6 +5702,7 @@ limitations under the License.
         }
         return _itemsElem;
     }
+    // Itemsエレメントからitems項目を抽出する(グループチャットルーム作成/更新結果・通知、チャットルーム情報取得応答用)
     function _getItemsFromGroupChatRoomInfoItemsElem(itemsElem, onGetItemsCallBack) {
         var _retArray = [];
         if(itemsElem == null) {
@@ -5283,6 +5715,7 @@ limitations under the License.
             _callCallbackFunc();
             return;
         }
+        // <item>の要素を取得する
         var _itemElemArray = Utils.getChildXmlElementArray(itemsElem, 'item');
         if(_itemElemArray == null) {
             _log.connectionLog(3, '_getItemsFromGroupChatRoomInfoItemsElem :: _itemElemArray is null');
@@ -5296,13 +5729,16 @@ limitations under the License.
 
         function _createNextItem() {
             if(_processIndex >= _count) {
+                // 全部処理したため結果を返す
                 _callCallbackFunc();
                 return;
             }
-            var _i = _processIndex;    
-            _processIndex++;   
+            var _i = _processIndex;    // データ取得用ループ変数
+            _processIndex++;   // 処理途中でcontinueの可能性があるため、ここで先にインクリメント
 
+            // <item>から内容を取り出す
             var _itemElem = _itemElemArray[_i];
+            // <id>
             var _idElem = Utils.getChildXmlElement(_itemElem, 'id');
             if(_idElem == null) {
                 _log.connectionLog(3, '_getItemsFromGroupChatRoomInfoItemsElem :: _idElem is null. No.' + _i);
@@ -5310,6 +5746,7 @@ limitations under the License.
                 return;
             }
             var _id = parseInt(_idElem.text());
+            // <roomid>
             var _roomIdElem = Utils.getChildXmlElement(_itemElem, 'roomid');
             if(_roomIdElem == null) {
                 _log.connectionLog(3, '_getItemsFromGroupChatRoomInfoItemsElem :: _roomIdElem is null. No.' + _i);
@@ -5317,6 +5754,7 @@ limitations under the License.
                 return;
             }
             var _roomId = _roomIdElem.text();
+            // <roomname>
             var _roomNameElem = Utils.getChildXmlElement(_itemElem, 'roomname');
             if(_roomNameElem == null) {
                 _log.connectionLog(3, '_getItemsFromGroupChatRoomInfoItemsElem :: _roomNameElem is null. No.' + _i);
@@ -5324,6 +5762,7 @@ limitations under the License.
                 return;
             }
             var _roomName = _roomNameElem.text();
+            // <parent_room_id>
             var _parentRoomIdElem = Utils.getChildXmlElement(_itemElem, 'parentroomid');
             if(_parentRoomIdElem == null) {
                 _log.connectionLog(3, '_getItemsFromGroupChatRoomInfoItemsElem :: _parentRoomIdElem is null. No.' + _i);
@@ -5332,6 +5771,7 @@ limitations under the License.
             }
             var _parentRoomId = _parentRoomIdElem.text();
 
+            // <privacy_type>
             var _privacyTypeElem = Utils.getChildXmlElement(_itemElem, 'privacytype');
             if(_privacyTypeElem == null) {
                 _log.connectionLog(3, '_getItemsFromGroupChatRoomInfoItemsElem :: _privacyTypeElem is null. No.' + _i);
@@ -5339,6 +5779,7 @@ limitations under the License.
                 return;
             }
             var _privacyType = parseInt(_privacyTypeElem.text());
+            // <members>
             var _membersElem = Utils.getChildXmlElement(_itemElem, 'members');
             if(_membersElem == null) {
                 _log.connectionLog(3, '_getItemsFromGroupChatRoomInfoItemsElem :: _membersElem is null. No.' + _i);
@@ -5355,6 +5796,7 @@ limitations under the License.
             var _memberItems = [];
             var _memberIndex = 0;
             for ( var _j = 0; _j < _memberCount; _j++) {
+                // <member>
                 var _memberElem = _memberElemArray[_j];
                 if (_memberElem == null) {
                     _log.connectionLog(3,
@@ -5378,6 +5820,7 @@ limitations under the License.
                 return;
             }
             _memberCount = _memberIndex;
+            // <notify_type>
             var _notifyTypeElem = Utils.getChildXmlElement(_itemElem, 'notify_type');
             if(_notifyTypeElem == null) {
                 _log.connectionLog(3, '_getItemsFromGroupChatRoomInfoItemsElem :: _notifyTypeElem is null. No.' + _i);
@@ -5385,6 +5828,7 @@ limitations under the License.
                 return;
             }
             var _notifyType = parseInt(_notifyTypeElem.text());
+            // <created_at>
             var _createdAtElem = Utils.getChildXmlElement(_itemElem, 'created_at');
             if(_createdAtElem == null) {
                 _log.connectionLog(3, '_getItemsFromGroupChatRoomInfoItemsElem :: _createdAtElem is null. No.' + _i);
@@ -5392,6 +5836,7 @@ limitations under the License.
                 return;
             }
             var _createdAt = _createdAtElem.text();
+            // <created_by>
             var _createdByElem = Utils.getChildXmlElement(_itemElem, 'created_by');
             if(_createdByElem == null) {
                 _log.connectionLog(3, '_getItemsFromGroupChatRoomInfoItemsElem :: _createdByElem is null. No.' + _i);
@@ -5399,6 +5844,7 @@ limitations under the License.
                 return;
             }
             var _createdBy = _createdByElem.text();
+            // <updated_at>
             var _updatedAtElem = Utils.getChildXmlElement(_itemElem, 'updated_at');
             if(_updatedAtElem == null) {
                 _log.connectionLog(3, '_getItemsFromGroupChatRoomInfoItemsElem :: _updatedAtElem is null. No.' + _i);
@@ -5406,6 +5852,7 @@ limitations under the License.
                 return;
             }
             var _updatedAt = _updatedAtElem.text();
+            // <updated_by>
             var _updatedByElem = Utils.getChildXmlElement(_itemElem, 'updated_by');
             if(_updatedByElem == null) {
                 _log.connectionLog(3, '_getItemsFromGroupChatRoomInfoItemsElem :: _updatedByElem is null. No.' + _i);
@@ -5413,19 +5860,23 @@ limitations under the License.
                 return;
             }
             var _updatedBy = _updatedByElem.text();
+            // <person_info>
             var _personInfoElem = Utils.getChildXmlElement(_itemElem, 'person_info');
             var _personInfo = null;
             if(_personInfoElem != null) {
                 _getPersonInfoItemsFromPersonInfoElement(_personInfoElem, _onGetPersonInfoItemsFromPersonInfoElement);
             } else {
+                // person_info項目がついていないので次へ
                 _onGetDataEntry();
             }
             function _onGetPersonInfoItemsFromPersonInfoElement(personInfoItems){
                 _personInfo = personInfoItems;
+                // データ取得後次へ
                 _onGetDataEntry();
             }
 
             function _onGetDataEntry() {
+                // 詰め込む
                 _retArray[_itemIndex] = {
                     id : _id,
                     roomId : _roomId,
@@ -5470,6 +5921,7 @@ limitations under the License.
             _callCallbackFunc();
             return;
         }
+        // <item>の要素を取得する
         var _itemElemArray = Utils.getChildXmlElementArray(itemsElem, 'item');
         if(_itemElemArray == null) {
             _log.connectionLog(3, '_getItemsFromAddGroupChatMemberItemsElem :: _itemElemArray is null');
@@ -5483,13 +5935,16 @@ limitations under the License.
 
         function _createNextItem() {
             if(_processIndex >= _count) {
+                // 全部処理したため結果を返す
                 _callCallbackFunc();
                 return;
             }
-            var _i = _processIndex;    
-            _processIndex++;   
+            var _i = _processIndex;    // データ取得用ループ変数
+            _processIndex++;   // 処理途中でcontinueの可能性があるため、ここで先にインクリメント
 
+            // <item>から内容を取り出す
             var _itemElem = _itemElemArray[_i];
+            // <roomid>
             var _roomIdElem = Utils.getChildXmlElement(_itemElem, 'roomid');
             if(_roomIdElem == null) {
                 _log.connectionLog(3, '_getItemsFromAddGroupChatMemberItemsElem :: _roomIdElem is null. No.' + _i);
@@ -5497,6 +5952,7 @@ limitations under the License.
                 return;
             }
             var _roomId = _roomIdElem.text();
+            // <roomname>
             var _roomNameElem = Utils.getChildXmlElement(_itemElem, 'roomname');
             if(_roomNameElem == null) {
                 _log.connectionLog(3, '_getItemsFromAddGroupChatMemberItemsElem :: _roomNameElem is null. No.' + _i);
@@ -5504,6 +5960,7 @@ limitations under the License.
                 return;
             }
             var _roomName = _roomNameElem.text();
+            // <parent_room_id>
             var _parentRoomIdElem = Utils.getChildXmlElement(_itemElem, 'parentroomid');
             if(_parentRoomIdElem == null) {
                 _log.connectionLog(3, '_getItemsFromAddGroupChatMemberItemsElem :: _parentRoomIdElem is null. No.' + _i);
@@ -5512,6 +5969,7 @@ limitations under the License.
             }
             var _parentRoomId = _parentRoomIdElem.text();
 
+            // <privacy_type>
             var _privacyTypeElem = Utils.getChildXmlElement(_itemElem, 'privacytype');
             if(_privacyTypeElem == null) {
                 _log.connectionLog(3, '_getItemsFromAddGroupChatMemberItemsElem :: _privacyTypeElem is null. No.' + _i);
@@ -5520,6 +5978,7 @@ limitations under the License.
             }
             var _privacyType = parseInt(_privacyTypeElem.text());
 
+            // <added_by>
             var _addedByElem = Utils.getChildXmlElement(_itemElem, 'added_by');
             if(_addedByElem == null) {
                 _log.connectionLog(3, '_getItemsFromAddGroupChatMemberItemsElem :: _addedByElem is null. No.' + _i);
@@ -5528,6 +5987,7 @@ limitations under the License.
             }
             var _addedBy = _addedByElem.text();
 
+            // <members>
             var _membersElem = Utils.getChildXmlElement(_itemElem, 'members');
             if(_membersElem == null) {
                 _log.connectionLog(3, '_getItemsFromAddGroupChatMemberItemsElem :: _membersElem is null. No.' + _i);
@@ -5544,6 +6004,7 @@ limitations under the License.
             var _memberItems = [];
             var _memberIndex = 0;
             for ( var _j = 0; _j < _memberCount; _j++) {
+                // <member>
                 var _memberElem = _memberElemArray[_j];
                 if (_memberElem == null) {
                     _log.connectionLog(3,
@@ -5568,6 +6029,7 @@ limitations under the License.
             }
             _memberCount = _memberIndex;
 
+            // <notify_type>
             var _notifyTypeElem = Utils.getChildXmlElement(_itemElem, 'notify_type');
             if(_notifyTypeElem == null) {
                 _log.connectionLog(3, '_getItemsFromAddGroupChatMemberItemsElem :: _notifyTypeElem is null. No.' + _i);
@@ -5576,19 +6038,23 @@ limitations under the License.
             }
             var _notifyType = parseInt(_notifyTypeElem.text());
 
+            // <person_info>
             var _personInfoElem = Utils.getChildXmlElement(_itemElem, 'person_info');
             var _personInfo = null;
             if(_personInfoElem != null) {
                 _getPersonInfoItemsFromPersonInfoElement(_personInfoElem, _onGetPersonInfoItemsFromPersonInfoElement);
             } else {
+                // person_info項目がついていないので次へ
                 _onGetDataEntry();
             }
             function _onGetPersonInfoItemsFromPersonInfoElement(personInfoItems){
                 _personInfo = personInfoItems;
+                // データ取得後次へ
                 _onGetDataEntry();
             }
 
             function _onGetDataEntry() {
+                // 詰め込む
                 _retArray[_itemIndex] = {
                     roomId : _roomId,
                     roomName : _roomName,
@@ -5617,6 +6083,7 @@ limitations under the License.
         }
     }
 
+    // コミュニティ作成応答XMPPからItemsエレメントを取り出す
     function _getItemsElemFromCreateCommunityResponce(xmlRootElem) {
         if (xmlRootElem == null) {
             _log
@@ -5624,6 +6091,7 @@ limitations under the License.
                             '_getItemsElemFromCreateCommunityResponce :: xmlRootElem is null');
             return null;
         }
+        // <group>
         var _groupElem = Utils.getChildXmlElement(xmlRootElem, 'group');
         if (_groupElem == null) {
             _log
@@ -5639,6 +6107,7 @@ limitations under the License.
                             '_getItemsElemFromCreateCommunityResponce :: _groupElemNamespace is not "createcommunity"');
             return null;
         }
+        // <content>
         var _contentElem = Utils.getChildXmlElement(_groupElem, 'content');
         if (_contentElem == null) {
             _log
@@ -5646,6 +6115,7 @@ limitations under the License.
                             '_getItemsElemFromCreateCommunityResponce :: _contentElem is invalid');
             return null;
         }
+        // <items>
         var _itemsElem = Utils.getChildXmlElement(_contentElem, 'items');
         if (_itemsElem == null) {
             _log
@@ -5656,6 +6126,7 @@ limitations under the License.
         return _itemsElem;
     }
 
+    // Itemsエレメントからitems項目を抽出する(コミュニティルーム作成/更新結果・通知、コミュニティ情報取得応答用)
     function _getItemsFromCommunityInfoItemsElem(itemsElem) {
         if (itemsElem == null) {
             _log.connectionLog(3,
@@ -5669,6 +6140,7 @@ limitations under the License.
                             '_getItemsFromCommunityInfoItemsElem :: itemsElem is invalid');
             return null;
         }
+        // <item>の要素を取得する
         var _itemElemArray = Utils.getChildXmlElementArray(itemsElem, 'item');
         if (_itemElemArray == null) {
             _log
@@ -5680,7 +6152,9 @@ limitations under the License.
         var _itemIndex = 0;
         var _count = _itemElemArray.length;
         for ( var _i = 0; _i < _count; _i++) {
+            // <item>から内容を取り出す
             var _itemElem = _itemElemArray[_i];
+            // <id>
             var _idElem = Utils.getChildXmlElement(_itemElem, 'id');
             if (_idElem == null) {
                 _log.connectionLog(3,
@@ -5689,6 +6163,7 @@ limitations under the License.
                 continue;
             }
             var _id = parseInt(_idElem.text());
+            // <roomid>
             var _roomIdElem = Utils.getChildXmlElement(_itemElem, 'roomid');
             if (_roomIdElem == null) {
                 _log.connectionLog(3,
@@ -5697,6 +6172,7 @@ limitations under the License.
                 continue;
             }
             var _roomId = _roomIdElem.text();
+            // <roomname>
             var _roomNameElem = Utils.getChildXmlElement(_itemElem, 'roomname');
             if (_roomNameElem == null) {
                 _log.connectionLog(3,
@@ -5705,6 +6181,7 @@ limitations under the License.
                 continue;
             }
             var _roomName = _roomNameElem.text();
+            // <description>
             var _descriptionElem = Utils.getChildXmlElement(_itemElem,
                     'description');
             if (_descriptionElem == null) {
@@ -5714,6 +6191,7 @@ limitations under the License.
                 continue;
             }
             var _description = _descriptionElem.text();
+            // <members>
             var _membersElem = Utils.getChildXmlElement(_itemElem, 'members');
             if (_membersElem == null) {
                 _log.connectionLog(3,
@@ -5729,6 +6207,7 @@ limitations under the License.
                 continue;
             }
             var _memberCount = parseInt(_memberCountAttr.value());
+            // <privacytype>
             var _privacyTypeElem = Utils.getChildXmlElement(_itemElem,
                     'privacytype');
             if (_privacyTypeElem == null) {
@@ -5738,6 +6217,7 @@ limitations under the License.
                 continue;
             }
             var _privacyType = parseInt(_privacyTypeElem.text());
+            // <memberentrytype>
             var _memberEntryTypeElem = Utils.getChildXmlElement(_itemElem,
                     'memberentrytype');
             if (_memberEntryTypeElem == null) {
@@ -5747,10 +6227,12 @@ limitations under the License.
                 continue;
             }
             var _memberEntryType = parseInt(_memberEntryTypeElem.text());
+            //10進数を16進数に変換する
             if (_memberEntryType == 0) {
                 _memberEntryType = 2791657;
             }
             _memberEntryType = Utils.convertDecimalToHexa(_memberEntryType);
+            // <logourl>
             var _logoUrlElem = Utils.getChildXmlElement(_itemElem, 'logourl');
             if (_logoUrlElem == null) {
                 _log.connectionLog(3,
@@ -5760,6 +6242,7 @@ limitations under the License.
             }
             var _logoUrl = _logoUrlElem.text();
 
+            // <notify_type>
             var _notifyTypeElem = Utils.getChildXmlElement(_itemElem, 'notify_type');
             if(_notifyTypeElem == null) {
                 _log.connectionLog(3, '_getItemsFromCommunityInfoItemsElem :: _notifyTypeElem is null. No.' + _i);
@@ -5767,6 +6250,7 @@ limitations under the License.
             }
             var _notifyType = parseInt(_notifyTypeElem.text());
 
+            // <created_at>
             var _createdAtElem = Utils.getChildXmlElement(_itemElem,
                     'created_at');
             if (_createdAtElem == null) {
@@ -5776,6 +6260,7 @@ limitations under the License.
                 continue;
             }
             var _createdAt = _createdAtElem.text();
+            // <created_by>
             var _createdByElem = Utils.getChildXmlElement(_itemElem,
                     'created_by');
             if (_createdByElem == null) {
@@ -5785,6 +6270,7 @@ limitations under the License.
                 continue;
             }
             var _createdBy = _createdByElem.text();
+            // <updated_at>
             var _updatedAtElem = Utils.getChildXmlElement(_itemElem,
                     'updated_at');
             if (_updatedAtElem == null) {
@@ -5794,6 +6280,7 @@ limitations under the License.
                 continue;
             }
             var _updatedAt = _updatedAtElem.text();
+            // <updated_by>
             var _updatedByElem = Utils.getChildXmlElement(_itemElem,
                     'updated_by');
             if (_updatedByElem == null) {
@@ -5803,6 +6290,7 @@ limitations under the License.
                 continue;
             }
             var _updatedBy = _updatedByElem.text();
+            // 詰め込む
             _retArray[_itemIndex] = {
                 id : _id,
                 roomId : _roomId,
@@ -5823,6 +6311,7 @@ limitations under the License.
         return _retArray;
     }
 
+    // GetGroup
     _proto.getGroup = function(accessToken, requestData, onGetGroupCallBackFunc) {
         if (accessToken == null || typeof accessToken != 'string') {
             _log.connectionLog(3, 'accessToken is invalid : ' + accessToken);
@@ -5925,7 +6414,7 @@ limitations under the License.
                 _result = true;
                 _reason = DISCCONECT_REASON_NO;
             }
-            var _isResponse = true; 
+            var _isResponse = true; // すぐに結果を応答してよいか
             var _extras = {};
             var _items = null;
             if(_result == true) {
@@ -5978,7 +6467,10 @@ limitations under the License.
                     if(_itemsElem != null) {
                         _items = _getItemsFromCommunityMemberInfoItemsElem(_itemsElem);
                         if(_items != null && _items.length > 0) {
+                                // データがある場合、アカウント情報を取得する必要があり、このシーケンスですぐに応答してはならないため、そのフラグを変更する
                             _isResponse = false;
+                                // アカウント情報を取得して、データに付属する
+                                //取得するアカウントのjid一覧を作成する
                             var _jidList = [];
                             var _jidHash = {};
                             var _itemCount = _items.length;
@@ -6006,9 +6498,11 @@ limitations under the License.
                                     }
                                 }
                             }
+                                // jid一覧を取得して応答データに付ける
                             if(_jidList.length > 0) {
                                 UserAccountUtils.getLoginAccountListByJidList(_jidList, _onGetUserAccountDataCallBack);
                             } else {
+                                    // 取得すべきデータがないので、すぐに応答を返す
                                 _isResponse = true;
                             }
                             function _onGetUserAccountDataCallBack(mapData){
@@ -6060,6 +6554,7 @@ limitations under the License.
         return true;
     };
 
+    // グループリスト取得応答XMPPからItemsエレメントを取り出す
     function _getItemsElemFromGetGroupListResponce(xmlRootElem, namespace) {
         if (xmlRootElem == null) {
             _log
@@ -6067,6 +6562,7 @@ limitations under the License.
                             '_getItemsElemFromGetGroupListResponce :: xmlRootElem is null');
             return null;
         }
+        // <group>
         var _groupElem = Utils.getChildXmlElement(xmlRootElem, 'group');
         if (_groupElem == null) {
             _log
@@ -6081,6 +6577,7 @@ limitations under the License.
                             + namespace + '"');
             return null;
         }
+        // <content>
         var _contentElem = Utils.getChildXmlElement(_groupElem, 'content');
         if (_contentElem == null) {
             _log
@@ -6088,6 +6585,7 @@ limitations under the License.
                             '_getItemsElemFromGetGroupListResponce :: _contentElem is invalid');
             return null;
         }
+        // <items>
         var _itemsElem = Utils.getChildXmlElement(_contentElem, 'items');
         if (_itemsElem == null) {
             _log
@@ -6098,6 +6596,7 @@ limitations under the License.
         return _itemsElem;
     }
 
+    // コミュニティメンバー取得応答XMPPからItemsエレメントを取り出す
     function _getItemsElemFromGetCommunityMemberInfoResponce(xmlRootElem) {
         if (xmlRootElem == null) {
             _log
@@ -6105,6 +6604,7 @@ limitations under the License.
                             '_getItemsElemFromGetCommunityMemberInfoResponce :: xmlRootElem is null');
             return null;
         }
+        // <group>
         var _groupElem = Utils.getChildXmlElement(xmlRootElem, 'group');
         if (_groupElem == null) {
             _log
@@ -6122,6 +6622,7 @@ limitations under the License.
                                     + namespace + '"');
             return null;
         }
+        // <content>
         var _contentElem = Utils.getChildXmlElement(_groupElem, 'content');
         if (_contentElem == null) {
             _log
@@ -6129,6 +6630,7 @@ limitations under the License.
                             '_getItemsElemFromGetCommunityMemberInfoResponce :: _contentElem is invalid');
             return null;
         }
+        // <items>
         var _itemsElem = Utils.getChildXmlElement(_contentElem, 'items');
         if (_itemsElem == null) {
             _log
@@ -6139,6 +6641,7 @@ limitations under the License.
         return _itemsElem;
     }
 
+    // Itemsエレメントからitems項目を抽出する(コミュニティ参加者取得応答用)
     function _getItemsFromCommunityMemberInfoItemsElem(itemsElem) {
         if (itemsElem == null) {
             _log
@@ -6153,6 +6656,7 @@ limitations under the License.
                             '_getItemsFromCommunityMemberInfoItemsElem :: itemsElem is invalid');
             return null;
         }
+        // <item>の要素を取得する
         var _itemElemArray = Utils.getChildXmlElementArray(itemsElem, 'item');
         if (_itemElemArray == null) {
             _log
@@ -6164,7 +6668,9 @@ limitations under the License.
         var _itemIndex = 0;
         var _count = _itemElemArray.length;
         for ( var _i = 0; _i < _count; _i++) {
+            // <item>から内容を取り出す
             var _itemElem = _itemElemArray[_i];
+            // <id>
             var _idElem = Utils.getChildXmlElement(_itemElem, 'id');
             if (_idElem == null) {
                 _log.connectionLog(3,
@@ -6173,6 +6679,7 @@ limitations under the License.
                 continue;
             }
             var _id = parseInt(_idElem.text());
+            // <roomid>
             var _roomIdElem = Utils.getChildXmlElement(_itemElem, 'roomid');
             if (_roomIdElem == null) {
                 _log.connectionLog(3,
@@ -6181,6 +6688,7 @@ limitations under the License.
                 continue;
             }
             var _roomId = _roomIdElem.text();
+            // <members>
             var _membersElem = Utils.getChildXmlElement(_itemElem, 'members');
             if (_membersElem == null) {
                 _log.connectionLog(3,
@@ -6188,8 +6696,11 @@ limitations under the License.
                                 + _i);
                 continue;
             }
+            // <owner>
             var _ownerArray = _getOwnerItemsFromCommunityMemberInfoMembersElem(_membersElem);
+            // <generalmember>
             var _generalMemberArray = _getGeneralMemberItemsFromCommunityMemberInfoMembersElem(_membersElem);
+            // memberCount
             var _memberCount = ((_ownerArray) ? _ownerArray.length : 0)
                     + ((_generalMemberArray) ? _generalMemberArray.length : 0);
             var _memberItems = {
@@ -6197,6 +6708,7 @@ limitations under the License.
                 generalMemberItems : (_generalMemberArray) ? _generalMemberArray
                         : []
             };
+            // 詰め込む
             _retArray[_itemIndex] = {
                 id : _id,
                 roomId : _roomId,
@@ -6208,6 +6720,7 @@ limitations under the License.
         return _retArray;
     }
 
+    // コミュニティメンバー情報の<members>から管理者のリストを取り出す
     function _getOwnerItemsFromCommunityMemberInfoMembersElem(membersElem) {
         var _retArray = [];
         var _ownerElemArray = Utils.getChildXmlElementArray(membersElem,
@@ -6224,6 +6737,7 @@ limitations under the License.
         return _retArray;
     }
 
+    // コミュニティメンバー情報の<members>から一般参加者のリストを取り出す
     function _getGeneralMemberItemsFromCommunityMemberInfoMembersElem(
             membersElem) {
         var _retArray = [];
@@ -6241,20 +6755,24 @@ limitations under the License.
         return _retArray;
     }
 
+    // メンバー一覧から１人分のメンバーを取り出す
     function _getMemberDataFromProfileElem(memberElem) {
         var _ret = {};
+        // jid
         var _jidElem = Utils.getChildXmlElement(memberElem, 'jid');
         if (_jidElem != null) {
             _ret.jid = _jidElem.text();
         } else {
             return null;
         }
+        // nickName
         var _nickNameElem = Utils.getChildXmlElement(memberElem, 'nickName');
         if (_nickNameElem != null) {
             _ret.nickName = _nickNameElem.text();
         } else {
             return null;
         }
+        // avatarType
         var _avatarTypeElem = Utils
                 .getChildXmlElement(memberElem, 'avatarType');
         if (_avatarTypeElem != null) {
@@ -6262,6 +6780,7 @@ limitations under the License.
         } else {
             return null;
         }
+        // avatarData
         var _avatarDataElem = Utils
                 .getChildXmlElement(memberElem, 'avatarData');
         if (_avatarDataElem != null) {
@@ -6269,12 +6788,14 @@ limitations under the License.
         } else {
             return null;
         }
+        // status
         var _statusElem = Utils.getChildXmlElement(memberElem, 'status');
         if (_statusElem != null) {
             _ret.status = parseInt(_statusElem.text());
         } else {
             return null;
         }
+        // role
         var _roleElem = Utils.getChildXmlElement(memberElem, 'role');
         if (_roleElem != null) {
             _ret.role = parseInt(_roleElem.text());
@@ -6284,6 +6805,7 @@ limitations under the License.
         return _ret;
     }
 
+    // UpdateGroup
     _proto.updateGroup = function(accessToken, requestData,
             onUpdateGroupCallBackFunc) {
         if (accessToken == null || typeof accessToken != 'string') {
@@ -6350,6 +6872,7 @@ limitations under the License.
         case RequestData.UPDATE_GROUP_TYPE_COMMUNITY_ROOM_INFO:
             var _updateCommunityInfoRequestData = requestData;
             var _imageFileUtils = ImageFileUtils.getInstance();
+            // 現在設定されている画像があればファイル名を取得しておく(用途：logo)
             _logoDataFileList = _imageFileUtils.getCommunityFilePathList(
                     _tenantUuid,
                     _updateCommunityInfoRequestData.roomId,
@@ -6361,12 +6884,15 @@ limitations under the License.
                     communityColor = communityColor.slice(1);
                 }
                 if (communityColor == 0 || communityColor == 1) {
+                    //コミュニティのデフォルトカラー
                     communityColor = '2A98E9';
                 }
+                //コミュニティカラーのバリデーションチェック
                 if (!Utils.varidieter.memberEntryType(communityColor)) {
                     _log.connectionLog(3, 'memberEntryType is invalid');
                     return false;
                 }
+                //コミュニティカラーが3桁のとき、6桁に変換する
                 if (communityColor.length == 3) {
                     communityColor = Utils.convertThreeWordToSix(communityColor);
                 }
@@ -6409,8 +6935,10 @@ limitations under the License.
                     break;
                 case RequestData.UPDATE_GROUP_TYPE_COMMUNITY_ROOM_INFO:
                     var _imageFileUtils = ImageFileUtils.getInstance();
+                    // 前回設定されていたのロゴファイルを削除
                     for ( var _i = 0; _i < _logoDataFileList.length; _i++) {
                         if (_logoDataFileList[_i] == requestData.logoUrl) {
+                            // 今回設定したファイルは消してはいけない
                             continue;
                         }
                         if (_imageFileUtils.deleteFile(_logoDataFileList[_i]) == false) {
@@ -6449,6 +6977,14 @@ limitations under the License.
         return true;
     };
 
+    /**
+     * GroupChat / Community を削除する要求XMPPを作成して Openfireに送信する
+     *
+     * @param  {string}   accessToken 実行するアカウントのアクセストークン
+     * @param  {object} requestData    { roomId: [string], type: RequestData.DELETE_XX } 形式。
+     * @param  {Function} onDeleteGroupCallBackFunc コールバック。 _result, _reason, _extras, _count, _itemsを返却。 _result(boolean)を確認すること。
+     * @return {boolean}                            パラメータチェック結果
+     */
     _proto.deleteGroup = function(accessToken, requestData,
             onDeleteGroupCallBackFunc) {
         if (accessToken == null || typeof accessToken != 'string') {
@@ -6531,6 +7067,7 @@ limitations under the License.
         return true;
     };
 
+    // コミュニティ更新応答XMPPからExtrasエレメントを取り出す
     function _getExtrasElemFromUpdateCommunityResponce(xmlRootElem) {
         if (xmlRootElem == null) {
             _log
@@ -6538,6 +7075,7 @@ limitations under the License.
                             '_getExtrasElemFromUpdateCommunityResponce :: xmlRootElem is null');
             return null;
         }
+        // <group>
         var _groupElem = Utils.getChildXmlElement(xmlRootElem, 'group');
         if (_groupElem == null) {
             _log
@@ -6553,6 +7091,7 @@ limitations under the License.
                             '_getExtrasElemFromUpdateCommunityResponce :: _groupElemNamespace is not "updatecommunityinfo"');
             return null;
         }
+        // <content>
         var _contentElem = Utils.getChildXmlElement(_groupElem, 'content');
         if (_contentElem == null) {
             _log
@@ -6560,6 +7099,7 @@ limitations under the License.
                             '_getExtrasElemFromUpdateCommunityResponce :: _contentElem is invalid');
             return null;
         }
+        // <extras>
         var _extrasElem = Utils.getChildXmlElement(_contentElem, 'extras');
         if (_extrasElem == null) {
             _log
@@ -6570,6 +7110,7 @@ limitations under the License.
         return _extrasElem;
     }
 
+    // コミュニティ更新応答XMPPのextrasエレメントからextras項目を作成する
     function _getExtrasFromUpdateCommunityInfoExtrasElem(extrasElem) {
         var _ret = {};
         if (extrasElem == null) {
@@ -6578,6 +7119,7 @@ limitations under the License.
                             '_getExtrasFromUpdateCommunityInfoExtrasElem :: extrasElem is null');
             return _ret;
         }
+        // <preinfo>
         var _preInfoElem = Utils.getChildXmlElement(extrasElem, 'preinfo');
         if (_preInfoElem == null) {
             _log
@@ -6585,6 +7127,7 @@ limitations under the License.
                             '_getExtrasFromUpdateCommunityInfoExtrasElem :: _preInfoElem is invalid');
             return _ret;
         }
+        // <id>
         var _idElem = Utils.getChildXmlElement(_preInfoElem, 'id');
         if (_idElem == null) {
             _log
@@ -6593,6 +7136,7 @@ limitations under the License.
             return _ret;
         }
         var _id = parseInt(_idElem.text());
+        // <roomid>
         var _roomIdElem = Utils.getChildXmlElement(_preInfoElem, 'roomid');
         if (_roomIdElem == null) {
             _log
@@ -6601,6 +7145,7 @@ limitations under the License.
             return _ret;
         }
         var _roomId = _roomIdElem.text();
+        // <roomname>
         var _roomNameElem = Utils.getChildXmlElement(_preInfoElem, 'roomname');
         if (_roomNameElem == null) {
             _log
@@ -6609,6 +7154,7 @@ limitations under the License.
             return _ret;
         }
         var _roomName = _roomNameElem.text();
+        // <description>
         var _descriptionElem = Utils.getChildXmlElement(_preInfoElem,
                 'description');
         if (_descriptionElem == null) {
@@ -6618,6 +7164,7 @@ limitations under the License.
             return _ret;
         }
         var _description = _descriptionElem.text();
+        // <members>
         var _membersElem = Utils.getChildXmlElement(_preInfoElem, 'members');
         if (_membersElem == null) {
             _log
@@ -6633,6 +7180,7 @@ limitations under the License.
             return _ret;
         }
         var _memberCount = parseInt(_memberCountAttr.value());
+        // <privacytype>
         var _privacyTypeElem = Utils.getChildXmlElement(_preInfoElem,
                 'privacytype');
         if (_privacyTypeElem == null) {
@@ -6642,6 +7190,7 @@ limitations under the License.
             return _ret;
         }
         var _privacyType = parseInt(_privacyTypeElem.text());
+        // <memberentrytype>
         var _memberEntryTypeElem = Utils.getChildXmlElement(_preInfoElem,
                 'memberentrytype');
         if (_memberEntryTypeElem == null) {
@@ -6651,10 +7200,12 @@ limitations under the License.
             return _ret;
         }
         var _memberEntryType = parseInt(_memberEntryTypeElem.text());
+        //10進数を16進数に変換
         if (_memberEntryType == 0) {
             _memberEntryType = 2791657;
         }
         _memberEntryType = Utils.convertDecimalToHexa(_memberEntryType);
+        // <logourl>
         var _logoUrlElem = Utils.getChildXmlElement(_preInfoElem, 'logourl');
         if (_logoUrlElem == null) {
             _log
@@ -6664,6 +7215,7 @@ limitations under the License.
         }
         var _logoUrl = _logoUrlElem.text();
 
+        // <notify_type>
         var _notifyTypeElem = Utils.getChildXmlElement(_preInfoElem, 'notify_type');
         if(_notifyTypeElem == null) {
             _log.connectionLog(3, '_getExtrasFromUpdateCommunityInfoExtrasElem :: _notifyTypeElem is null.');
@@ -6671,6 +7223,7 @@ limitations under the License.
         }
         var _notifyType = parseInt(_notifyTypeElem.text());
 
+        // 詰め込む
         var _preInfo = {
             id : _id,
             roomId : _roomId,
@@ -6687,6 +7240,7 @@ limitations under the License.
         return _ret;
     }
 
+    // コミュニティ更新応答XMPPからItemsエレメントを取り出す
     function _getItemsElemFromUpdateCommunityResponce(xmlRootElem) {
         if (xmlRootElem == null) {
             _log
@@ -6694,6 +7248,7 @@ limitations under the License.
                             '_getItemsElemFromUpdateCommunityResponce :: xmlRootElem is null');
             return null;
         }
+        // <group>
         var _groupElem = Utils.getChildXmlElement(xmlRootElem, 'group');
         if (_groupElem == null) {
             _log
@@ -6709,6 +7264,7 @@ limitations under the License.
                             '_getItemsElemFromUpdateCommunityResponce :: _groupElemNamespace is not "updatecommunityinfo"');
             return null;
         }
+        // <content>
         var _contentElem = Utils.getChildXmlElement(_groupElem, 'content');
         if (_contentElem == null) {
             _log
@@ -6716,6 +7272,7 @@ limitations under the License.
                             '_getItemsElemFromUpdateCommunityResponce :: _contentElem is invalid');
             return null;
         }
+        // <items>
         var _itemsElem = Utils.getChildXmlElement(_contentElem, 'items');
         if (_itemsElem == null) {
             _log
@@ -6726,6 +7283,7 @@ limitations under the License.
         return _itemsElem;
     }
 
+    // AddMember
     _proto.addMember = function(accessToken, requestData,
             onAddMemberCallBackFunc) {
         if (accessToken == null || typeof accessToken != 'string') {
@@ -6800,7 +7358,7 @@ limitations under the License.
                 _result = true;
                 _reason = DISCCONECT_REASON_NO;
             }
-            var _isResponse = true; 
+            var _isResponse = true; // すぐに結果を応答してよいか
             var _extras = {};
             var _items = null;
             if(_result == true) {
@@ -6830,7 +7388,9 @@ limitations under the License.
                         break;
                     }
 
+                        // データがある場合、アカウント情報を取得する必要があり、このシーケンスですぐに応答してはならないため、そのフラグを変更する
                     _isResponse = false;
+                        // アカウント情報を取得して、データに付属する
                     _appendCubeeAccountForAddMemberResponseOrNotification(_items, _onAppendCubeeAccountCallback);
                     function _onAppendCubeeAccountCallback(returnItems){
                         _items = returnItems;
@@ -6885,6 +7445,7 @@ limitations under the License.
                             '_getItemsElemFromAddOrRemoveGroupResponce :: xmlRootElem is null');
             return null;
         }
+        // <group>
         var _groupElem = Utils.getChildXmlElement(xmlRootElem, 'group');
         if (_groupElem == null) {
             _log
@@ -6899,6 +7460,7 @@ limitations under the License.
                             + namespace + '"');
             return null;
         }
+        // <content>
         var _contentElem = Utils.getChildXmlElement(_groupElem, 'content');
         if (_contentElem == null) {
             _log
@@ -6906,6 +7468,7 @@ limitations under the License.
                             '_getItemsElemFromAddOrRemoveGroupResponce :: _contentElem is invalid');
             return null;
         }
+        // <items>
         var _itemsElem = Utils.getChildXmlElement(_contentElem, 'items');
         if (_itemsElem == null) {
             _log
@@ -6923,6 +7486,7 @@ limitations under the License.
                             '_getItemsElemFromRemoveContactMemberResponce :: xmlRootElem is null');
             return null;
         }
+        // <contact>
         var _contactElem = Utils.getChildXmlElement(xmlRootElem, 'contact');
         if (_contactElem == null) {
             _log
@@ -6937,6 +7501,7 @@ limitations under the License.
                             + namespace + '"');
             return null;
         }
+        // <content>
         var _contentElem = Utils.getChildXmlElement(_contactElem, 'content');
         if (_contentElem == null) {
             _log
@@ -6944,6 +7509,7 @@ limitations under the License.
                             '_getItemsElemFromRemoveContactMemberResponce :: _contentElem is invalid');
             return null;
         }
+        // <items>
         var _itemsElem = Utils.getChildXmlElement(_contentElem, 'items');
         if (_itemsElem == null) {
             _log
@@ -6966,6 +7532,7 @@ limitations under the License.
             _callCallbackFunc();
             return;
         }
+        // <item>の要素を取得する
         var _itemElemArray = Utils.getChildXmlElementArray(itemsElem, 'item');
         if(_itemElemArray == null) {
             _log.connectionLog(3, '_getItemsFromAddContactListMemberItemsElem :: _itemElemArray is null');
@@ -6979,13 +7546,16 @@ limitations under the License.
 
         function _createNextItem() {
             if(_processIndex >= _count) {
+                // 全部処理したため結果を返す
                 _callCallbackFunc();
                 return;
             }
-            var _i = _processIndex;    
-            _processIndex++;   
+            var _i = _processIndex;    // データ取得用ループ変数
+            _processIndex++;   // 処理途中でcontinueの可能性があるため、ここで先にインクリメント
 
+            // <item>から内容を取り出す
             var _itemElem = _itemElemArray[_i];
+            // <added_by>
             var _addedByElem = Utils.getChildXmlElement(_itemElem, 'added_by');
             if(_addedByElem == null) {
                 _log.connectionLog(3, '_getItemsFromAddContactListMemberItemsElem :: _addedByElem is null. No.' + _processIndex);
@@ -6994,6 +7564,7 @@ limitations under the License.
             }
             var _addedBy = _addedByElem.text();
 
+            // <members>
             var _membersElem = Utils.getChildXmlElement(_itemElem, 'members');
             if(_membersElem == null) {
                 _log.connectionLog(3, '_getItemsFromAddContactListMemberItemsElem :: _membersElem is null. No.' + _processIndex);
@@ -7022,6 +7593,7 @@ limitations under the License.
             }
 
             function _onGetDataEntry() {
+                // 詰め込む
                 _retArray[_itemIndex] = {
                     addedBy : _addedBy,
                     count : _memberCount,
@@ -7054,10 +7626,12 @@ limitations under the License.
             onGetMemberCallBack(null);
             return;
         }
+        // <member>
         var _memberElemArray = Utils.getChildXmlElementArray(_successMembersElem,
                 'member');
         var _memberArray = _getMemberItemsFromAddedContactListMemberElemArray(_memberElemArray);
         var _count = _memberArray.length;
+        // jidのArrayを生成
         var _jidList = new Array();
         for ( var _i = 0; _i < _count; _i++) {
             _jidList[_i] = _memberArray[_i].jid;
@@ -7068,10 +7642,12 @@ limitations under the License.
         function _onGetUserAccountDataCallBack(mapData) {
             var _loginAccountMapData = mapData;
             for ( var _i = 0; _i < _count; _i++) {
+                // ユーザ名(ログインアカウントの再設定)
                 if (_loginAccountMapData) {
                     _memberArray[_i].userName = _loginAccountMapData[_memberArray[_i].jid];
                 }
             }
+            // 応答を返す
             onGetMemberCallBack(_memberArray);
         }
     }
@@ -7087,7 +7663,9 @@ limitations under the License.
             var _memberElem = memberElemArray[_i];
             var _item = _getPersonItemFromElement(_memberElem);
 
+            // <contactlistgroups>
             var _contactListGroupsElem = Utils.getChildXmlElement(_memberElem, 'contactlistgroups');
+            // <contactlistgroup>
             var _contactListGroupArray = Utils.getChildXmlElementArray(_contactListGroupsElem, 'contactlistgroup');
             var _contactListGroupCount = 0;
             var _contactListGroupItems = [];
@@ -7098,6 +7676,7 @@ limitations under the License.
                     _contactListGroupItems[_j] = _contactListGroupElem.text();
                 }
             }
+            // <position>
             var _positionElem = Utils.getChildXmlElement(_memberElem,
                     'position');
             var _positionItemArray = Utils.getChildXmlElementArray(_positionElem, 'item');
@@ -7128,6 +7707,7 @@ limitations under the License.
             _log.connectionLog(3, '_getFailureMemberForAddContactListMember :: _failureMembersElem is null.');
             return null;
         }
+        // <member>
         var _memberElemArray = Utils.getChildXmlElementArray(_failureMembersElem,
                 'member');
         var _memberArray = [];
@@ -7135,6 +7715,7 @@ limitations under the License.
         for(_i = 0; _i < _memberElemCount; _i++){
             var _memberElem = _memberElemArray[_i];
             var _item = {};
+            // <jid>
             var _jidElem = Utils.getChildXmlElement(_memberElem,
                     'jid');
             var _jid = '';
@@ -7142,6 +7723,7 @@ limitations under the License.
                 _jid = _jidElem.text();
             }
 
+            // <contactlistgroup>
             var _contactListGroupElem = Utils.getChildXmlElement(_memberElem, 'contactlistgroup');
             var _contactListGroup = '';
             if (_contactListGroupElem != null) {
@@ -7155,6 +7737,7 @@ limitations under the License.
     }
 
 
+    // Itemsエレメントからitems項目を抽出する(コミュニティメンバー追加応答・通知用)
     function _getItemsFromAddCommunityMemberItemsElem(itemsElem) {
         if (itemsElem == null) {
             _log
@@ -7169,6 +7752,7 @@ limitations under the License.
                             '_getItemsFromAddCommunityMemberItemsElem :: itemsElem is invalid');
             return null;
         }
+        // <item>の要素を取得する
         var _itemElemArray = Utils.getChildXmlElementArray(itemsElem, 'item');
         if (_itemElemArray == null) {
             _log
@@ -7180,7 +7764,9 @@ limitations under the License.
         var _itemIndex = 0;
         var _count = _itemElemArray.length;
         for ( var _i = 0; _i < _count; _i++) {
+            // <item>から内容を取り出す
             var _itemElem = _itemElemArray[_i];
+            // <roomid>
             var _roomIdElem = Utils.getChildXmlElement(_itemElem, 'roomid');
             if (_roomIdElem == null) {
                 _log.connectionLog(3,
@@ -7189,6 +7775,7 @@ limitations under the License.
                 continue;
             }
             var _roomId = _roomIdElem.text();
+            // <roomname>
             var _roomNameElem = Utils.getChildXmlElement(_itemElem, 'roomname');
             if (_roomNameElem == null) {
                 _log.connectionLog(3,
@@ -7197,6 +7784,7 @@ limitations under the License.
                 continue;
             }
             var _roomName = _roomNameElem.text();
+            // <added_by>
             var _addedByElem = Utils.getChildXmlElement(_itemElem, 'added_by');
             if (_addedByElem == null) {
                 _log.connectionLog(3,
@@ -7205,6 +7793,7 @@ limitations under the License.
                 continue;
             }
             var _addedBy = _addedByElem.text();
+            // <members>
             var _membersElem = Utils.getChildXmlElement(_itemElem, 'members');
             if (_membersElem == null) {
                 _log.connectionLog(3,
@@ -7212,6 +7801,7 @@ limitations under the License.
                                 + _i);
                 continue;
             }
+            // <member>
             var _members = [];
             var _memberElemArray = Utils.getChildXmlElementArray(_membersElem,
                     'member');
@@ -7224,13 +7814,16 @@ limitations under the License.
                 }
                 _members.push(_memberData);
             }
+            // count
             var _memberCount = _members.length;
+            // <notify_type>
             var _notifyTypeElem = Utils.getChildXmlElement(_itemElem, 'notify_type');
             if(_notifyTypeElem == null) {
                 _log.connectionLog(3, '_getItemsFromAddCommunityMemberItemsElem :: _notifyTypeElem is null. No.' + _i);
                 continue;
             }
             var _notifyType = parseInt(_notifyTypeElem.text());
+            // 詰め込む
             _retArray[_itemIndex] = {
                 roomId : _roomId,
                 roomName : _roomName,
@@ -7244,12 +7837,14 @@ limitations under the License.
         return _retArray;
     }
 
+    // コミュニティメンバー追加時の応答および、通知でitemsのmember情報にcubeeアカウント情報を付ける
     function _appendCubeeAccountForAddMemberResponseOrNotification(items,
             callbackFunc) {
         if (items == null) {
             _returnCallback();
             return;
         }
+        // 取得するアカウントのjid一覧を作成する
         var _jidList = [];
         var _jidHash = {};
         var _itemCount = items.length;
@@ -7266,10 +7861,12 @@ limitations under the License.
                 }
             }
         }
+        // jid一覧からアカウント情報を取得して応答データに付ける
         if (_jidList.length > 0) {
             UserAccountUtils.getLoginAccountListByJidList(_jidList,
                     _onGetUserAccountDataCallBack);
         } else {
+            // jid一覧がない場合は応答する
             _returnCallback();
             return;
         }
@@ -7393,6 +7990,7 @@ limitations under the License.
                             '_getItemsElemFromGetMailServerListResponce :: xmlRootElem is null');
             return null;
         }
+        // <mail>
         var _mailElem = Utils.getChildXmlElement(xmlRootElem, 'mail');
         if (_mailElem == null) {
             _log
@@ -7408,6 +8006,7 @@ limitations under the License.
                             '_getItemsElemFromGetMailServerListResponce :: _mailElemNamespace is not "createchatroom"');
             return null;
         }
+        // <content>
         var _contentElem = Utils.getChildXmlElement(_mailElem, 'content');
         if (_contentElem == null) {
             _log
@@ -7415,6 +8014,7 @@ limitations under the License.
                             '_getItemsElemFromGetMailServerListResponce :: _contentElem is invalid');
             return null;
         }
+        // <items>
         var _itemsElem = Utils.getChildXmlElement(_contentElem, 'items');
         if (_itemsElem == null) {
             _log
@@ -7439,6 +8039,7 @@ limitations under the License.
                             '_getItemsFromGetMailServerListItemsElem :: itemsElem is invalid');
             return null;
         }
+        // <item>の要素を取得する
         var _itemElemArray = Utils.getChildXmlElementArray(itemsElem, 'item');
         if (_itemElemArray == null) {
             _log
@@ -7450,7 +8051,9 @@ limitations under the License.
         var _itemIndex = 0;
         var _count = _itemElemArray.length;
         for ( var _i = 0; _i < _count; _i++) {
+            // <item>から内容を取り出す
             var _itemElem = _itemElemArray[_i];
+            // <id>
             var _idElem = Utils.getChildXmlElement(_itemElem, 'id');
             if (_idElem == null) {
                 _log.connectionLog(3,
@@ -7460,6 +8063,7 @@ limitations under the License.
             }
             var _idStr = _idElem.text();
             var _id = parseInt(_idStr);
+            // <display_name>
             var _displayNameElem = Utils.getChildXmlElement(_itemElem,
                     'display_name');
             if (_displayNameElem == null) {
@@ -7469,6 +8073,7 @@ limitations under the License.
                 continue;
             }
             var _displayName = _displayNameElem.text();
+            // <server_type>
             var _serverTypeElem = Utils.getChildXmlElement(_itemElem,
                     'server_type');
             if (_serverTypeElem == null) {
@@ -7479,6 +8084,7 @@ limitations under the License.
             }
             var _serverTypeStr = _serverTypeElem.text();
             var _serverType = parseInt(_serverTypeStr);
+            // <created_at>
             var _createdAtElem = Utils.getChildXmlElement(_itemElem,
                     'created_at');
             if (_createdAtElem == null) {
@@ -7488,6 +8094,7 @@ limitations under the License.
                 continue;
             }
             var _createdAt = _createdAtElem.text();
+            // <created_by>
             var _createdByElem = Utils.getChildXmlElement(_itemElem,
                     'created_by');
             if (_createdByElem == null) {
@@ -7497,6 +8104,7 @@ limitations under the License.
                 continue;
             }
             var _createdBy = _createdByElem.text();
+            // <updated_at>
             var _updatedAtElem = Utils.getChildXmlElement(_itemElem,
                     'updated_at');
             if (_updatedAtElem == null) {
@@ -7506,6 +8114,7 @@ limitations under the License.
                 continue;
             }
             var _updatedAt = _updatedAtElem.text();
+            // <updated_by>
             var _updatedByElem = Utils.getChildXmlElement(_itemElem,
                     'updated_by');
             if (_updatedByElem == null) {
@@ -7515,6 +8124,7 @@ limitations under the License.
                 continue;
             }
             var _updatedBy = _updatedByElem.text();
+            // <pop_host>
             var _popHostElem = Utils.getChildXmlElement(_itemElem, 'pop_host');
             if (_popHostElem == null) {
                 _log.connectionLog(3,
@@ -7523,6 +8133,7 @@ limitations under the License.
                 continue;
             }
             var _popHost = _popHostElem.text();
+            // <pop_port>
             var _popPortElem = Utils.getChildXmlElement(_itemElem, 'pop_port');
             if (_popPortElem == null) {
                 _log.connectionLog(3,
@@ -7532,6 +8143,7 @@ limitations under the License.
             }
             var _popPortStr = _popPortElem.text();
             var _popPort = parseInt(_popPortStr);
+            // <pop_auth_mode>
             var _popAuthModeElem = Utils.getChildXmlElement(_itemElem,
                     'pop_auth_mode');
             if (_popAuthModeElem == null) {
@@ -7542,6 +8154,7 @@ limitations under the License.
             }
             var _popAuthModeStr = _popAuthModeElem.text();
             var _popAuthMode = parseInt(_popAuthModeStr);
+            // <pop_response_timeout>
             var _popResponseTimeoutElem = Utils.getChildXmlElement(_itemElem,
                     'pop_response_timeout');
             if (_popResponseTimeoutElem == null) {
@@ -7554,6 +8167,7 @@ limitations under the License.
             }
             var _popResponseTimeoutStr = _popResponseTimeoutElem.text();
             var _popResponseTimeout = parseInt(_popResponseTimeoutStr);
+            // 詰め込む
             _retArray[_itemIndex] = {
                 id : _id,
                 displayName : _displayName,
@@ -7571,6 +8185,7 @@ limitations under the License.
         }
         return _retArray;
     }
+    //メールアカウント情報取得
     _proto.getGetMailCooperationSettings = function(accessToken, onGetMailCooperationSettingsCallBackFunc) {
         if (accessToken == null || typeof accessToken != 'string') {
             _log.connectionLog(4, 'accessToken is invalid');
@@ -7637,6 +8252,7 @@ limitations under the License.
 
         return true;
     };
+    // メールアカウント情報取得応答からitemsElementを取得
     function _getItemsElemFromGetMailCooperationSettingsResponce(xmlRootElem) {
         if (xmlRootElem == null) {
             _log
@@ -7644,6 +8260,7 @@ limitations under the License.
                             '_getItemsElemFromGetMailCooperationSettingsResponce :: xmlRootElem is null');
             return null;
         }
+        // <mail>
         var _mailElem = Utils.getChildXmlElement(xmlRootElem, 'mail');
         if (_mailElem == null) {
             _log
@@ -7659,6 +8276,7 @@ limitations under the License.
                             '_getItemsElemFromGetMailCooperationSettingsResponce :: _mailElemNamespace is not "getsettings"');
             return null;
         }
+        // <content>
         var _contentElem = Utils.getChildXmlElement(_mailElem, 'content');
         if (_contentElem == null) {
             _log
@@ -7667,6 +8285,7 @@ limitations under the License.
                             '_getItemsElemFromGetMailCooperationSettingsResponce :: _contentElem is invalid');
             return null;
         }
+        // <items>
         var _itemsElem = Utils.getChildXmlElement(_contentElem, 'items');
         if (_itemsElem == null) {
             _log
@@ -7676,6 +8295,7 @@ limitations under the License.
         }
         return _itemsElem;
     }
+    //メールアカウント一覧情報取得
     _proto.getAllUserMailSettings = function(accessToken, requestData, onGetAllUserMailSettingsCallBackFunc) {
         if (accessToken == null || typeof accessToken != 'string') {
             _log.connectionLog(4, 'accessToken is invalid');
@@ -7754,6 +8374,7 @@ limitations under the License.
         _xsConn.send(_xmppStr);
         return true;
     };
+    // メールアカウント一覧情報取得応答からitemsElementを取得
     function _getItemsElemFromGetAllUserMailSettingsResponce(xmlRootElem) {
         if (xmlRootElem == null) {
             _log
@@ -7761,6 +8382,7 @@ limitations under the License.
                             '_getItemsElemFromGetMailCooperationSettingsResponce :: xmlRootElem is null');
             return null;
         }
+        // <mail>
         var _mailElem = Utils.getChildXmlElement(xmlRootElem, 'mail');
         if (_mailElem == null) {
             _log
@@ -7776,6 +8398,7 @@ limitations under the License.
                             '_getItemsElemFromGetAllUserMailSettingsResponce :: _mailElemNamespace is not "getallusersettings"');
             return null;
         }
+        // <content>
         var _contentElem = Utils.getChildXmlElement(_mailElem, 'content');
         if (_contentElem == null) {
             _log
@@ -7783,6 +8406,7 @@ limitations under the License.
                             '_getItemsElemFromGetAllUserMailSettingsResponce :: _contentElem is invalid');
             return null;
         }
+        // <items>
         var _itemsElem = Utils.getChildXmlElement(_contentElem, 'items');
         if (_itemsElem == null) {
             _log
@@ -7792,6 +8416,7 @@ limitations under the License.
         }
         return _itemsElem;
     }
+    //メールアカウント情報のitemsElementからitems(json形式)取得
     function _getItemsFromGetMailCooperationSettingsItemsElem(itemsElem) {
         if (itemsElem == null) {
             _log
@@ -7806,6 +8431,7 @@ limitations under the License.
                             '_getItemsFromGetMailCooperationSettingsItemsElem :: itemsElem is invalid');
             return null;
         }
+        // <item>の要素を取得する
         var _itemElemArray = Utils.getChildXmlElementArray(itemsElem, 'item');
         if (_itemElemArray == null) {
             _log
@@ -7817,7 +8443,9 @@ limitations under the License.
         var _itemIndex = 0;
         var _count = _itemElemArray.length;
         for ( var _i = 0; _i < _count; _i++) {
+            // <item>から内容を取り出す
             var _itemElem = _itemElemArray[_i];
+            // <id>
             var _idElem = Utils.getChildXmlElement(_itemElem, 'id');
             if (_idElem == null) {
                 _log.connectionLog(3,
@@ -7827,6 +8455,7 @@ limitations under the License.
             }
             var _idStr = _idElem.text();
             var _id = parseInt(_idStr);
+            // <jid>
             var _jidElem = Utils.getChildXmlElement(_itemElem, 'jid');
             if (_jidElem == null) {
                 _log.connectionLog(3,
@@ -7835,6 +8464,7 @@ limitations under the License.
                 continue;
             }
             var _jid = _jidElem.text();
+            // <sever_id>
             var _serverIdElem = Utils
                     .getChildXmlElement(_itemElem, 'server_id');
             if (_serverIdElem == null) {
@@ -7847,6 +8477,7 @@ limitations under the License.
             }
             var _serverIdStr = _serverIdElem.text();
             var _serverId = parseInt(_serverIdStr);
+            // <branch_number>
             var _branchNumberElem = Utils.getChildXmlElement(_itemElem,
                     'branch_number');
             if (_branchNumberElem == null) {
@@ -7859,6 +8490,7 @@ limitations under the License.
             }
             var _branchNumberStr = _branchNumberElem.text();
             var _branchNumber = parseInt(_branchNumberStr);
+            // <mail_address>
             var _mailElem = Utils.getChildXmlElement(_itemElem, 'mail_address');
             if (_mailElem == null) {
                 _log.connectionLog(3,
@@ -7867,6 +8499,7 @@ limitations under the License.
                 continue;
             }
             var _mail = _mailElem.text();
+            // <mail_cooperation_type>
             var _typeElem = Utils.getChildXmlElement(_itemElem,
                     'mail_cooperation_type');
             if (_typeElem == null) {
@@ -7877,6 +8510,7 @@ limitations under the License.
             }
             var _typeStr = _typeElem.text();
             var _type = parseInt(_typeStr);
+            // <setting_info>
             var _settingInfo = {};
             var _settingInfoElem = Utils.getChildXmlElement(_itemElem,
                     'setting_info');
@@ -7890,6 +8524,7 @@ limitations under the License.
             }
             _settingInfo = _getSettingInfoFromSettngInfoElm(_settingInfoElem);
 
+            // 詰め込む
             _retArray[_itemIndex] = {
                 id : _id,
                 serverId : _serverId,
@@ -7903,11 +8538,14 @@ limitations under the License.
         }
         return _retArray;
 
+        // settingInfoElemからsettingInfo(json)を取得
         function _getSettingInfoFromSettngInfoElm(settingInfoElem) {
             var _ret = {};
             if (settingInfoElem == null) {
                 return _ret;
             }
+            // =====今はPOPのみ対応===========
+            // <pop_server>
             var _popServerElem = Utils.getChildXmlElement(settingInfoElem,
                     'pop_server');
             if (_popServerElem == null) {
@@ -7917,6 +8555,7 @@ limitations under the License.
                 return _ret;
             }
             var _popServer = {};
+            // <mail_account>
             var _mailAccountElem = Utils.getChildXmlElement(_popServerElem,
                     'mail_account');
             if (_mailAccountElem == null) {
@@ -7926,6 +8565,7 @@ limitations under the License.
                 return _ret;
             }
             var _mailAccount = _mailAccountElem.text();
+            // <mail_password>
             var _mailPassElem = Utils.getChildXmlElement(_popServerElem,
                     'mail_password');
             if (_mailPassElem == null) {
@@ -7938,9 +8578,11 @@ limitations under the License.
             _popServer.mailAccount = _mailAccount;
             _popServer.mailPassword = _mailPass;
             _ret.popServer = _popServer;
+            // =====今はPOPのみ対応 ここまで===========
             return _ret;
         }
     }
+    // 件数取得
     _proto.getCount = function(accessToken, requestData, onGetCountCallBackFunc) {
         if (accessToken == null || typeof accessToken != 'string') {
             _log.connectionLog(3, 'accessToken is invalid : ' + accessToken);
@@ -8005,6 +8647,7 @@ limitations under the License.
                 switch (_type) {
                 case RequestData.GET_COUNT_TYPE_MESSAGE:
                     _extras = {};
+                    // <query>
                     var _queryElem = Utils.getChildXmlElement(
                             responceXmlRootElem, 'query');
                     if (_queryElem == null) {
@@ -8014,6 +8657,7 @@ limitations under the License.
                         _reason = ERROR_REASON_PARSE_RESPONSE_XMPP;
                         break;
                     }
+                    // <content>
                     var _contentElem = Utils.getChildXmlElement(_queryElem,
                             'content');
                     if (_contentElem == null) {
@@ -8024,6 +8668,7 @@ limitations under the License.
                         _reason = ERROR_REASON_PARSE_RESPONSE_XMPP;
                         break;
                     }
+                    // <count>
                     var _countElem = Utils.getChildXmlElement(_contentElem,
                             'count');
                     if (_countElem == null) {
@@ -8050,6 +8695,7 @@ limitations under the License.
         return true;
     };
 
+    // メンバー変更
     _proto.updateMember = function(accessToken, requestData,
             onUpdateMemberCallBackFunc) {
         if (accessToken == null || typeof accessToken != 'string') {
@@ -8138,6 +8784,7 @@ limitations under the License.
                                         'synchronousBridgeNodeXmpp updateMember(onUpdateMemberCallback)::response data(content) is invalid');
                         break;
                     }
+                    // extrasの抽出
                     _extras = _getExtrasFromUpdateCommunityOwnerResponceContent(_contentElem);
                     if (_extras == null) {
                         _log
@@ -8146,6 +8793,7 @@ limitations under the License.
                                         'synchronousBridgeNodeXmpp updateMember(onUpdateMemberCallback)::response data(extras) is invalid');
                         _extras = {};
                     }
+                    // itemsの抽出
                     _items = _getItemsFromUpdateCommunityOwnerResponceContent(_contentElem);
                     if (_items == null) {
                         _log
@@ -8181,6 +8829,7 @@ limitations under the License.
         return true;
     };
 
+    // コミュニティオーナー変更の応答を受けてContentエレメントをチュス出する
     function _getContentElemFromUpdateCommunityOwnerResponce(
             responceXmlRootElem) {
         var _ret = null;
@@ -8190,6 +8839,7 @@ limitations under the License.
                             '_getContentElemFromUpdateCommunityOwnerResponce :: xmlRootElem is null');
             return _ret;
         }
+        // <group>
         var _groupElem = Utils.getChildXmlElement(responceXmlRootElem, 'group');
         if (_groupElem == null) {
             _log
@@ -8205,6 +8855,7 @@ limitations under the License.
                             '_getContentElemFromUpdateCommunityOwnerResponce :: _groupElemNamespace is not "createchatroom"');
             return _ret;
         }
+        // <content>
         var _contentElem = Utils.getChildXmlElement(_groupElem, 'content');
         if (_contentElem == null) {
             _log
@@ -8216,6 +8867,7 @@ limitations under the License.
         return _ret;
     }
 
+    // コミュニティオーナー変更の応答・通知を受けて、extras項目を抽出する
     function _getExtrasFromUpdateCommunityOwnerResponceContent(contentElem) {
         var _ret = null;
         if (contentElem == null) {
@@ -8224,6 +8876,7 @@ limitations under the License.
                             '_getExtrasFromUpdateCommunityOwnerResponceContent :: contentElem is null');
             return _ret;
         }
+        // <extras>
         var _extrasElem = Utils.getChildXmlElement(contentElem, 'extras');
         if (_extrasElem == null) {
             _log
@@ -8231,6 +8884,7 @@ limitations under the License.
                             '_getExtrasFromUpdateCommunityOwnerResponceContent :: _extrasElem is null');
             return _ret;
         }
+        // <preowners>
         var _preOwnersElem = Utils.getChildXmlElement(_extrasElem, 'preowners');
         if (_preOwnersElem == null) {
             _log
@@ -8238,6 +8892,7 @@ limitations under the License.
                             '_getExtrasFromUpdateCommunityOwnerResponceContent :: _preOwnersElem is null');
             return _ret;
         }
+        // <owner>
         var _ownersArray = _getOwnerArrayFromOwnersElem(_preOwnersElem);
         if (_ownersArray == null) {
             _log
@@ -8254,6 +8909,7 @@ limitations under the License.
         return _ret;
     }
 
+    // コミュニティオーナー変更の応答・通知を受けて、items項目を抽出する
     function _getItemsFromUpdateCommunityOwnerResponceContent(contentElem) {
         var _ret = null;
         if (contentElem == null) {
@@ -8262,6 +8918,7 @@ limitations under the License.
                             '_getItemsFromUpdateCommunityOwnerResponceContent :: contentElem is null');
             return _ret;
         }
+        // <items>
         var _itemsElem = Utils.getChildXmlElement(contentElem, 'items');
         if (_itemsElem == null) {
             _log
@@ -8269,6 +8926,7 @@ limitations under the License.
                             '_getItemsFromUpdateCommunityOwnerResponceContent :: _itemsElem is null');
             return _ret;
         }
+        // <item>
         var _itemElemArray = Utils.getChildXmlElementArray(_itemsElem, 'item');
         if (_itemElemArray == null) {
             _log
@@ -8284,6 +8942,7 @@ limitations under the License.
             if (_itemElem == null) {
                 continue;
             }
+            // <roomid>
             var _roomIdElem = Utils.getChildXmlElement(_itemElem, 'roomid');
             if (_roomIdElem == null) {
                 _log
@@ -8292,6 +8951,7 @@ limitations under the License.
                 continue;
             }
             var _roomId = _roomIdElem.text();
+            // <owners>
             var _ownersElem = Utils.getChildXmlElement(_itemElem, 'owners');
             var _ownersArray = _getOwnerArrayFromOwnersElem(_ownersElem);
             if (_ownersArray == null) {
@@ -8300,6 +8960,7 @@ limitations under the License.
                                 '_getItemsFromUpdateCommunityOwnerResponceContent :: _ownersArray is null');
                 return _ret;
             }
+            // 取得データを詰め込む
             var _item = {
                 roomId : _roomId,
                 ownerCount : _ownersArray.length,
@@ -8319,6 +8980,7 @@ limitations under the License.
                     '_getOwnerArrayFromOwnersElem :: ownersElem is null');
             return _ret;
         }
+        // <owner>
         var _ownerElemArray = Utils
                 .getChildXmlElementArray(ownersElem, 'owner');
         if (_ownerElemArray == null) {
@@ -8342,6 +9004,7 @@ limitations under the License.
         return _ret;
     }
 
+    // メンバー削除
     _proto.removeMember = function(accessToken, requestData,
             onRemoveMemberCallBackFunc) {
         if (accessToken == null || typeof accessToken != 'string') {
@@ -8545,6 +9208,7 @@ limitations under the License.
         return true;
     };
 
+    // Itemsエレメントからitems項目を抽出する(コミュニティメンバー追加応答・通知用)
     function _getItemsFromRemoveCommunityMemberItemsElem(itemsElem) {
         if (itemsElem == null) {
             _log
@@ -8559,6 +9223,7 @@ limitations under the License.
                             '_getItemsFromRemoveCommunityMemberItemsElem :: itemsElem is invalid');
             return null;
         }
+        // <item>の要素を取得する
         var _itemElemArray = Utils.getChildXmlElementArray(itemsElem, 'item');
         if (_itemElemArray == null) {
             _log
@@ -8569,7 +9234,9 @@ limitations under the License.
         var _retArray = [];
         var _count = _itemElemArray.length;
         for ( var _i = 0; _i < _count; _i++) {
+            // <item>から内容を取り出す
             var _itemElem = _itemElemArray[_i];
+            // <roomid>
             var _roomIdElem = Utils.getChildXmlElement(_itemElem, 'roomid');
             if (_roomIdElem == null) {
                 _log.connectionLog(3,
@@ -8578,6 +9245,7 @@ limitations under the License.
                 continue;
             }
             var _roomId = _roomIdElem.text();
+            // <roomname>
             var _roomNameElem = Utils.getChildXmlElement(_itemElem, 'roomname');
             if (_roomNameElem == null) {
                 _log.connectionLog(3,
@@ -8586,6 +9254,7 @@ limitations under the License.
                 continue;
             }
             var _roomName = _roomNameElem.text();
+            // <removed_by>
             var _removedByElem = Utils.getChildXmlElement(_itemElem,
                     'removed_by');
             if (_removedByElem == null) {
@@ -8595,6 +9264,7 @@ limitations under the License.
                 continue;
             }
             var _removedBy = _removedByElem.text();
+            // <members>
             var _membersElem = Utils.getChildXmlElement(_itemElem, 'members');
             if (_membersElem == null) {
                 _log.connectionLog(3,
@@ -8602,6 +9272,7 @@ limitations under the License.
                                 + _i);
                 continue;
             }
+            // <member>
             var _members = [];
             var _memberElemArray = Utils.getChildXmlElementArray(_membersElem,
                     'member');
@@ -8611,7 +9282,9 @@ limitations under the License.
                 var _member = _memberElem.text();
                 _members.push(_member);
             }
+            // count
             var _memberCount = _members.length;
+            // 詰め込む
             var _itemData = {
                 roomId : _roomId,
                 roomName : _roomName,
@@ -8624,6 +9297,14 @@ limitations under the License.
         return _retArray;
     }
 
+    /**
+     * Itemsエレメントからitems項目を抽出する(GroupChatメンバー削除応答・通知用)
+     *
+     * @param {object}
+     *            itemsElem
+     * @param {int}
+     *            packetType リクエストに対する応答 or 通知の切り分け（0:応答,1:通知）
+     */
     function _getItemsFromRemoveGroupChatMemberItemsElem(itemsElem, packetType) {
         if (itemsElem == null) {
             _log
@@ -8638,6 +9319,7 @@ limitations under the License.
                             '_getItemsFromRemoveGroupChatMemberItemsElem :: itemsElem is invalid');
             return null;
         }
+        // <item>の要素を取得する
         var _itemElemArray = Utils.getChildXmlElementArray(itemsElem, 'item');
         if (_itemElemArray == null) {
             _log
@@ -8648,7 +9330,9 @@ limitations under the License.
         var _retArray = [];
         var _count = _itemElemArray.length;
         for ( var _i = 0; _i < _count; _i++) {
+            // <item>から内容を取り出す
             var _itemElem = _itemElemArray[_i];
+            // <roomid>
             var _roomIdElem = Utils.getChildXmlElement(_itemElem, 'roomid');
             if (_roomIdElem == null) {
                 _log.connectionLog(3,
@@ -8658,6 +9342,7 @@ limitations under the License.
             }
             var _roomId = _roomIdElem.text();
 
+            // <roomname>
             var _roomNameElem = Utils.getChildXmlElement(_itemElem, 'roomname');
             if (_roomNameElem == null) {
                 _log.connectionLog(3,
@@ -8667,6 +9352,7 @@ limitations under the License.
             }
             var _roomName = _roomNameElem.text();
 
+            // <parent_room_id>
             var _parentRoomIdElem = Utils.getChildXmlElement(_itemElem, 'parentroomid');
             if (_parentRoomIdElem == null) {
                 _log.connectionLog(3,
@@ -8676,6 +9362,7 @@ limitations under the License.
             }
             var _parentRoomId = _parentRoomIdElem.text();
 
+            // <privacy_type>
             var _privacyTypeElem = Utils.getChildXmlElement(_itemElem, 'privacytype');
             if (_privacyTypeElem == null) {
                 _log.connectionLog(3,
@@ -8685,6 +9372,7 @@ limitations under the License.
             }
             var _privacyType = parseInt(_privacyTypeElem.text());
 
+            // <removed_by>
             var _removedByElem = Utils.getChildXmlElement(_itemElem,
                     'removed_by');
             if (_removedByElem == null) {
@@ -8695,6 +9383,7 @@ limitations under the License.
             }
             var _removedBy = _removedByElem.text();
 
+            // <removetype>
             var _removetypeElem = Utils.getChildXmlElement(_itemElem,
                     'removetype');
             if (_removetypeElem == null) {
@@ -8705,6 +9394,7 @@ limitations under the License.
             }
             var _removetype = _removetypeElem.text();
 
+            // <members>
             var _membersElem = Utils.getChildXmlElement(_itemElem, 'members');
             if (_membersElem == null) {
                 _log.connectionLog(3,
@@ -8713,11 +9403,15 @@ limitations under the License.
                 continue;
             }
 
+            // count(成功した人の数)
             var _memberCount = 0;
             var _membersList = [];
+            // 応答の場合
             if (packetType == 0) {
+                // <successmembers>
                 var _successMembersElem = Utils.getChildXmlElement(
                         _membersElem, 'successmembers');
+                // successMember 内の <member>
                 var _sMembers = [];
                 if (_successMembersElem) {
                     var _memberElemArray = Utils.getChildXmlElementArray(
@@ -8729,8 +9423,10 @@ limitations under the License.
                         _sMembers.push(_member);
                     }
                 }
+                // <failureMembers>
                 var _failureMembersElem = Utils.getChildXmlElement(
                         _membersElem, 'failuremembers');
+                // successMember 内の <member>
                 var _fMembers = [];
                 if (_failureMembersElem) {
                     var _memberElemArray = Utils.getChildXmlElementArray(
@@ -8748,6 +9444,7 @@ limitations under the License.
                     failureMembers : _fMembers
                 };
             } else {
+                // 通知の場合
                 var _members = [];
                 var _memberElemArray = Utils.getChildXmlElementArray(
                         _membersElem, 'member');
@@ -8761,6 +9458,7 @@ limitations under the License.
                 _membersList = _members;
             }
 
+            // 詰め込む
             var _itemData = {
                 roomId : _roomId,
                 roomName : _roomName,
@@ -8778,6 +9476,12 @@ limitations under the License.
         };
     }
 
+    /**
+     * Itemsエレメントからitems項目を抽出する(コンタクトリストメンバー削除応答用)
+     *
+     * @param {object}
+     *            itemsElem
+     */
     function _getItemsFromRemoveContactListMemberItemsElem(itemsElem) {
         if (itemsElem == null) {
             _log
@@ -8792,6 +9496,7 @@ limitations under the License.
                             '_getItemsFromRemoveContactListMemberItemsElem :: itemsElem is invalid');
             return null;
         }
+        // <item>の要素を取得する
         var _itemElemArray = Utils.getChildXmlElementArray(itemsElem, 'item');
         if (_itemElemArray == null) {
             _log
@@ -8802,7 +9507,9 @@ limitations under the License.
         var _retArray = [];
         var _count = _itemElemArray.length;
         for ( var _i = 0; _i < _count; _i++) {
+            // <item>から内容を取り出す
             var _itemElem = _itemElemArray[_i];
+            // <removed_by>
             var _removedByElem = Utils.getChildXmlElement(_itemElem,
                     'removed_by');
             if (_removedByElem == null) {
@@ -8813,6 +9520,7 @@ limitations under the License.
             }
             var _removedBy = _removedByElem.text();
 
+            // <members>
             var _membersElem = Utils.getChildXmlElement(_itemElem, 'members');
             if (_membersElem == null) {
                 _log.connectionLog(3,
@@ -8823,8 +9531,10 @@ limitations under the License.
 
             var _membersList = [];
             var _memberCount = 0;
+            // <successmembers>
             var _successMembersElem = Utils.getChildXmlElement(
                     _membersElem, 'successmembers');
+            // successMember 内の <member>
             var _sMembers = [];
             if (_successMembersElem) {
                 var _memberElemArray = Utils.getChildXmlElementArray(
@@ -8843,8 +9553,10 @@ limitations under the License.
                     _memberCount++;
                 }
             }
+            // <failureMembers>
             var _failureMembersElem = Utils.getChildXmlElement(
                     _membersElem, 'failuremembers');
+            // failureMembers 内の <member>
             var _fMembers = [];
             if (_failureMembersElem) {
                 var _memberElemArray = Utils.getChildXmlElementArray(
@@ -8867,6 +9579,7 @@ limitations under the License.
                 successMembers : _sMembers,
                 failureMembers : _fMembers
             };
+            // 詰め込む
             var _itemData = {
                 removedBy : _removedBy,
                 count : _memberCount,
@@ -8877,6 +9590,7 @@ limitations under the License.
         return _retArray;
     }
 
+    // PubSubMessageの通知
     function _onPubSubMessage(sessionData, xmlRootElem) {
         var _fromAttr = xmlRootElem.attr('from');
         if (_fromAttr == null) {
@@ -8892,6 +9606,7 @@ limitations under the License.
         }
         var _to = _toAttr.value().split('/')[0];
 
+        // <event>
         var _eventElem = Utils.getChildXmlElement(xmlRootElem, 'event');
         if (_eventElem == null) {
             _log.connectionLog(3, '_eventElem is invalid');
@@ -8903,6 +9618,7 @@ limitations under the License.
             return;
         }
 
+        // <items>
         var _itemsElem = Utils.getChildXmlElement(_eventElem, 'items');
         if (_itemsElem == null) {
             _log.connectionLog(3, '_itemsElem is invalid');
@@ -8915,6 +9631,7 @@ limitations under the License.
         }
         var _nodeName = _publishNodeAttr.value();
 
+        // <item>
         var _itemElem = Utils.getChildXmlElement(_itemsElem, 'item');
         if (_itemElem == null) {
             _log.connectionLog(3, '_itemElem is invalid');
@@ -8942,28 +9659,36 @@ limitations under the License.
             type : 1,
             nodeName : _nodeName,
         };
+        // <entry>
         var _entryElem = Utils.getChildXmlElement(_itemElem, 'entry');
         if (_entryElem != null) {
+            // <body>
             var _bodyElem = Utils.getChildXmlElement(_entryElem, 'body');
             if (_bodyElem != null) {
+                // body
                 _itemData.body = _bodyElem.text();
             }
+            // <reply>
             var _replyElem = Utils.getChildXmlElement(_entryElem, 'reply');
             if (_replyElem != null) {
                 var _replyId = _replyElem.text();
                 if (_replyId == 'no_id') {
                     _replyId = '';
                 }
+                // replyId
                 _itemData.replyId = _replyId;
             }
 
-            _itemData.replyTo = ''; 
+            // replyTo
+            _itemData.replyTo = ''; // 暫定
 
+            // attached 暫定
             var _attachedElem = Utils.getChildXmlElement(_entryElem,
                     'attached_items');
             if (_attachedElem != null) {
                 var _attachedItemElemArray = Utils.getChildXmlElementArray(
                         _attachedElem, 'item');
+                // attachedCount attachedItems
                 _itemData.attachedCount = 0;
                 _itemData.attachedItems = [];
                 if (_attachedItemElemArray != null) {
@@ -8975,6 +9700,7 @@ limitations under the License.
                 }
             }
 
+            // context 暫定
             var _contextElem = Utils.getChildXmlElement(_entryElem, 'context');
             if (_contextElem != null) {
                 _itemData.context = _contextElem.text();
@@ -8986,6 +9712,7 @@ limitations under the License.
         _notifyPushMessge([sessionData], _notifyType, _pushContent);
     }
 
+    // チャット着信の通知
     function _onChatNotification(sessionDataAry, xmlRootElem) {
         var xmlRootElemTypeAttr = xmlRootElem.attr('type');
         if (xmlRootElemTypeAttr == null) {
@@ -8997,6 +9724,7 @@ limitations under the License.
             _log.connectionLog(3, '_xmlRootElemType is invalid');
             return;
         }
+        // from
         var _fromAttr = xmlRootElem.attr('from');
         if (_fromAttr == null) {
             _log.connectionLog(3, '_fromAttr is invalid');
@@ -9011,12 +9739,14 @@ limitations under the License.
         }
         var _to = _toAttr.value().split('/')[0];
 
+        // body
         var _bodyElem = Utils.getChildXmlElement(xmlRootElem, 'body');
         if (_bodyElem == null) {
             _log.connectionLog(3, '_bodyElem is invalid');
             return;
         }
         var _body = _bodyElem.text();
+        // replyId
         var _replyId = '';
         var _replyIdElem = Utils.getChildXmlElement(xmlRootElem, 'reply_id');
         if (_replyIdElem != null) {
@@ -9042,13 +9772,16 @@ limitations under the License.
         _notifyPushMessge(sessionDataAry, _notifyType, _pushContent);
     }
 
+    // チャットの着信
     function _onChatMessage(sessionDataAry, xmlRootElem) {
         _log.connectionLog(7, "do func  SynchronousBridgeNodeXmpp._onChatMessage(...");
+        // <chat>
         var _chatElem = Utils.getChildXmlElement(xmlRootElem, 'chat');
         if (_chatElem == null) {
             _log.connectionLog(3, '_chatElem is invalid');
             return;
         }
+        // <items>
         var _itemsElem = Utils.getChildXmlElement(_chatElem, 'items');
         if (_itemsElem == null) {
             _log.connectionLog(3, '_itemsElem is invalid');
@@ -9076,13 +9809,16 @@ limitations under the License.
         }
     }
 
+    // タスクの通知
     function _onTaskMessage(sessionDataAry, xmlRootElem) {
         _log.connectionLog(7, 'do func SynchronousBridgeNodeXmpp._onTaskMessage(..');
+        // <task>
         var _taskElem = Utils.getChildXmlElement(xmlRootElem, 'task');
         if (_taskElem == null) {
             _log.connectionLog(3, '_taskElem is invalid');
             return;
         }
+        // 追加か更新か
         var _subType = 0;
         var _taskNamespace = _taskElem.namespace().href();
         if (_taskNamespace == 'http://necst.nec.co.jp/protocol/task#add') {
@@ -9093,6 +9829,7 @@ limitations under the License.
             _log.connectionLog(3, 'task namespace is invalid');
             return;
         }
+        // <items>
         var _itemsElem = Utils.getChildXmlElement(_taskElem, 'items');
         if (_itemsElem == null) {
             _log.connectionLog(3, '_itemsElem is invalid');
@@ -9121,13 +9858,16 @@ limitations under the License.
         }
     }
 
+    // システムメッセージ通知
     function _onSystemMessage(sessionDataAry, xmlRootElem) {
         _log.connectionLog(7, "do func  SynchronousBridgeNodeXmpp._onSystemMessage(...");
+        // <system>
         var _systemElem = Utils.getChildXmlElement(xmlRootElem, 'system');
         if (_systemElem == null) {
             _log.connectionLog(3, '_systemElem is invalid');
             return;
         }
+        // <items>
         var _itemsElem = Utils.getChildXmlElement(_systemElem, 'items');
         if (_itemsElem == null) {
             _log.connectionLog(3, '_itemsElem is invalid');
@@ -9154,6 +9894,7 @@ limitations under the License.
         }
     }
 
+    // GoodJob通知
     function _onGoodJobMessage(sessionDataAry, xmlRootElem) {
         var _goodJobElem = Utils.getChildXmlElement(xmlRootElem, 'goodjob');
         if (_goodJobElem == null) {
@@ -9197,6 +9938,7 @@ limitations under the License.
         }
     }
 
+    // GoodJob情報をXMLから取得（GoodJob情報取得時、と通知時）
     function _getGoodJobItemsFromGoodJobItemsXML(_goodJobItemsXMLElem, callback) {
         var _retZeroCount = 0;
         var _retZeroItems = [];
@@ -9211,6 +9953,7 @@ limitations under the License.
         }
         var _goodJobItemElemArray = Utils.getChildXmlElementArray(_goodJobItemsXMLElem,
                 'item');
+        // goodJobCount goodJobItems
         if(_goodJobItemElemArray != null) {
             var _jidList = [];
             _itemCount = _goodJobItemElemArray.length;
@@ -9223,51 +9966,63 @@ limitations under the License.
             for(var _i = 0; _i < _itemCount; _i++) {
                 var _goodJobItemElem = _goodJobItemElemArray[_i];
                 var _goodJobData = {};
+                // itemId
                 var _goodJobItemIdAttr = _goodJobItemElem.attr('itemid');
                 if (_goodJobItemIdAttr != null) {
                     _goodJobData.itemId = _goodJobItemIdAttr.value();
                 }
+                // msgownjid
                 var _goodJobMsgOwnJidAttr = _goodJobItemElem.attr('msgownjid');
                 if (_goodJobMsgOwnJidAttr != null) {
                     _goodJobData.msgOwnJid = _goodJobMsgOwnJidAttr.value();
                 }
+                // msgto
                 var _goodJobMsgToAttr = _goodJobItemElem.attr('msgto');
                 if (_goodJobMsgToAttr != null) {
                     _goodJobData.msgTo = _goodJobMsgToAttr.value();
                 }
+                // msgtype
                 var _goodJobMsgTypeAttr = _goodJobItemElem.attr('msgtype');
                 if (_goodJobMsgTypeAttr != null) {
                     _goodJobData.msgType = parseInt(_goodJobMsgTypeAttr.value());
                 }
+                // body
                 var _goodJobBodyAttr = _goodJobItemElem.attr('body');
                 if (_goodJobBodyAttr != null) {
                     _goodJobData.body = _goodJobBodyAttr.value();
                 }
 
+                // fromJid
                 var _goodJobFromJidAttr = _goodJobItemElem.attr('fromjid');
                 if (_goodJobFromJidAttr != null) {
                     _goodJobData.fromJid = _goodJobFromJidAttr.value();
                 }
+                // fromName
                 var _goodJobFromNameAttr = _goodJobItemElem.attr('fromname');
                 if (_goodJobFromNameAttr != null) {
                     _goodJobData.fromName = _goodJobFromNameAttr.value();
                 }
+                // date
                 var _goodJobDateAttr = _goodJobItemElem.attr('date');
                 if (_goodJobDateAttr != null) {
                     _goodJobData.date = _goodJobDateAttr.value();
                 }
+                // nickName
                 var _nickNameElem = Utils.getChildXmlElement(_goodJobItemElem, 'nickname');
                 if(_nickNameElem != null) {
                     _goodJobData.nickName = _nickNameElem.text();
                 }
+                // avatarData
                 var _avatarDataElem = Utils.getChildXmlElement(_goodJobItemElem, 'avatardata');
                 if(_avatarDataElem != null) {
                     _goodJobData.avatarData = _avatarDataElem.text();
                 }
+                // avatarType
                 var _avatarTypeElem = Utils.getChildXmlElement(_goodJobItemElem, 'avatartype');
                 if(_avatarTypeElem != null) {
                     _goodJobData.avatarType = _avatarTypeElem.text();
                 }
+                // status
                 var _statusElem = Utils.getChildXmlElement(_goodJobItemElem, 'status');
                 if(_statusElem != null) {
                     _goodJobData.status = parseInt(_statusElem.text());
@@ -9276,15 +10031,18 @@ limitations under the License.
                 _items[_i] = _goodJobData;
                 _jidList.push(_goodJobData.fromJid);
             }
+            // アカウントを取得する
             if(_jidList.length > 0) {
                 UserAccountUtils.getLoginAccountListByJidList(_jidList, _onGetUserAccountDataCallBackForGoodJobData);
             } else {
+                // jid一覧がない場合は終了（異常系）
                 setTimeout(function(){
                     callback(_retZeroCount, _retZeroItems);
                 }, 1);
                 return;
             }
         } else {
+            // 通知データがない（異常系）
             setTimeout(function(){
                 callback(_retZeroCount, _retZeroItems);
             }, 1);
@@ -9296,12 +10054,19 @@ limitations under the License.
                 var _goodJobData = _items[_i];
                 _goodJobData.userName = mapData[_goodJobData.fromJid];
             }
+            // アカウントが取得できたのでコールバックする
             setTimeout(function(){
                 callback(_itemCount, _items);
             }, 1);
         }
     }
 
+    /**
+     * GoodJobの集計情報をXMLから取得（GoodJob情報取得時、と通知時）
+     *
+     * @param _goodJobItemsXMLElem XMPPからのレスポンスXML
+     * @param callback APIレスポンスコールバック
+     */
     function _getGoodJobTotalFromGoodJobCountingXML(_goodJobItemsXMLElem, callback) {
         var _retZeroCount = 0;
         var _retZeroItems = [];
@@ -9316,6 +10081,7 @@ limitations under the License.
         }
 
         var _goodJobItemElemArray = Utils.getChildXmlElementArray(_goodJobItemsXMLElem,'item');
+        // goodJobCount goodJobItems
         if(_goodJobItemElemArray != null) {
             var _jidList = [];
             _itemCount = _goodJobItemElemArray.length;
@@ -9328,24 +10094,29 @@ limitations under the License.
             for(var _i = 0; _i < _itemCount; _i++) {
                 var _goodJobItemElem = _goodJobItemElemArray[_i];
                 var _goodJobData = {};
+                // rank
                 var _goodJobRankElem = Utils.getChildXmlElement(_goodJobItemElem, 'rank');
                 if (_goodJobRankElem != null) {
                     _goodJobData.rank = parseInt(_goodJobRankElem.text());
                 }
+                // jid
                 var _goodJobJidElem = Utils.getChildXmlElement(_goodJobItemElem, 'jid');
                 if (_goodJobJidElem != null) {
                     _goodJobData.jid = _goodJobJidElem.text();
                 }
+                // points
                 var _pointsElem = Utils.getChildXmlElement(_goodJobItemElem, 'points');
                 if(_pointsElem != null) {
                     _goodJobData.points = parseInt(_pointsElem.text());
                 }
                 _items[_i] = _goodJobData;
             }
+            // コールバックする
             setTimeout(function(){
                 callback(_itemCount, _items);
             }, 1);
         } else {
+            // 通知データがない（異常系）
             setTimeout(function(){
                 callback(_retZeroCount, _retZeroItems);
             }, 1);
@@ -9353,6 +10124,12 @@ limitations under the License.
         }
     }
 
+    /**
+     * GoodJobのランキング情報をXMLから取得（GoodJob情報取得時、と通知時）
+     *
+     * @param _goodJobItemsXMLElem XMPPからのレスポンスXML
+     * @param callback APIレスポンスコールバック
+     */
     function _getGoodJobRankingFromGoodJobCountingXML(_goodJobItemsXMLElem, callback) {
         var _retZeroCount = 0;
         var _retZeroItems = [];
@@ -9367,6 +10144,7 @@ limitations under the License.
         }
 
         var _goodJobItemElemArray = Utils.getChildXmlElementArray(_goodJobItemsXMLElem,'item');
+        // goodJobCount goodJobItems
         if(_goodJobItemElemArray != null) {
             var _jidList = [];
             _itemCount = _goodJobItemElemArray.length;
@@ -9379,26 +10157,32 @@ limitations under the License.
             for(var _i = 0; _i < _itemCount; _i++) {
                 var _goodJobItemElem = _goodJobItemElemArray[_i];
                 var _goodJobData = {};
+                // rank
                 var _goodJobRankElem = Utils.getChildXmlElement(_goodJobItemElem, 'rank');
                 if (_goodJobRankElem != null) {
                     _goodJobData.rank = parseInt(_goodJobRankElem.text());
                 }
+                // jid
                 var _goodJobJidElem = Utils.getChildXmlElement(_goodJobItemElem, 'jid');
                 if (_goodJobJidElem != null) {
                     _goodJobData.jid = _goodJobJidElem.text();
                 }
+                // points
                 var _pointsElem = Utils.getChildXmlElement(_goodJobItemElem, 'points');
                 if(_pointsElem != null) {
                     _goodJobData.points = parseInt(_pointsElem.text());
                 }
+                // name
                 var _nameElem = Utils.getChildXmlElement(_goodJobItemElem, 'name');
                 if(_nameElem != null) {
                     _goodJobData.name = _nameElem.text();
                 }
+                // nickname
                 var _nicknameElem = Utils.getChildXmlElement(_goodJobItemElem, 'nickname');
                 if(_nicknameElem != null) {
                     _goodJobData.nickname = _nicknameElem.text();
                 }
+                // affiliation
                 var _affiliationElem = Utils.getChildXmlElement(_goodJobItemElem, 'affiliation');
                 if(_affiliationElem != null) {
                     try{
@@ -9407,10 +10191,12 @@ limitations under the License.
                         _goodJobData.affiliation = JSON.parse("[]");
                     }
                 }
+                // avatartype
                 var _avatartypeElem = Utils.getChildXmlElement(_goodJobItemElem, 'avatartype');
                 if(_avatartypeElem != null) {
                     _goodJobData.avatartype = _avatartypeElem.text();
                 }
+                // avatardata
                 var _avatardataElem = Utils.getChildXmlElement(_goodJobItemElem, 'avatardata');
                 if(_avatardataElem != null) {
                     _goodJobData.avatardata = _avatardataElem.text();
@@ -9418,10 +10204,12 @@ limitations under the License.
 
                 _items[_i] = _goodJobData;
             }
+            // コールバックする
             setTimeout(function(){
                 callback(_itemCount, _items);
             }, 1);
         } else {
+            // 通知データがない（異常系）
             setTimeout(function(){
                 callback(_retZeroCount, _retZeroItems);
             }, 1);
@@ -9429,6 +10217,7 @@ limitations under the License.
         }
     }
 
+    // EmotionPoint通知
     function _onEmotionPointMessage(sessionDataAry, xmlRootElem) {
         _log.connectionLog(7, 'do func SynchronousBridgeNodeXmpp._onEmotionPointMessage(..');
         var _emotionPointElem = Utils.getChildXmlElement(xmlRootElem, 'emotionpoint');
@@ -9473,6 +10262,7 @@ limitations under the License.
         }
     }
 
+    // EmotionPoint情報をXMLから取得（EmotionPoint情報取得時、と通知時）
     function _getEmotionPointItemsFromEmotionPointItemsXML(_emotionPointItemsXMLElem, callback) {
         _log.connectionLog(7, 'do func SynchronousBridgeNodeXmpp._getEmotionPointItemsFromEmotionPointItemsXML(..');
         var _retZeroCount = 0;
@@ -9488,6 +10278,7 @@ limitations under the License.
         }
         var _emotionPointItemElemArray = Utils.getChildXmlElementArray(_emotionPointItemsXMLElem,
                 'item');
+        // emotionPointCount emotionPointItems
         if(_emotionPointItemElemArray != null) {
             var _jidList = [];
             _itemCount = _emotionPointItemElemArray.length;
@@ -9501,58 +10292,72 @@ limitations under the License.
             for(var _i = 0; _i < _itemCount; _i++) {
                 var _emotionPointItemElem = _emotionPointItemElemArray[_i];
                 var _emotionPointData = {};
+                // itemId
                 var _emotionPointItemIdAttr = _emotionPointItemElem.attr('itemid');
                 if (_emotionPointItemIdAttr != null) {
                     _emotionPointData.itemId = _emotionPointItemIdAttr.value();
                 }
+                // msgownjid
                 var _emotionPointMsgOwnJidAttr = _emotionPointItemElem.attr('msgownjid');
                 if (_emotionPointMsgOwnJidAttr != null) {
                     _emotionPointData.msgOwnJid = _emotionPointMsgOwnJidAttr.value();
                 }
+                // msgto
                 var _emotionPointMsgToAttr = _emotionPointItemElem.attr('msgto');
                 if (_emotionPointMsgToAttr != null) {
                     _emotionPointData.msgTo = _emotionPointMsgToAttr.value();
                 }
+                // msgtype
                 var _emotionPointMsgTypeAttr = _emotionPointItemElem.attr('msgtype');
                 if (_emotionPointMsgTypeAttr != null) {
                     _emotionPointData.msgType = parseInt(_emotionPointMsgTypeAttr.value());
                 }
+                // body
                 var _emotionPointBodyAttr = _emotionPointItemElem.attr('body');
                 if (_emotionPointBodyAttr != null) {
                     _emotionPointData.body = _emotionPointBodyAttr.value();
                 }
+                // emotion_point
                 var _emotionPointEmotionPointAttr = _emotionPointItemElem.attr('emotion_point');
                 if (_emotionPointEmotionPointAttr != null) {
                     _emotionPointData.emotionPoint = parseInt(_emotionPointEmotionPointAttr.value());
                 }
+                // fromJid
                 var _emotionPointFromJidAttr = _emotionPointItemElem.attr('fromjid');
                 if (_emotionPointFromJidAttr != null) {
                     _emotionPointData.fromJid = _emotionPointFromJidAttr.value();
                 }
+                // fromName
                 var _emotionPointFromNameAttr = _emotionPointItemElem.attr('fromname');
                 if (_emotionPointFromNameAttr != null) {
                     _emotionPointData.fromName = _emotionPointFromNameAttr.value();
                 }
+                // created_at
                 var _emotionPointCreatedAtAttr = _emotionPointItemElem.attr('created_at');
                 if (_emotionPointCreatedAtAttr != null) {
                     _emotionPointData.createdAt = _emotionPointCreatedAtAttr.value();
                 }
+                // updated_at
                 var _emotionPointUpdatedAtAttr = _emotionPointItemElem.attr('updated_at');
                 if (_emotionPointUpdatedAtAttr != null) {
                     _emotionPointData.updatedAt = _emotionPointUpdatedAtAttr.value();
                 }
+                // nickName
                 var _nickNameElem = Utils.getChildXmlElement(_emotionPointItemElem, 'nickname');
                 if(_nickNameElem != null) {
                     _emotionPointData.nickName = _nickNameElem.text();
                 }
+                // avatarData
                 var _avatarDataElem = Utils.getChildXmlElement(_emotionPointItemElem, 'avatardata');
                 if(_avatarDataElem != null) {
                     _emotionPointData.avatarData = _avatarDataElem.text();
                 }
+                // avatarType
                 var _avatarTypeElem = Utils.getChildXmlElement(_emotionPointItemElem, 'avatartype');
                 if(_avatarTypeElem != null) {
                     _emotionPointData.avatarType = _avatarTypeElem.text();
                 }
+                // status
                 var _statusElem = Utils.getChildXmlElement(_emotionPointItemElem, 'status');
                 if(_statusElem != null) {
                     _emotionPointData.status = parseInt(_statusElem.text());
@@ -9560,15 +10365,18 @@ limitations under the License.
                 _items[_i] = _emotionPointData;
                 _jidList.push(_emotionPointData.fromJid);
             }
+            // アカウントを取得する
             if(_jidList.length > 0) {
                 UserAccountUtils.getLoginAccountListByJidList(_jidList, _onGetUserAccountDataCallBackForEmotionPointData);
             } else {
+                // jid一覧がない場合は終了（異常系）
                 setTimeout(function(){
                     callback(_retZeroCount, _retZeroItems);
                 }, 1);
                 return;
             }
         } else {
+            // 通知データがない（異常系）
             setTimeout(function(){
                 callback(_retZeroCount, _retZeroItems);
             }, 1);
@@ -9580,12 +10388,19 @@ limitations under the License.
                 var _emotionPointData = _items[_i];
                 _emotionPointData.userName = mapData[_emotionPointData.fromJid];
             }
+            // アカウントが取得できたのでコールバックする
             setTimeout(function(){
                 callback(_itemCount, _items);
             }, 1);
         }
     }
 
+    /**
+     * EmotionPointの集計情報をXMLから取得（EmotionPoint情報取得時、と通知時）
+     *
+     * @param _goodJobItemsXMLElem XMPPからのレスポンスXML
+     * @param callback APIレスポンスコールバック
+     */
     function _getEmotionPointTotalFromEmotionPointCountingXML(_emotionPointItemsXMLElem, callback) {
         var _retZeroCount = 0;
         var _retZeroItems = [];
@@ -9600,6 +10415,7 @@ limitations under the License.
         }
 
         var _emotionPointItemElemArray = Utils.getChildXmlElementArray(_emotionPointItemsXMLElem,'item');
+        // emotionPointCount emotionPointItems
         if(_emotionPointItemElemArray != null) {
             var _jidList = [];
             _itemCount = _emotionPointItemElemArray.length;
@@ -9612,24 +10428,29 @@ limitations under the License.
             for(var _i = 0; _i < _itemCount; _i++) {
                 var _emotionPointItemElem = _emotionPointItemElemArray[_i];
                 var _emotionPointData = {};
+                // rank
                 var _emotionPointRankElem = Utils.getChildXmlElement(_emotionPointItemElem, 'rank');
                 if (_emotionPointRankElem != null) {
                     _emotionPointData.rank = parseInt(_emotionPointRankElem.text());
                 }
+                // jid
                 var _emotionPointJidElem = Utils.getChildXmlElement(_emotionPointItemElem, 'jid');
                 if (_emotionPointJidElem != null) {
                     _emotionPointData.jid = _emotionPointJidElem.text();
                 }
+                // points
                 var _pointsElem = Utils.getChildXmlElement(_emotionPointItemElem, 'points');
                 if(_pointsElem != null) {
                     _emotionPointData.points = parseInt(_pointsElem.text());
                 }
                 _items[_i] = _emotionPointData;
             }
+            // コールバックする
             setTimeout(function(){
                 callback(_itemCount, _items);
             }, 1);
         } else {
+            // 通知データがない（異常系）
             setTimeout(function(){
                 callback(_retZeroCount, _retZeroItems);
             }, 1);
@@ -9637,6 +10458,12 @@ limitations under the License.
         }
     }
 
+    /**
+     * EmotionPointの集計情報をXMLから取得（EmotionPoint情報取得時、と通知時）
+     *
+     * @param _goodJobItemsXMLElem XMPPからのレスポンスXML
+     * @param callback APIレスポンスコールバック
+     */
     function _getEmotionPointRankingFromEmotionPointCountingXML(_emotionPointItemsXMLElem, callback) {
         var _retZeroCount = 0;
         var _retZeroItems = [];
@@ -9651,6 +10478,7 @@ limitations under the License.
         }
 
         var _emotionPointItemElemArray = Utils.getChildXmlElementArray(_emotionPointItemsXMLElem,'item');
+        // emotionPointCount emotionPointItems
         if(_emotionPointItemElemArray != null) {
             var _jidList = [];
             _itemCount = _emotionPointItemElemArray.length;
@@ -9663,26 +10491,32 @@ limitations under the License.
             for(var _i = 0; _i < _itemCount; _i++) {
                 var _emotionPointItemElem = _emotionPointItemElemArray[_i];
                 var _emotionPointData = {};
+                // rank
                 var _emotionPointRankElem = Utils.getChildXmlElement(_emotionPointItemElem, 'rank');
                 if (_emotionPointRankElem != null) {
                     _emotionPointData.rank = parseInt(_emotionPointRankElem.text());
                 }
+                // jid
                 var _emotionPointJidElem = Utils.getChildXmlElement(_emotionPointItemElem, 'jid');
                 if (_emotionPointJidElem != null) {
                     _emotionPointData.jid = _emotionPointJidElem.text();
                 }
+                // points
                 var _pointsElem = Utils.getChildXmlElement(_emotionPointItemElem, 'points');
                 if(_pointsElem != null) {
                     _emotionPointData.points = parseInt(_pointsElem.text());
                 }
+                // name
                 var _nameElem = Utils.getChildXmlElement(_emotionPointItemElem, 'name');
                 if(_nameElem != null) {
                     _emotionPointData.name = _nameElem.text();
                 }
+                // nickname
                 var _nicknameElem = Utils.getChildXmlElement(_emotionPointItemElem, 'nickname');
                 if(_nicknameElem != null) {
                     _emotionPointData.nickname = _nicknameElem.text();
                 }
+                // affiliation
                 var _affiliationElem = Utils.getChildXmlElement(_emotionPointItemElem, 'affiliation');
                 if(_affiliationElem != null) {
                     try{
@@ -9691,10 +10525,12 @@ limitations under the License.
                         _emotionPointData.affiliation = JSON.parse("[]");
                     }
                 }
+                // avatartype
                 var _avatartypeElem = Utils.getChildXmlElement(_emotionPointItemElem, 'avatartype');
                 if(_avatartypeElem != null) {
                     _emotionPointData.avatartype = _avatartypeElem.text();
                 }
+                // avatardata
                 var _avatardataElem = Utils.getChildXmlElement(_emotionPointItemElem, 'avatardata');
                 if(_avatardataElem != null) {
                     _emotionPointData.avatardata = _avatardataElem.text();
@@ -9702,10 +10538,12 @@ limitations under the License.
 
                 _items[_i] = _emotionPointData;
             }
+            // コールバックする
             setTimeout(function(){
                 callback(_itemCount, _items);
             }, 1);
         } else {
+            // 通知データがない（異常系）
             setTimeout(function(){
                 callback(_retZeroCount, _retZeroItems);
             }, 1);
@@ -9713,6 +10551,7 @@ limitations under the License.
         }
     }
 
+    // ThreadTitle通知
     function _onThreadTitleMessage(sessionDataAry, xmlRootElem) {
         _log.connectionLog(7, 'do func SynchronousBridgeNodeXmpp._onThreadTitleMessage(...');
         const _threadTitleUpdateElem = Utils.getChildXmlElement(xmlRootElem, 'threadtitleupdate');
@@ -9727,6 +10566,12 @@ limitations under the License.
         }
 
         let _threadTitleData = {};
+        //id
+        // const _idElem = Utils.getChildXmlElement(_itemsElem, 'id');
+        // if(_idElem != null) {
+        //     _threadTitleData.id = _idElem.text();
+        // }
+        // type
         const _typeElem = Utils.getChildXmlElement(_itemsElem, 'type');
         let _typeStr = "";
         if(_typeElem == null ||
@@ -9741,14 +10586,17 @@ limitations under the License.
             return;
         }
         _typeStr = _typeElem.text();
+        // thread_root_id
         const _threadRootIdElem = Utils.getChildXmlElement(_itemsElem, 'thread_root_id');
         if(_threadRootIdElem != null) {
             _threadTitleData.threadRootId = _threadRootIdElem.text();
         }
+        // thread_title
         const _threadTitleElem = Utils.getChildXmlElement(_itemsElem, 'thread_title');
         if(_threadTitleElem != null) {
             _threadTitleData.threadTitle = _threadTitleElem.text();
         }
+        //item_id
         const _itemIdElem = Utils.getChildXmlElement(_itemsElem, 'item_id');
         if(_itemIdElem != null) {
             _threadTitleData.itemId = _itemIdElem.text();
@@ -9764,6 +10612,7 @@ limitations under the License.
         _notifyPushMessge(sessionDataAry, _notifyType, _pushContent);
     }
 
+    // MessageOption通知
     function _onMessageOptionNotify(sessionDataAry, xmlRootElem) {
         var _notifyElem = Utils.getChildXmlElement(xmlRootElem, 'notify');
         if (_notifyElem == null) {
@@ -9782,6 +10631,7 @@ limitations under the License.
             return;
         }
 
+        // type
         var _typeElem = Utils.getChildXmlElement(_contentElem, 'type');
         if (_typeElem == null) {
             _log.connectionLog(3, '_typeElem is invalid');
@@ -9791,6 +10641,7 @@ limitations under the License.
         var _extras = {};
         var _itemCount = 0;
         var _items = [];
+        // items
         var _itemsElem = Utils.getChildXmlElement(_contentElem, 'items');
         if (_itemsElem == null) {
             _log.connectionLog(3, '_itemsElem is invalid');
@@ -9799,7 +10650,8 @@ limitations under the License.
         switch(_type) {
         case RequestData.NOTIFY_MESSAGE_OPTION_TYPE_UPDATE_SIBLING_TASK:
             var _siblingTaskItemElemArray = Utils.getChildXmlElementArray(_itemsElem, 'item');
-            _type = RequestData.NOTIFY_MESSAGE_OPTION_TYPE_UPDATE_SIBLING_TASK;     
+            _type = RequestData.NOTIFY_MESSAGE_OPTION_TYPE_UPDATE_SIBLING_TASK;     // 念のため
+                // itemCount items
             if(_siblingTaskItemElemArray != null) {
                 _itemCount = _siblingTaskItemElemArray.length;
                 if(_itemCount == 0) {
@@ -9810,38 +10662,47 @@ limitations under the License.
                 for(var _i = 0; _i < _itemCount; _i++) {
                     var _siblingItemElem = _siblingTaskItemElemArray[_i];
                     var _siblingData = {};
+                        // itemId
                     var _itemIdAttr = _siblingItemElem.attr('itemid');
                     if(_itemIdAttr != null) {
                         _siblingData.itemId = _itemIdAttr.value();
                     }
+                        // siblingItemId
                     var _siblingItemIdAttr = _siblingItemElem.attr('siblingitemid');
                     if(_siblingItemIdAttr != null) {
                         _siblingData.siblingItemId = _siblingItemIdAttr.value();
                     }
+                        // ownerJid
                     var _ownerJidAttr = _siblingItemElem.attr('ownerjid');
                     if(_ownerJidAttr != null) {
                         _siblingData.ownerJid = _ownerJidAttr.value();
                     }
+                        // ownerName
                     var _ownerNameAttr = _siblingItemElem.attr('ownername');
                     if(_ownerNameAttr != null) {
                         _siblingData.ownerName = _ownerNameAttr.value();
                     }
+                        // status
                     var _statusAttr = _siblingItemElem.attr('status');
                     if(_statusAttr != null) {
                         _siblingData.status = parseInt(_statusAttr.value());
                     }
+                        // nickName
                     var _nickNameElem = Utils.getChildXmlElement(_siblingItemElem, 'nickname');
                     if(_nickNameElem != null) {
                         _siblingData.nickName = _nickNameElem.text();
                     }
+                        // avatarData
                     var _avatarDataElem = Utils.getChildXmlElement(_siblingItemElem, 'avatardata');
                     if(_avatarDataElem != null) {
                         _siblingData.avatarData = _avatarDataElem.text();
                     }
+                        // avatarType
                     var _avatarTypeElem = Utils.getChildXmlElement(_siblingItemElem, 'avatartype');
                     if(_avatarTypeElem != null) {
                         _siblingData.avatarType = _avatarTypeElem.text();
                     }
+                        // status
                     var _userStatusElem = Utils.getChildXmlElement(_siblingItemElem, 'status');
                     if(_userStatusElem != null) {
                         _siblingData.userStatus = parseInt(_userStatusElem.text());
@@ -9850,6 +10711,7 @@ limitations under the License.
 
                     _items[_i] = _siblingData;
                 }
+                    // アカウントデータ取得時のコールバック
                 function _onGetUserAccountDataCallBackForSiblingNotify(mapData) {
                     for(var _i = 0; _i < _itemCount; _i++) {
                         var _siblingData = _items[_i];
@@ -9857,9 +10719,11 @@ limitations under the License.
                     }
                     _onGetItemsCallBack(_items);
                 }
+                    // アカウントを取得する
                 if(_jidList.length > 0) {
                     UserAccountUtils.getLoginAccountListByJidList(_jidList, _onGetUserAccountDataCallBackForSiblingNotify);
                 } else {
+                        // jid一覧がない場合はsibling項目終了
                     _onGetItemsCallBack(_items);
                     return;
                 }
@@ -9867,6 +10731,7 @@ limitations under the License.
             break;
         case RequestData.NOTIFY_MESSAGE_OPTION_TYPE_DEMAND_TASK:
         case RequestData.NOTIFY_MESSAGE_OPTION_TYPE_CLEAR_DEMANDED_TASK:
+                //タスク催促・解除通知オブジェクト生成処理
             var _itemsArray = Utils.getChildXmlElementArray(_itemsElem, 'item');
             if(_itemsArray != null){
                 _itemCount = _itemsArray.length;
@@ -9913,6 +10778,7 @@ limitations under the License.
         }
     }
 
+    // タスク催促や解除エレメントからItemsデータを取得
     function _getItemsFromDemandItemsElm(itemsElem) {
         if (itemsElem == null) {
             _log.connectionLog(3, '_itemsElem is invalid');
@@ -9920,6 +10786,7 @@ limitations under the License.
         }
         var _items = null;
         var _itemsElemArray = Utils.getChildXmlElementArray(itemsElem, 'item');
+        // itemCount items
         if (_itemsElemArray != null) {
             _items = [];
             _itemCount = _itemsElemArray.length;
@@ -9928,10 +10795,12 @@ limitations under the License.
                 var _itemData = {};
                 var _taskInfoElm = Utils.getChildXmlElement(_itemElem,
                         'task_info');
+                // task_info
                 if (_taskInfoElm == null) {
                     _log.connectionLog(3, '_taskInfoElm is null');
                     continue;
                 }
+                // itemId
                 var _itemIdElm = Utils.getChildXmlElement(_taskInfoElm,
                         'item_id');
                 if (_itemIdElm == null) {
@@ -9939,18 +10808,21 @@ limitations under the License.
                     continue;
                 }
                 var _itemId = _itemIdElm.text();
+                // title
                 var _titleElm = Utils.getChildXmlElement(_taskInfoElm, 'title');
                 if (_titleElm == null) {
                     _log.connectionLog(3, '_titleElm is null');
                     continue;
                 }
                 var _title = _titleElm.text();
+                // owner
                 var _ownerElm = Utils.getChildXmlElement(_taskInfoElm, 'owner');
                 if (_ownerElm == null) {
                     _log.connectionLog(3, '_ownerElm is null');
                     continue;
                 }
                 var _owner = _ownerElm.text();
+                // client
                 var _clientElm = Utils.getChildXmlElement(_taskInfoElm,
                         'client');
                 if (_clientElm == null) {
@@ -9958,6 +10830,7 @@ limitations under the License.
                     continue;
                 }
                 var _client = _clientElm.text();
+                // status
                 var _statusElm = Utils.getChildXmlElement(_taskInfoElm,
                         'status');
                 if (_statusElm == null) {
@@ -9965,6 +10838,7 @@ limitations under the License.
                     continue;
                 }
                 var _status = parseInt(_statusElm.text());
+                // demand_date
                 var _demandDateElm = Utils.getChildXmlElement(_taskInfoElm,
                         'demand_date');
                 if (_demandDateElm == null) {
@@ -9972,18 +10846,21 @@ limitations under the License.
                     continue;
                 }
                 var _demandDate = _demandDateElm.text();
+                // from_user_info
                 var _fromUserInfoElm = Utils.getChildXmlElement(_itemElem,
                         'from_user_info');
                 if (_fromUserInfoElm == null) {
                     _log.connectionLog(3, '_fromUserInfoElm is null');
                     continue;
                 }
+                // jid
                 var _jidElm = Utils.getChildXmlElement(_fromUserInfoElm, 'jid');
                 if (_jidElm == null) {
                     _log.connectionLog(3, '_jidElm is null');
                     continue;
                 }
                 var _jid = _jidElm.text();
+                // nickname
                 var _nicknameElm = Utils.getChildXmlElement(_fromUserInfoElm,
                         'nickname');
                 if (_nicknameElm == null) {
@@ -10012,12 +10889,14 @@ limitations under the License.
         return _items;
     }
 
+    // 既読通知エレメントからItemsデータを取得
     function _getItemsFromSetReadMessageElm(itemsElem, onGetItemsCallBack) {
         if (itemsElem == null) {
             _log.connectionLog(3, '_itemsElem is invalid');
             return false;
         }
         var _itemsElemArray = Utils.getChildXmlElementArray(itemsElem, 'item');
+        // itemCount items
         if (_itemsElemArray == null) {
             return false;
         }
@@ -10039,6 +10918,7 @@ limitations under the License.
                 return;
             }
             var _itemId = _itemIdElm.text();
+            // from_user_info
             var _fromUserInfoElm = Utils.getChildXmlElement(_itemElem,
                     'from_user_info');
             if (_fromUserInfoElm == null) {
@@ -10082,6 +10962,7 @@ limitations under the License.
         return true;
     }
 
+    // ChangePersonData通知
     function _onChangePersonDataNotify(sessionDataAry, xmlRootElem, xsConn) {
         var _notifyElem = Utils.getChildXmlElement(xmlRootElem, 'notify');
         if (_notifyElem == null) {
@@ -10100,6 +10981,7 @@ limitations under the License.
             return;
         }
 
+        // type
         var _typeElem = Utils.getChildXmlElement(_contentElem, 'type');
         if (_typeElem == null) {
             _log.connectionLog(3, '_typeElem is invalid');
@@ -10109,6 +10991,7 @@ limitations under the License.
         var _extras = {};
         var _itemCount = 0;
         var _items = [];
+        // items
         var _itemsElem = Utils.getChildXmlElement(_contentElem, 'items');
         switch (_type) {
         case RequestData.NOTIFY_CHANGE_PERSON_DATA_TYPE_PRESENCE:
@@ -10118,23 +11001,28 @@ limitations under the License.
             }
             var _presenceItemElemArray = Utils.getChildXmlElementArray(
                     _itemsElem, 'item');
+            // itemCount items
             if (_presenceItemElemArray != null) {
                 _itemCount = _presenceItemElemArray.length;
                 for ( var _i = 0; _i < _itemCount; _i++) {
                     var _presenceItemElem = _presenceItemElemArray[_i];
                     var _presenceData = {};
+                    // jid
                     var _jidAttr = _presenceItemElem.attr('jid');
                     if (_jidAttr != null) {
                         _presenceData.jid = _jidAttr.value();
                     }
+                    // presence
                     var _presenceAttr = _presenceItemElem.attr('presence');
                     if (_presenceAttr != null) {
                         _presenceData.presence = parseInt(_presenceAttr.value());
                     }
+                    // myMemo
                     var _myMemoAttr = _presenceItemElem.attr('myMemo');
                     if (_myMemoAttr != null) {
                         _presenceData.myMemo = _myMemoAttr.value();
                     }
+                    // updateTime
                     var _updateTimeAttr = _presenceItemElem.attr('updateTime');
                     if (_updateTimeAttr != null) {
                         _presenceData.updateTime = _updateTimeAttr.value();
@@ -10142,7 +11030,7 @@ limitations under the License.
                     _items[_i] = _presenceData;
                 }
             }
-            _type = RequestData.NOTIFY_CHANGE_PERSON_DATA_TYPE_PRESENCE; 
+            _type = RequestData.NOTIFY_CHANGE_PERSON_DATA_TYPE_PRESENCE; // 念のため
             break;
         case RequestData.NOTIFY_CHANGE_PERSON_DATA_TYPE_PROFILE:
             if (_itemsElem == null) {
@@ -10151,21 +11039,25 @@ limitations under the License.
             }
             var _profileItemElemArray = Utils.getChildXmlElementArray(
                     _itemsElem, 'item');
+            // itemCount items
             if (_profileItemElemArray != null) {
                 _itemCount = _profileItemElemArray.length;
                 for ( var _i = 0; _i < _itemCount; _i++) {
                     var _profileItemElem = _profileItemElemArray[_i];
                     var _profileData = {};
+                    // jid
                     var _jidElem = Utils.getChildXmlElement(_profileItemElem,
                             'jid');
                     if (_jidElem != null) {
                         _profileData.jid = _jidElem.text();
                     }
+                    // nickName
                     var _nickNameElem = Utils.getChildXmlElement(
                             _profileItemElem, 'nickName');
                     if (_nickNameElem != null) {
                         _profileData.nickName = _nickNameElem.text();
                     }
+                    // group
                     var _groupArray = Utils.getChildXmlElement(
                         _profileItemElem, 'group');
                     let _groupItems = [];
@@ -10180,16 +11072,19 @@ limitations under the License.
                     }
                     _profileData.group = _groupItems;
 
+                    // avatarType
                     var _avatarTypeElem = Utils.getChildXmlElement(
                             _profileItemElem, 'avatarType');
                     if (_avatarTypeElem != null) {
                         _profileData.avatarType = _avatarTypeElem.text();
                     }
+                    // avatarData
                     var _avatarDataElem = Utils.getChildXmlElement(
                             _profileItemElem, 'avatarData');
                     if (_avatarDataElem != null) {
                         _profileData.avatarData = _avatarDataElem.text();
                     }
+                    // updateTime
                     var _updateTimeElem = Utils.getChildXmlElement(
                             _profileItemElem, 'updateTime');
                     if (_updateTimeElem != null) {
@@ -10212,6 +11107,7 @@ limitations under the License.
         var _notifyType = Const.API_NOTIFY.API_NOTIFY_CHANGE_PERSON_DATA;
         _notifyPushMessge(sessionDataAry, _notifyType, _pushContent);
     }
+    // Message通知
     function _onMessageNotify(sessionDataAry, xmlRootElem) {
         _log.connectionLog(7, "do func  SynchronousBridgeNodeXmpp._onMessageNotify(...");
         var _notifyElem = Utils.getChildXmlElement(xmlRootElem, 'notify');
@@ -10232,6 +11128,7 @@ limitations under the License.
             return;
         }
 
+        // type
         var _type = _contentElem.attr('type').value();
 
         var _extras = {};
@@ -10241,8 +11138,11 @@ limitations under the License.
             _type == 'Task'||
             _type == 'Community'||
             _type == 'Murmur') {
+            // タスクの場合は追加か更新かの情報が必要
+            // <extras>
             var _extrasElem = Utils.getChildXmlElement(_contentElem, 'extras');
             if (_extrasElem != null) {
+                // <sub_type>
                 var _subTypeElem = Utils.getChildXmlElement(_extrasElem,
                         'sub_type');
                 if (_subTypeElem != null) {
@@ -10252,14 +11152,15 @@ limitations under the License.
                     _log.connectionLog(3, '_subTypeElem is null');
                 }
             } else {
-                let loglevel = 5;
+                let loglevel = 5;// 5 = info
                 if(_type == 'Task'){
-                    loglevel = 3;
+                    loglevel = 3;// 3 = error
                 }
                 _log.connectionLog(loglevel, '_extrasElem is null _type:' + _type);
             }
         }
         var _items = [];
+        // <items>
         var _itemsElem = Utils.getChildXmlElement(_contentElem, 'items');
         if (_itemsElem == null) {
             _log.connectionLog(3, '_itemsElem is invalid');
@@ -10304,6 +11205,7 @@ limitations under the License.
     }
 
 
+    // メッセージ削除
     function _onMessageDeleteNotify(sessionDataAry, xmlRootElem) {
         var _notifyElem = Utils.getChildXmlElement(xmlRootElem, 'notify');
         if (_notifyElem == null) {
@@ -10320,6 +11222,7 @@ limitations under the License.
             _log.connectionLog(3, '_contentElem is invalid');
             return;
         }
+        // <items>
         var _itemsElem = Utils.getChildXmlElement(_contentElem, 'items');
         if (_itemsElem == null) {
             _log.connectionLog(3, '_itemsElem is invalid');
@@ -10339,6 +11242,7 @@ limitations under the License.
             if (_itemElem == null) {
                 continue;
             }
+            // itemId
             var _itemIdElem = Utils.getChildXmlElement(_itemElem, 'item_id');
             if (_itemIdElem == null) {
                 _log.connectionLog(7, 'Message' + _i + '  : itemId');
@@ -10346,6 +11250,7 @@ limitations under the License.
             }
             _itemData.itemId = _itemIdElem.text();
 
+            // deleteFlag
             var _deleteFlagElem = Utils.getChildXmlElement(_itemElem,
                     'delete_flag');
             if (_deleteFlagElem == null) {
@@ -10354,6 +11259,7 @@ limitations under the License.
             }
             _itemData.deleteFlag = parseInt(_deleteFlagElem.text());
 
+            // deletedBy
             var _deletedByElem = Utils.getChildXmlElement(_itemElem,
                     'deleted_by');
             if (_deletedByElem == null) {
@@ -10388,6 +11294,7 @@ limitations under the License.
         AuthorityChecker.checkOnMessage(sessionDataAry, _items, _onCheckedAuthority);
     }
 
+    // チャットルーム作成通知
     function _onCreateChatRoomNotify(sessionDataAry, xmlRootElem) {
         var _notifyElem = Utils.getChildXmlElement(xmlRootElem, 'notify');
         if (_notifyElem == null) {
@@ -10410,6 +11317,7 @@ limitations under the License.
         }
         var _extras = {};
         var _itemCount = 0;
+        // items
         var _itemsElem = Utils.getChildXmlElement(_contentElem, 'items');
         var _items = null;
         if(_itemsElem != null) {
@@ -10439,6 +11347,7 @@ limitations under the License.
         }
     }
 
+    // グループチャットメンバー追加通知
     function _onAddChatRoomMemberNotify(sessionDataAry, xmlRootElem) {
         var _notifyElem = Utils.getChildXmlElement(xmlRootElem, 'notify');
         if (_notifyElem == null) {
@@ -10462,6 +11371,7 @@ limitations under the License.
         }
         var _extras = {};
         var _itemCount = 0;
+        // items
         var _itemsElem = Utils.getChildXmlElement(_contentElem, 'items');
         var _items = null;
         if(_itemsElem != null) {
@@ -10491,6 +11401,7 @@ limitations under the License.
         }
     }
 
+    // GroupChatメンバー削除通知
     function _onRemoveChatRoomMemberNotify(sessionDataAry, xmlRootElem) {
         var _notifyElem = Utils.getChildXmlElement(xmlRootElem, 'notify');
         if (_notifyElem == null) {
@@ -10517,6 +11428,7 @@ limitations under the License.
                             'SynchronousBridgeNodeXmpp#_onRemoveChatRoomMemberNotify::_contentElem is invalid');
             return;
         }
+        // items
         var _itemsElem = Utils.getChildXmlElement(_contentElem, 'items');
         if (_itemsElem == null) {
             _log
@@ -10528,6 +11440,7 @@ limitations under the License.
         var _itemObj = _getItemsFromRemoveGroupChatMemberItemsElem(_itemsElem,
                 1);
         var _items = _itemObj.items;
+        // extras
         var _extras = {
             removeType : _itemObj.removeType
         };
@@ -10537,7 +11450,9 @@ limitations under the License.
                             'SynchronousBridgeNodeXmpp#_onRemoveChatRoomMemberNotify:: _items is invalid');
             return;
         }
+        // count
         var _itemCount = _items.length;
+        // 通知する
         var _pushContent = {
             type : RequestData.NOTIFY_REMOVE_MEMBER_TYPE_GROUP_CHAT_ROOM,
             extras : _extras,
@@ -10564,6 +11479,7 @@ limitations under the License.
         }
         setTimeout(_callPushMessage, 1);
     }
+    // チャットルーム情報更新通知
     function _onUpdateChatRoomInfoNotify(sessionDataAry, xmlRootElem) {
         var _notifyElem = Utils.getChildXmlElement(xmlRootElem, 'notify');
         if (_notifyElem == null) {
@@ -10585,6 +11501,7 @@ limitations under the License.
                     '_onUpdateChatRoomInfoNotify::_contentElem is invalid');
             return;
         }
+        // extras
         var _extrasElem = Utils.getChildXmlElement(_contentElem, 'extras');
         if (_extrasElem == null) {
             _log.connectionLog(3,
@@ -10596,6 +11513,7 @@ limitations under the License.
             _extras = {};
         }
         var _itemCount = 0;
+        // items
         var _itemsElem = Utils.getChildXmlElement(_contentElem, 'items');
         var _items = null;
         if(_itemsElem != null) {
@@ -10624,6 +11542,7 @@ limitations under the License.
             _notifyPushMessge(sessionDataAry, _notifyType, _pushContent);
         }
     }
+    // extrasエレメントからextras項目を抽出する(グループチャットルーム更新結果・通知用)
     function _getExtrasFromGroupChatRoomInfoExtrasElem(extrasElem) {
         if (extrasElem == null) {
             _log
@@ -10632,6 +11551,7 @@ limitations under the License.
             return null;
         }
         var _extras = {};
+        // <subtype>の要素を取得する
         var _subTypeElem = Utils.getChildXmlElement(extrasElem, 'subtype');
         if (_subTypeElem == null) {
             _log
@@ -10649,20 +11569,26 @@ limitations under the License.
         var _itemIndex = 0;
         var _count = _itemElemArray.length;
         for ( var _i = 0; _i < _count; _i++) {
+            // <item>から内容を取り出す
             var _itemElem = _itemElemArray[_i];
+            // 詰め込む
             _subTypeArray[_itemIndex] = _itemElem.text();
             _itemIndex++;
         }
+        // <preroomname>の要素を取得する
         var _preRoomNameElem = Utils.getChildXmlElement(extrasElem,
                 'preroomname');
         var _preRoomName = _preRoomNameElem.text();
+        // <prenotifyType>の要素を取得する
         var _preNotifyTypeElem = Utils.getChildXmlElement(extrasElem,
                 'prenotify_type');
         var _preNotifyType = parseInt(_preNotifyTypeElem.text());
+        // <preprivacyType>の要素を取得する
         var _prePrivacyTypeElem = Utils.getChildXmlElement(extrasElem,
                 'preprivacy_type');
         var _prePrivacyType = parseInt(_prePrivacyTypeElem.text());
 
+        // extrasを生成
         _extras = {
             "subType" : _subTypeArray,
             "preRoomName" : _preRoomName,
@@ -10672,6 +11598,7 @@ limitations under the License.
         return _extras;
     }
 
+    // コミュニティ情報更新通知
     function _onUpdateCommunityInfoNotify(sessionDataAry, xmlRootElem) {
         var _notifyElem = Utils.getChildXmlElement(xmlRootElem, 'notify');
         if (_notifyElem == null) {
@@ -10693,6 +11620,7 @@ limitations under the License.
                     '_onUpdateCommunityInfoNotify::_contentElem is invalid');
             return;
         }
+        // extras
         var _extrasElem = Utils.getChildXmlElement(_contentElem, 'extras');
         if (_extrasElem == null) {
             _log.connectionLog(3,
@@ -10705,6 +11633,7 @@ limitations under the License.
             _log.connectionLog(6,
                     '_onUpdateCommunityInfoNotify::_extras is nothing');
         }
+        // items
         var _itemsElem = Utils.getChildXmlElement(_contentElem, 'items');
         if (_itemsElem == null) {
             _log.connectionLog(3,
@@ -10729,6 +11658,7 @@ limitations under the License.
         _notifyPushMessge(sessionDataAry, _notifyType, _pushContent);
     }
 
+    // コミュニティメンバー追加通知
     function _onAddCommunityMemberNotify(sessionDataAry, xmlRootElem) {
         var _notifyElem = Utils.getChildXmlElement(xmlRootElem, 'notify');
         if (_notifyElem == null) {
@@ -10754,7 +11684,9 @@ limitations under the License.
                             'SynchronousBridgeNodeXmpp#_onAddCommunityMemberNotify::_contentElem is invalid');
             return;
         }
+        // extras
         var _extras = {};
+        // items
         var _itemsElem = Utils.getChildXmlElement(_contentElem, 'items');
         if (_itemsElem == null) {
             _log
@@ -10770,6 +11702,7 @@ limitations under the License.
             return;
         }
 
+        // アカウント情報を取得して、データに付属する
         _appendCubeeAccountForAddMemberResponseOrNotification(_items,
                 _onAppendCubeeAccountCallback);
         function _onAppendCubeeAccountCallback(returnItems) {
@@ -10788,6 +11721,7 @@ limitations under the License.
         }
     }
 
+    // コミュニティオーナー変更通知
     function _onUpdateCommunityOwnerNotify(sessionDataAry, xmlRootElem) {
         var _notifyElem = Utils.getChildXmlElement(xmlRootElem, 'notify');
         if (_notifyElem == null) {
@@ -10814,6 +11748,7 @@ limitations under the License.
                             'SynchronousBridgeNodeXmpp#_onUpdateCommunityOwnerNotify::_contentElem is invalid');
             return;
         }
+        // extras
         var _extras = _getExtrasFromUpdateCommunityOwnerResponceContent(_contentElem);
         if (_extras == null) {
             _log
@@ -10822,6 +11757,7 @@ limitations under the License.
                             'SynchronousBridgeNodeXmpp#_onUpdateCommunityOwnerNotify::notify data(extras) is invalid');
             _extras = {};
         }
+        // items
         _items = _getItemsFromUpdateCommunityOwnerResponceContent(_contentElem);
         if (_items == null) {
             _log
@@ -10843,6 +11779,7 @@ limitations under the License.
         _notifyPushMessge(sessionDataAry, _notifyType, _pushContent);
     }
 
+    // コミュニティメンバー削除通知
     function _onRemoveCommunityMemberNotify(sessionDataAry, xmlRootElem) {
         var _notifyElem = Utils.getChildXmlElement(xmlRootElem, 'notify');
         if (_notifyElem == null) {
@@ -10869,7 +11806,9 @@ limitations under the License.
                             'SynchronousBridgeNodeXmpp#_onRemoveCommunityMemberNotify::_contentElem is invalid');
             return;
         }
+        // extras
         var _extras = {};
+        // items
         var _itemsElem = Utils.getChildXmlElement(_contentElem, 'items');
         if (_itemsElem == null) {
             _log
@@ -10885,7 +11824,9 @@ limitations under the License.
                             'SynchronousBridgeNodeXmpp#_onRemoveCommunityMemberNotify:: _items is invalid');
             return;
         }
+        // count
         var _itemCount = _items.length;
+        // 通知する
         var _pushContent = {
             type : RequestData.NOTIFY_REMOVE_MEMBER_TYPE_COMMUNITY_ROOM,
             extras : _extras,
@@ -10896,6 +11837,12 @@ limitations under the License.
         _notifyPushMessge(sessionDataAry, _notifyType, _pushContent);
     }
 
+    /**
+     * ノートの削除の為のXMPPから通知を受ける
+     *
+     * @param sessionDataAry 通知を送信する全ユーザーのセッションの配列
+     * @param xmlRootElem openfireからのレスポンスXMPP
+     */
     function _onDeleteNoteNotify(sessionDataAry, xmlRootElem) {
         _log.connectionLog(7,'do func SynchronousBridgeNodeXmpp#_onDeleteNoteNotify(');
         _log.connectionLog(7,'do func SynchronousBridgeNodeXmpp#_onDeleteNoteNotify('+xmlRootElem);
@@ -10909,6 +11856,7 @@ limitations under the License.
             _log.connectionLog(3, '_itemElem is invalid');
             return;
         }
+        // 通知する
         var _pushContent = {
             note_title : (_itemElem.attr("note_title") ? _itemElem.attr("note_title").value() : ""),
             note_url   : (_itemElem.attr("note_url") ? _itemElem.attr("note_url").value() : ""),
@@ -10918,10 +11866,17 @@ limitations under the License.
             created_at : (_itemElem.attr("created_at") ? _itemElem.attr("created_at").value() : ""),
             updated_at : (_itemElem.attr("updated_at") ? _itemElem.attr("updated_at").value() : "")
         };
+        // count
         var _notifyType = Const.API_NOTIFY.API_NOTIFY_DELETE_NOTE;
         _notifyPushMessge(sessionDataAry, _notifyType, _pushContent);
     }
 
+    /**
+     * ノートの情報更新の為のXMPPから通知を受ける
+     *
+     * @param sessionDataAry 通知を送信する全ユーザーのセッションの配列
+     * @param xmlRootElem openfireからのレスポンスXMPP
+     */
     function _onUpdateNoteInfoNotify(sessionDataAry, xmlRootElem) {
         _log.connectionLog(7,'do func SynchronousBridgeNodeXmpp#_onUpdateNoteInfoNotify(');
         var _updateNoteInfoElem = Utils.getChildXmlElement(xmlRootElem, 'noteinfoupdate');
@@ -10934,6 +11889,7 @@ limitations under the License.
             _log.connectionLog(3, '_itemElem is invalid');
             return;
         }
+        // 通知する
         var _pushContent = {
             note_title : (_itemElem.attr("note_title") ? _itemElem.attr("note_title").value() : ""),
             note_url   : (_itemElem.attr("note_url") ? _itemElem.attr("note_url").value() : ""),
@@ -10944,10 +11900,12 @@ limitations under the License.
             created_at : (_itemElem.attr("created_at") ? _itemElem.attr("created_at").value() : ""),
             updated_at : (_itemElem.attr("updated_at") ? _itemElem.attr("updated_at").value() : "")
         };
+        // count
         var _notifyType = Const.API_NOTIFY.API_NOTIFY_UPDATE_NOTE_INFO
         _notifyPushMessge(sessionDataAry, _notifyType, _pushContent);
     }
 
+    // エラー発生時
     function xsErrorOccurred(xsConn, error) {
         _log.connectionLog(7, 'XMPP error occurred');
         if (xsConn == null) {
@@ -10969,6 +11927,7 @@ limitations under the License.
                 return;
             }, 1);
         }
+        // クライアントに通知
         var _sessionDataMannager = SessionDataMannager.getInstance();
         var _sessionDataAry = _sessionDataMannager.getByOpenfireSock(xsConn);
         if(_sessionDataAry == null){
@@ -10983,6 +11942,7 @@ limitations under the License.
         function _callOnErrorXmppServer() {
             var _accessToken = _sessionDataAry[_index].getAccessToken();
             _log.connectionLog(7, 'SynchronousBridgeNodeXmpp xsErrorOccurred :: [' + _index + ']:' + _accessToken);
+            // XMPP接続にエラーが発生した場合にも、SessionDataを削除する。
             _sessionDataMannager.remove(_accessToken);
             _log.connectionLog(6, 'Remove session data: ' + _accessToken);
             var _clientSock = _sessionDataAry[_index].getSocketIoSock();
@@ -10997,6 +11957,7 @@ limitations under the License.
         setTimeout(_callOnErrorXmppServer, 1);
     }
 
+    // 切断時
     function xsDisconnected(xsConn) {
         _log.connectionLog(7, 'XMPP disconnect');
         if (xsConn == null) {
@@ -11029,6 +11990,7 @@ limitations under the License.
             var _sessionData = _sessionDataAry[_index];
             _log.connectionLog(6, 'SynchronousBridgeNodeXmpp xsDisconnected :: [' + _index + ']:' + _sessionDataAry[_index].getAccessToken());
             _sessionDataMannager.remove(_sessionData.getAccessToken());
+            // クライアントに通知
             var _clientSock = _sessionData.getSocketIoSock();
             if (_clientSock != null) {
                 CubeeWebApi.getInstance().onDisconnectXmppServer(_clientSock);
@@ -11040,6 +12002,21 @@ limitations under the License.
         }
         setTimeout(_callOnDisconnectXmppServer, 1);
     }
+    /**
+     * Admin認証
+     *
+     * @param {object}
+     *            socket socket
+     * @param {string}
+     *            tenantUuid テナントUUID
+     * @param {string}
+     *            user ユーザ
+     * @param {string}
+     *            password パスワード
+     * @param {function}
+     *            onLogindCallback コールバック関数
+     * @returns {Boolean} 認証できた場合はtrue、認証に失敗した場合はfalse
+     */
     _proto.adminLogin = function(socket, tenantUuid, user, password, onLogindCallback,
             isIndependence) {
         var _self = this;
@@ -11093,6 +12070,17 @@ limitations under the License.
         return _self.login(socket, tenantUuid, user, password, _loginCallback,
                 isIndependence);
     };
+    /**
+     * ユーザ権限取得
+     *
+     * @param {string}
+     *            accessToken アクセストークン
+     * @param {string}
+     *            fromJid jid
+     * @param {function}
+     *            onGetUserAuthorityCallBack コールバック関数
+     * @returns {Boolean} 登録を開始できた場合はtrue、登録に失敗した場合はfalse
+     */
     _proto.getUserAuthority = function(accessToken, fromJid,
             onGetUserAuthorityCallBack) {
         var _self = this;
@@ -11131,9 +12119,25 @@ limitations under the License.
         return true;
     };
 
+    /**
+     * ユーザを登録する
+     *
+     * @param {string}
+     *            accessToken アクセストークン
+     * @param {object}
+     *            personData 登録するユーザ情報
+     * @param {string}
+     *            password 登録するユーザのパスワード
+     * @param {object}
+     *            registeredContactData 登録するコンタクト情報
+     * @param {function}
+     *            onRegisterUserCallback コールバック関数
+     * @returns {Boolean} 登録を開始できた場合はtrue、登録に失敗した場合はfalse
+     */
     _proto.registerUser = function(accessToken, personData, password,
             registeredContactData, onRegisterUserCallback) {
         var _self = this;
+        // 引数チェック
         if (accessToken == null || typeof accessToken != 'string') {
             return false;
         }
@@ -11160,6 +12164,17 @@ limitations under the License.
         return UserAccountUtils.create(_sessionData, personData, password,
                 registeredContactData, onRegisterUserCallback);
     };
+    /**
+     * 全ユーザ一覧情報取得（権限ユーザ用）
+     *
+     * @param {string}
+     *            accessToken admin権限ユーザのアクセストークン
+     * @param {function}
+     *            onGetAllUserListCallBackFunc コールバック関数
+     * @param {string}
+     *            tenantId テナントID(テナントを指定せず、全てのユーザを取得する場合は省略またはnull)
+     * @returns {Boolean} 全ユーザ情報一覧取得を開始できた場合はtrue、失敗した場合はfalse
+     */
     _proto.getAllUserListForAdmin = function(accessToken,
             onGetAllUserListCallBackFunc, tenantId) {
         var _self = this;
@@ -11220,6 +12235,7 @@ limitations under the License.
             onGetAllUserListCallBackFunc(_result, _reason, _extras, _items);
         }
     };
+    // 全ユーザ情報一覧取得応答XMPPからItemsエレメントを取り出す
     function _getItemsElemFromGetAllUserListResponce(xmlRootElem) {
         if (xmlRootElem == null) {
             _log
@@ -11227,6 +12243,7 @@ limitations under the License.
                             '_getItemsElemFromGetAllUserListResponce :: xmlRootElem is null');
             return null;
         }
+        // <query>
         var _queryElem = Utils.getChildXmlElement(xmlRootElem, 'query');
         if (_queryElem == null) {
             _log
@@ -11241,6 +12258,7 @@ limitations under the License.
                             '_getItemsElemFromGetAllUserListResponce :: _queryElemNamespace is not "admin"');
             return null;
         }
+        // <content>
         var _contentElem = Utils.getChildXmlElement(_queryElem, 'content');
         if (_contentElem == null) {
             _log
@@ -11248,6 +12266,7 @@ limitations under the License.
                             '_getItemsElemFromGetAllUserListResponce :: _contentElem is invalid');
             return null;
         }
+        // <items>
         var _itemsElem = Utils.getChildXmlElement(_contentElem, 'items');
         if (_itemsElem == null) {
             _log
@@ -11257,6 +12276,7 @@ limitations under the License.
         }
         return _itemsElem;
     }
+    // Itemsエレメントからitems項目を抽出する(全ユーザ情報一覧取得応答用)
     function _getItemsFromGetAllUserListItemsElem(itemsElem) {
         if (itemsElem == null) {
             _log
@@ -11270,6 +12290,7 @@ limitations under the License.
                             '_getItemsFromGetAllUserListItemsElem :: itemsElem is invalid');
             return null;
         }
+        // <item>の要素を取得する
         var _itemElemArray = Utils.getChildXmlElementArray(itemsElem, 'item');
         if (_itemElemArray == null) {
             _log
@@ -11281,7 +12302,9 @@ limitations under the License.
         var _itemIndex = 0;
         var _count = _itemElemArray.length;
         for ( var _i = 0; _i < _count; _i++) {
+            // <item>から内容を取り出す
             var _itemElem = _itemElemArray[_i];
+            // <jid>
             var _jidElem = Utils.getChildXmlElement(_itemElem, 'jid');
             if (_jidElem == null) {
                 _log.connectionLog(3,
@@ -11290,6 +12313,8 @@ limitations under the License.
                 continue;
             }
             var _jid = _jidElem.text();
+            // <vCard>
+            // ニックネーム
             var _nickName = '';
             var _avatarType = '';
             var _avatarData = '';
@@ -11305,6 +12330,7 @@ limitations under the License.
                     _nickName = _nickNameElem.text();
                 }
                 _nickName = Utils.replaceAll(_nickName, '\n', '');
+                // アバタータイプ・アバターデータ
                 var _photoElem = Utils.getChildXmlElement(_vCardElem, 'PHOTO');
                 if (_photoElem == null) {
                     _photoElem = Utils.getChildXmlElement(_vCardElem, 'photo');
@@ -11335,6 +12361,7 @@ limitations under the License.
             var _groupArray = new Array();
             var _groupElem = Utils.getChildXmlElement(_itemElem, 'group');
             if (_groupElem != null) {
+                // <item>の要素を取得する
                 var _groupItemElemArray = Utils.getChildXmlElementArray(
                         _groupElem, 'item');
                 var _groupCount = _groupItemElemArray.length;
@@ -11343,12 +12370,14 @@ limitations under the License.
                     _groupArray.push(_groupItemElem.text());
                 }
             }
+            // <status>
             var _status = 0;
             var _statusElem = Utils.getChildXmlElement(_itemElem, 'status');
             if (_statusElem != null) {
                 _status = _statusElem.text();
                 _status = parseInt(_status);
             }
+            // 詰め込む
             _retArray[_itemIndex] = {
                 jid : _jid,
                 nickName : _nickName,
@@ -11361,9 +12390,21 @@ limitations under the License.
         }
         return _retArray;
     }
+    /**
+     * ユーザ情報を更新する（admin権限ユーザ用）
+     *
+     * @param {string}
+     *            accessToken admin権限ユーザのアクセストークン
+     * @param {object}
+     *            updateVCardData 更新するユーザ情報
+     * @param {function}
+     *            onUpdateVCardCallbackFunc コールバック関数
+     * @returns {Boolean} 更新を開始できた場合はtrue、登録に失敗した場合はfalse
+     */
     _proto.updateVCardForAdmin = function(accessToken, updateVCardData,
             onUpdateVCardCallbackFunc) {
         var _self = this;
+        // 引数チェック
         if (accessToken == null || typeof accessToken != 'string') {
             return false;
         }
@@ -11412,9 +12453,23 @@ limitations under the License.
         }
     };
 
+    /**
+     * ユーザのパスワードを更新する（admin権限ユーザ用）
+     *
+     * @param {string}
+     *            accessToken アクセストークン
+     * @param {string}
+     *            loginAccount 登録するユーザ情報
+     * @param {string}
+     *            password 登録するユーザのパスワード
+     * @param {function}
+     *            onUpdateUserPasswordCallback コールバック関数
+     * @returns {Boolean} 更新を開始できた場合はtrue、更新に失敗した場合はfalse
+     */
     _proto.updateUserPassword = function(accessToken, loginAccount, password,
             onUpdateUserPasswordCallback) {
         var _self = this;
+        // 引数チェック
         if (accessToken == null || typeof accessToken != 'string') {
             return false;
         }
@@ -11438,9 +12493,27 @@ limitations under the License.
                 password, onUpdateUserPasswordCallback);
     };
 
+    /**
+     * アカウントDBからユーザ一覧を取得しXMPPでユーザ情報を取得する（admin権限ユーザ用）
+     *
+     * @param {string}
+     *            accessToken アクセストークン
+     * @param {string}
+     *            tenantId テナントID 省略可 nullの場合は省略とする
+     * @param {Array}
+     *            except 取得するユーザ一覧に含めないユーザ名(Openfireアカウント名)の配列
+     * @param {number}
+     *            start 取得開始件数（何件目～）
+     * @param {number}
+     *            count 取得件数
+     * @param {function}
+     *            onGetUserListCallbackFunc コールバック関数
+     * @returns {Boolean} 更新を開始できた場合はtrue、更新に失敗した場合はfalse
+     */
     _proto.getUserListForAdmintool = function(accessToken, tenantId, except,
             start, count, onGetUserListCallbackFunc) {
         var _self = this;
+        // 引数チェック
         if (accessToken == null || typeof accessToken != 'string') {
             _log.connectionLog(3,
                     'getUserListForAdmintool :: accessToken is invalid : '
@@ -11530,6 +12603,7 @@ limitations under the License.
                     if (_items == null) {
                         _items = [];
                     }
+                    // 詰め込む
                     var _content = {
                         result : _result,
                         reason : _reason,
@@ -11547,6 +12621,17 @@ limitations under the License.
         }
     };
 
+    /**
+     * 入力されたユーザ情報を取得する（admin権限ユーザ用）
+     *
+     * @param {string}
+     *            accessToken アクセストークン
+     * @param {Array}
+     *            accountData 入力したデータ
+     * @param {function}
+     *            callback コールバック関数
+     * @returns {object} ユーザ詳細情報
+     */
     _proto.getPersonByUserAccountData = function(accessToken, accountData, callback) {
         var _sessionData = SessionDataMannager.getInstance().get(accessToken);
 
@@ -11598,9 +12683,23 @@ limitations under the License.
         _xsConn.send(_xmppStr);
     };
 
+    /**
+     * ユーザデータ一括登録
+     *
+     * @param {SessionData}
+     *            sessionData セッションデータ
+     * @param {Array}
+     *            createUserMap 登録するユーザ(createUserData)のマップ 構造 { 【登録するユーザアカウント】 : {
+     *            personData : PersonDataオブジェクト password : パスワード
+     *            registeredContactData : RegisteredContactDataオブジェクト }, ※2件目 }
+     * @param {function}
+     *            onExecBatchRegistration 実行結果後のコールバック
+     * @returns {boolean} true : 処理成功 / false : 処理失敗
+     */
     _proto.execBatchRegistration = function(accessToken, createUserMap,
             onExecBatchRegistrationCallback) {
         var _self = this;
+        // 引数チェック
         if (accessToken == null || typeof accessToken != 'string') {
             _log
                     .connectionLog(3,
@@ -11630,6 +12729,7 @@ limitations under the License.
         return UserAccountUtils.execBatchRegistration(_sessionData,
                 createUserMap, onExecBatchRegistrationCallback);
     };
+    // Itemsエレメントからitems項目を抽出する(指定ユーザ情報一覧取得応答用)
     function _getItemsFromGetSelectUserListItemsElem(itemsElem,
             userAcountDataList) {
         if (itemsElem == null) {
@@ -11650,6 +12750,7 @@ limitations under the License.
                             '_getItemsFromGetSelectUserListItemsElem :: itemsElem is invalid');
             return null;
         }
+        // <item>の要素を取得する
         var _itemElemArray = Utils.getChildXmlElementArray(itemsElem, 'item');
         if (_itemElemArray == null) {
             _log
@@ -11660,6 +12761,7 @@ limitations under the License.
         var _retArray = [];
         var _itemIndex = 0;
         var _count = _itemElemArray.length;
+        // データの数をチェック
         if (_count != userAcountDataList.length) {
             _log
                     .connectionLog(3,
@@ -11674,7 +12776,9 @@ limitations under the License.
         }
 
         for ( var _i = 0; _i < _count; _i++) {
+            // <item>から内容を取り出す
             var _itemElem = _itemElemArray[_i];
+            // <jid>
             var _jidElem = Utils.getChildXmlElement(_itemElem, 'jid');
             if (_jidElem == null) {
                 _log.connectionLog(3,
@@ -11683,6 +12787,8 @@ limitations under the License.
                 continue;
             }
             var _jid = _jidElem.text();
+            // <vCard>
+            // ニックネーム
             var _nickName = '';
             var _vCardElem = Utils.getChildXmlElement(_itemElem, 'vCard');
             if (_vCardElem != null) {
@@ -11697,6 +12803,7 @@ limitations under the License.
                 }
                 _nickName = Utils.replaceAll(_nickName, '\n', '');
             }
+            // 所属
             var _group = [];
             var _groupElem = Utils.getChildXmlElement(_itemElem, 'group');
             if (_groupElem != null) {
@@ -11713,12 +12820,15 @@ limitations under the License.
                     }
                 }
             }
+            //メールアドレス
             var _mailAddressElem = Utils.getChildXmlElement(_itemElem, 'email');
             var _mailAddress = _mailAddressElem != null ? _mailAddressElem.text() : '';
 
+            // openfireの管理者権限
             var _isAdminElem = Utils.getChildXmlElement(_itemElem, 'isAdmin');
             var _isAdmin = _isAdminElem && _isAdminElem.text() == PersonData.AUTHORITY_TYPE_ADMIN;
 
+            // 詰め込む
             _retArray[_itemIndex] = {
                 id : userAcountDataList[_itemIndex].getId(),
                 jid : _jid,
@@ -11733,9 +12843,22 @@ limitations under the License.
         }
         return _retArray;
     }
+    /**
+     * ユーザデータ一括更新
+     *
+     * @param {string}
+     *            accessToken アクセストークン
+     * @param {Array}
+     *            updateUserList 更新するユーザリスト 構造 [ { account : 更新するユーザのcubeeアカウント
+     *            nickname : ニックネーム group : group }, { ※2件目 }, ]
+     * @param {function}
+     *            onExecBatchUpdateCallBack 実行結果後のコールバック
+     * @returns {boolean} true : 処理成功 / false : 処理失敗
+     */
     _proto.execBatchUpdate = function(accessToken, updateUserList,
             onExecBatchUpdateCallBack) {
         var _self = this;
+        // 引数チェック
         if (accessToken == null || typeof accessToken != 'string') {
             _log
                     .connectionLog(3,
@@ -11767,6 +12890,7 @@ limitations under the License.
             _log.connectionLog(3, '_updUserCount is 0');
             return false;
         }
+        // 更新結果リストを初期化
         var _resultList = [];
         for ( var _i = 0; _i < _updUserCount; _i++) {
             var _updUserData = updateUserList[_i];
@@ -11777,32 +12901,40 @@ limitations under the License.
             };
             _resultList[_i] = _item;
         }
+        // XMPPに要求する更新ユーザデータの取得
         return _getRequestUpdateUserListToXmpp(_sessionData.getTenantUuid(), updateUserList, _resultList,
                 _onGetRequestUpdateUserListToXmpp);
 
+        // XMPPに要求する更新ユーザデータの取得後のコールバック
         function _onGetRequestUpdateUserListToXmpp(requestUpdUserListToXmpp) {
             var _count = requestUpdUserListToXmpp.length;
             if (_count == 0) {
+                // 結果を呼び出し元に返す
                 onExecBatchUpdateCallBack(true, DISCCONECT_REASON_NO, {},
                         _resultList.length, _resultList);
                 return;
             }
+            // XMPPサーバへのユーザ更新要求
             var _ret = _requestUpdateUserToXmppServer(_sessionData,
                     requestUpdUserListToXmpp, _onRequestUpdateUserToXmppServer);
             if (!_ret) {
+                // 結果を呼び出し元に返す
                 onExecBatchUpdateCallBack(false, DISCCONECT_REASON_ERROR_INNER,
                         {}, 0, []);
             }
         }
 
+        // XMPPサーバへ更新応答のコールバック
         function _onRequestUpdateUserToXmppServer(result, reason, items) {
             var _resultListCount = _resultList.length;
             if (!result) {
+                // 結果を呼び出し元に返す
                 onExecBatchUpdateCallBack(result, reason, {}, 0, []);
                 return;
             }
             var _itemsCount = items.length;
             var _curResultListIdx = 0;
+            // itemsの結果を元にresultListを更新する
             for ( var _itemsIdx = 0; _itemsIdx < _itemsCount; _itemsIdx++) {
                 var _item = items[_itemsIdx];
                 for ( var _resultListIdx = _curResultListIdx; _resultListIdx < _resultListCount; _resultListIdx++) {
@@ -11821,11 +12953,28 @@ limitations under the License.
                     break;
                 }
             }
+            // 結果を呼び出し元に返す
             onExecBatchUpdateCallBack(result, reason, {}, _resultListCount,
                     _resultList);
         }
     };
 
+    /**
+     * XMPPに要求する更新ユーザデータの取得
+     *
+     * @param {String}
+     *            tenantUuid テナントUUID
+     * @param {Array}
+     *            updateUserList 更新するユーザリスト 構造 [ { account : 更新するユーザのcubeeアカウント
+     *            nickname : ニックネーム group : group
+     *            delete_flg : 削除フラグ}, { ※2件目 }, ]
+     * @param {Array}
+     *            resultList
+     *            結果用のリスト(user_account_storeに更新対象のユーザがいない場合、リストが更新される)
+     * @param {function}
+     *            onGetRequestUpdateUserListToXmpp XMPPサーバへ送る更新ユーザデータ取得後のコールバック
+     * @returns {boolean} true : 処理成功 / false : 処理失敗
+     */
     function _getRequestUpdateUserListToXmpp(tenantUuid, updateUserList, resultList,
             onGetRequestUpdateUserListToXmpp) {
         if (updateUserList == null || typeof updateUserList != 'object') {
@@ -11850,6 +12999,7 @@ limitations under the License.
                             'SynchronousBridgeNodeXmpp#_getRequestUpdateUserListToXmpp onGetRequestUpdateUserListToXmpp is invalid');
             return false;
         }
+        // updateUserListにあるaccoutからOpenfireのアカウント名を取得
         var _updUserListIdx = 0;
         var _count = updateUserList.length;
         var _account = updateUserList[_updUserListIdx].account;
@@ -11858,7 +13008,9 @@ limitations under the License.
         return UserAccountUtils.getUserDataByTenantLoginAccount(_tenantUuid, _account,
                 _onGetUserAccountData);
 
+        // ユーザ情報取得後のコールバック
         function _onGetUserAccountData(userAccountData) {
+            // ユーザアカウント情報がなければ、エラー
             if (userAccountData == null) {
                 _log
                         .connectionLog(
@@ -11878,17 +13030,32 @@ limitations under the License.
                 _item.mailAddress = updateUserList[_updUserListIdx].mailAddress;
                 _requestUpdUserListToXmpp.push(_item);
             }
+            // インデックスを加算
             _updUserListIdx++;
+            // updateUserListの要素数に達したら、コールバックを返す
             if (_updUserListIdx == _count) {
                 onGetRequestUpdateUserListToXmpp(_requestUpdUserListToXmpp);
                 return;
             }
+            // 次の要素に対するUserAccountDataを取得
             _account = updateUserList[_updUserListIdx].account;
             UserAccountUtils.getUserDataByTenantLoginAccount(_tenantUuid, _account,
                     _onGetUserAccountData);
         }
     }
 
+    /**
+     * XMPPサーバへのユーザ更新要求(複数更新対応用)
+     *
+     * @param {SessionData}
+     *            sessionData セッションデータ
+     * @param {Array}
+     *            updateUserList 登録するユーザリスト 構造 [ { openfireAccount :
+     *            Openfireアカウント nickname : ニックネーム group : グループ }, ※2件目 ]
+     * @param {function}
+     *            onUpdateUserCallBack 実行結果後のコールバック
+     * @returns {boolean} true : 処理成功 / false : 処理失敗
+     */
     function _requestUpdateUserToXmppServer(sessionData, updateUserList,
             onUpdateUserCallBack) {
         if (sessionData == null || typeof sessionData != 'object') {
@@ -11919,7 +13086,9 @@ limitations under the License.
                             'UserAccountManager#_requestUpdateUserToXmppServer _xsConn is null');
             return false;
         }
+        // ここでXmppを取得しないと、Synchronousから実行したときにundefindとなる
         var _fromJid = sessionData.getJid();
+        // ユーザ更新のXMPP生成
         var _sessionDataMannager = SessionDataMannager.getInstance();
         var _xmppRegisterUser = XmppUtils.checkCreateXmppData(_xsConn, function() {
             return Xmpp.createUpdateUserXmpp(_fromJid, updateUserList);
@@ -11938,11 +13107,14 @@ limitations under the License.
                             'UserAccountManager#_requestUpdateUserToXmppServer _xmppRegisterUser[0] is invalid');
             return false;
         }
+        // XMPPサーバへ登録要求送信
         var _id = _xmppRegisterUser[1];
         sessionData.setCallback(_id, _onRegisterUserCallback);
         _xsConn.send(_xmppStr);
         return true;
 
+        // ユーザ登録応答時のコールバック
+        // 結果(_result),理由(_reason),_itemsをコールバック関数で返す
         function _onRegisterUserCallback(xmlRootElem) {
             var _result = false;
             var _reason = ERROR_REASON_XMPP_SERVER;
@@ -11955,9 +13127,11 @@ limitations under the License.
                 _items = _getItemsFromCreateOrUpdateUserResultItemsElm(
                         _itemsElm, updateUserList);
             }
+            // コールバックを呼び出し元に返す
             onUpdateUserCallBack(_result, _reason, _items);
         }
     }
+    // ユーザ登録、更新応答（Admin用）の応答XMPPからItemsエレメントを取り出す
     function _getItemsElemFromCreateOrUpdateUserXmppResponce(xmlRootElem) {
         if (xmlRootElem == null) {
             _log
@@ -11965,6 +13139,7 @@ limitations under the License.
                             '_getItemsElemFromCreateOrUpdateUserResponce :: xmlRootElem is null');
             return null;
         }
+        // <query>
         var _queryElem = Utils.getChildXmlElement(xmlRootElem, 'query');
         if (_queryElem == null) {
             _log
@@ -11980,6 +13155,7 @@ limitations under the License.
                             '_getItemsElemFromCreateOrUpdateUserResponce :: _queryElemNamespace is not "admin"');
             return null;
         }
+        // <content>
         var _contentElem = Utils.getChildXmlElement(_queryElem, 'content');
         if (_contentElem == null) {
             _log
@@ -11987,6 +13163,7 @@ limitations under the License.
                             '_getItemsElemFromCreateOrUpdateUserResponce :: _contentElem is invalid');
             return null;
         }
+        // <items>
         var _itemsElem = Utils.getChildXmlElement(_contentElem, 'items');
         if (_itemsElem == null) {
             _log
@@ -11996,6 +13173,7 @@ limitations under the License.
         }
         return _itemsElem;
     }
+    // ユーザ登録、更新応答（Admin用）のitemsエレメントからitemsを取得する
     function _getItemsFromCreateOrUpdateUserResultItemsElm(itemsElm) {
         if (itemsElm == null) {
             _log
@@ -12009,6 +13187,7 @@ limitations under the License.
                             '_getItemsFromCreateOrUpdateUserResultItemsElm :: itemsElem is invalid');
             return null;
         }
+        // <item>の要素を取得する
         var _itemElemArray = Utils.getChildXmlElementArray(itemsElm, 'item');
         if (_itemElemArray == null) {
             _log
@@ -12020,7 +13199,9 @@ limitations under the License.
         var _count = _itemElemArray.length;
 
         for ( var _i = 0; _i < _count; _i++) {
+            // <item>から内容を取り出す
             var _itemElem = _itemElemArray[_i];
+            // <result>
             var _resultElem = Utils.getChildXmlElement(_itemElem, 'result');
             if (_resultElem == null) {
                 _log.connectionLog(3,
@@ -12029,6 +13210,7 @@ limitations under the License.
                 continue;
             }
             var _result = _resultElem.text();
+            // <username>
             var _userNameElem = Utils.getChildXmlElement(_itemElem, 'username');
             if (_userNameElem == null) {
                 _log.connectionLog(3,
@@ -12037,6 +13219,7 @@ limitations under the License.
                 continue;
             }
             var _openfireAccount = _userNameElem.text();
+            // 詰め込む
             _retArray[_i] = {
                 result : (_result == 'true') ? true : false,
                 openfireAccount : _openfireAccount,
@@ -12044,9 +13227,23 @@ limitations under the License.
         }
         return _retArray;
     }
+    /**
+     * ユーザのステータスを更新する（admin権限ユーザ用）
+     *
+     * @param {string}
+     *            accessToken アクセストークン
+     * @param {string}
+     *            loginAccount ログインユーザアカウント
+     * @param {number}
+     *            accountStatus ユーザのステータス
+     * @param {function}
+     *            onUpdateUserPasswordCallback コールバック関数
+     * @returns {Boolean} 更新を開始できた場合はtrue、更新に失敗した場合はfalse
+     */
     _proto.updateUserAccountStatus = function(accessToken, loginAccount,
             accountStatus, onUpdateUserAccountStatusCallback) {
         var _self = this;
+        // 引数チェック
         if (accessToken == null || typeof accessToken != 'string') {
             return false;
         }
@@ -12070,9 +13267,11 @@ limitations under the License.
         return UserAccountUtils.getUserDataByTenantLoginAccount(_tenantUuid, loginAccount,
                 _onGetUserAccountDataCallBack);
 
+        // ユーザアカウントデータ取得後のコールバック
         function _onGetUserAccountDataCallBack(userAcountData) {
 
             if (userAcountData == null) {
+                // 結果を呼び出し元に返す
                 onUpdateUserAccountStatusCallback(false, ERROR_NOT_FOUND_USER);
                 return;
             }
@@ -12103,6 +13302,7 @@ limitations under the License.
             _xsConn.send(_xmppStr);
         }
 
+        // XMPPからの応答後のコールバック
         function _onUpdateUserAccountStatusFromXmppCallBack(responceXmlRootElem) {
             _log.connectionLog(7, 'onGetSelectUserListCallBack start');
             var _result = false;
@@ -12113,9 +13313,11 @@ limitations under the License.
                 onUpdateUserAccountStatusCallback(_result, _reason);
                 return;
             }
+            //ユーザアカウントDBの更新
             UserAccountUtils.updateUserAccountStatus(_tenantUuid, loginAccount, accountStatus, _onUpdateUserAccountStoreCallBack);
         }
 
+        // ユーザアカウントDB更新後のコールバック
         function _onUpdateUserAccountStoreCallBack(result) {
             _log.connectionLog(7, '_onUpdateUserAccountStoreCallBack start');
             var _result = false;
@@ -12136,6 +13338,8 @@ limitations under the License.
     };
 
 
+    // 短縮URL処理用ライブラリ
+    // メッセージからcubeeの添付ファイルっぽいURL以外のURLのリストを返却する
 
     function _getURLs(body) {
         var ary = body.split(/(%09|%20|%0D%0A|%0d%0a|%0A|%0a|%0D|%0d|%E3%80%80|%e3%80%80)/);
@@ -12156,6 +13360,7 @@ limitations under the License.
             }
         }
 
+        // URLがなければnullを返す
         if (retval.length == 0) {
             _log.connectionLog(7, '***_getURLs: no URL');
             return null;
@@ -12163,6 +13368,7 @@ limitations under the License.
         return retval;
     }
 
+    // cubeeの添付ファイルっぽいURLかそうではないかを判定する
     function _isAttachedURL(url) {
         var localregexp = Utils.replaceAll(_conf.getConfData('SYSTEM_LOCATION_ROOT') + "/f/.*",
                                            "/", "%2F");
@@ -12176,6 +13382,8 @@ limitations under the License.
         }
     }
 
+    // 加工済みファイル処理用ライブラリ
+    // メッセージからcubeeの添付ファイルっぽいリストを返却する
     function _getAttachedURLs(body) {
         var ary = body.split(/(%09|%20|%0D%0A|%0d%0a|%0A|%0a|%0D|%0d|%E3%80%80|%e3%80%80)/);
         var urlregexp =  /((https?)(%3A%2F%2F|%3a%2f%2f).+)/gi;
@@ -12194,12 +13402,14 @@ limitations under the License.
                 }
             }
         }
+        // URLがなければnullを返す
         if (retval.length == 0) {
             _log.connectionLog(7, '***_getAttachedURLs: not found');
             return null;
         }
         return retval;
 
+        // cubeeの添付ファイルっぽいURLかそうではないかを判定する
         function _isAttached(url) {
             var localregexp = Utils.replaceAll(_conf.getConfData('SYSTEM_LOCATION_ROOT') + "/f/.*", "/", "%2F");
             var _strmatch = url.match(localregexp);
@@ -12216,6 +13426,8 @@ limitations under the License.
         }
     }
 
+    // 加工済みファイル処理用ライブラリ
+    // cubeeの添付ファイルっぽいURLから加工済みファイル情報を取得する
     function _getConvertFileItem(tenantUuid, url, onCallback){
         var _decoded = decodeURIComponent(url.replace(/\+/g, '%20'));
         var _fileUtils = FileUtils.getInstance();
@@ -12224,6 +13436,7 @@ limitations under the License.
                 _log.connectionLog(7, '_getConvertFiFleItem : file not found');
                 onCallback(null);
             } else {
+                //加工済みファイルのファイルパスを取得
                 var _systemLocationStr = _conf.getConfData('SYSTEM_LOCATION_ROOT');
                 var _targetPath = filePath.substr(filePath.indexOf(_systemLocationStr)+_systemLocationStr.length);
                 _log.connectionLog(7, '_getConvertFileItem::'+_targetPath);
@@ -12240,12 +13453,15 @@ limitations under the License.
             if(_convertedFilePath != null){
                 var _parts = Url.parse(_decoded);
                 if (_parts.host == null) {
+                    // The _decoded should be absolute URL path. If not, _parts.host return null.
                     _ret = null;
                 } else {
+                    // 添付ファイルに関係するURLにはテナントUUIDを含めないため、convertURL からテナントUUIDを削除する
                     var _tenantUuidRegExp = new RegExp(tenantUuid+'/');
                     _convertedFilePath = _convertedFilePath.replace(_tenantUuidRegExp, '');
                     var _systemLocationStr = _conf.getConfData('SYSTEM_LOCATION_ROOT');
                     var _headURL = _parts.protocol + '//' + _parts.host + _systemLocationStr;
+                    // _parts.host contain the port if _decoded has the port.
                     var _convertedFileURL = encodeURIComponent(_headURL + _convertedFilePath);
                     _ret = {
                         "originalURL" : url,

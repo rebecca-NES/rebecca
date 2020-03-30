@@ -1,24 +1,12 @@
-/*
-Copyright 2020 NEC Solution Innovators, Ltd.
-
-Licensed under the Apache License, Version 2.0 (the "License");
-you may not use this file except in compliance with the License.
-You may obtain a copy of the License at
-
-    http://www.apache.org/licenses/LICENSE-2.0
-
-Unless required by applicable law or agreed to in writing, software
-distributed under the License is distributed on an "AS IS" BASIS,
-WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-See the License for the specific language governing permissions and
-limitations under the License.
-*/
 (function() {
+    // SSL 3.0無効化用モジュール読み込み
     var constants = require('constants');
+    // 設定ファイルデータモジュールの読み込み
     var fs = require('fs');
     var Conf = require('./conf');
     var _conf = Conf.getInstance();
     var CubeeWebApi = require('./cubee_web_api');
+    // ログAPIモジュールの読み込み
     var ServerLog = require('./server_log');
 
     var log = ServerLog.getInstance();
@@ -32,6 +20,7 @@ limitations under the License.
             log.connectionLog(6, 'Socket.IO Port Setting is nothing');
         } else {
             var http_server = require('http').createServer();
+            // Socket.IOモジュールの読み込み
             _io = require('socket.io')(http_server);
             http_server.listen(_socketIoPort);
         }
@@ -48,10 +37,12 @@ limitations under the License.
                     key : fs.readFileSync(_sslCertificateKeyFile).toString(),
                     cert : fs.readFileSync(_sslCertificateFile).toString()
                 });
+                // Socket.IOモジュールの読み込み
                 _ioSsl = require('socket.io')(https_server);
                 https_server.listen(_socketIoSslPort);
             }
         }
+        // 接続処理受け付ける
         if (_io != null) {
             _io.set('transports', ['websocket', 'polling']);
             _io.on('connection', onSocketsConnected);
@@ -66,15 +57,19 @@ limitations under the License.
         var _ipAddress = socket.handshake.address.address;
         log.connectionLog(7, 'connected from ' + _ipAddress);
         socket.isSynchronous = true;
+        //
         socket.receiveBuf = '';
 
+        // メッセージ受信時
         socket.on('message', function(msg) {
             var _receiveData = msg.toString();
             log.connectionLog(7, _receiveData);
+            //socket.receiveBuf += _receiveData;
             socket.receiveBuf = _receiveData;
             try {
                 _receiveObject = JSON.parse(socket.receiveBuf);
             } catch(e) {
+                // JSON形式以外はエラー
                 log.connectionLog(7, 'receive JSON parse error : ' + socket.receiveBuf);
                 return;
             }
@@ -87,6 +82,7 @@ limitations under the License.
 
             CubeeWebApi.getInstance().receive(socket, _message, processCallback);
         });
+        // 切断時
         socket.on('disconnect', function() {
             log.connectionLog(7, 'disconnected');
             CubeeWebApi.getInstance().notifyDisconnect(socket);
@@ -100,6 +96,7 @@ limitations under the License.
         socket.emit('message', message);
     };
 
+    // Xmppサーバでエラーが発生
     function onError(socket, error) {
         if (socket == null) {
             return;
@@ -107,11 +104,13 @@ limitations under the License.
         socket.emit('error', error);
     };
 
+    // Xmppサーバから切断された
     function onDisconnect(socket) {
         if (socket == null) {
             return;
         }
         socket.emit('XMPP server disconnect', '');
+        //socket.disconnect();
     };
 
     exports.start = start;

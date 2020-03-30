@@ -1,18 +1,9 @@
-/*
-Copyright 2020 NEC Solution Innovators, Ltd.
-
-Licensed under the Apache License, Version 2.0 (the "License");
-you may not use this file except in compliance with the License.
-You may obtain a copy of the License at
-
-    http://www.apache.org/licenses/LICENSE-2.0
-
-Unless required by applicable law or agreed to in writing, software
-distributed under the License is distributed on an "AS IS" BASIS,
-WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-See the License for the specific language governing permissions and
-limitations under the License.
-*/
+/**
+ * コミュニティーのnode内からも使うAPI
+ * Webからはweb_apiが口になり、このファイルの上位
+ *
+ * @module src/scripts/controller/community/api
+ */
 'use strict';
 
 const _ = require('underscore');
@@ -23,6 +14,16 @@ const API_STATUS = require('../const').API_STATUS;
 const SynchronousBridgeNodeXmpp = require('../synchronous_bridge_node_xmpp');
 const RequestData = require('../../model/request_data').RequestData;
 
+/**
+ * ルーム作成時に実行されるAPI（公開関数）
+ * Xmppでルーム作成が完了後の処理
+ *
+ * @param {string} system_uuid - 権限管理を利用するシステムのUUID
+ * @param {object} session - リリクエストを行ったユーザ情報
+ * @param {object} _content - リクエストとXmppから作成後に返された値
+ *
+ * @return {promise} 正常に更新できた場合はresolve, 失敗した場合はreject
+ */
 exports.doAfterCreatedRoom = (system_uuid, session, _content) => {
     return new Promise((resolve, reject) => {
         if(!_.has(_content,"items")||
@@ -49,6 +50,7 @@ exports.doAfterCreatedRoom = (system_uuid, session, _content) => {
                         err["roomId"] = _content.items[0].roomId;
                         err["deleted"] = res2.deleted;
                         Log.connectionLog(6, `community.api.doAfterCreatedRoom deleteRoomAndMemberAuthority then: ${JSON.stringify(err)}`);
+                        //ルーム削除は成功したが登録としては失敗なためreject
                         reject(err);
                     }).catch((err2)=>{
                         err["roomId"] = _content.items[0].roomId;
@@ -60,6 +62,18 @@ exports.doAfterCreatedRoom = (system_uuid, session, _content) => {
     });
 };
 
+/**
+ * ルーム作成時など、初期のポリシーと権限をルームに設定する
+ * すべて設定予定の権限作成に成功しなかった場合は作成された物も削除
+ * して元の状態にもどる。
+ * ※サブ関数としてプライベートな関数とする
+ *
+ * @param {string} system_uuid - 権限管理を利用するシステムのUUID
+ * @param {object} session - リリクエストを行ったユーザ情報
+ * @param {object} resource - リソースID（ルームID）
+ *
+ * @return {promise} 正常に更新できた場合はresolve, 失敗した場合はreject
+ */
 const setDefaultPolicyAndRightsAtCreate = (system_uuid, session, resource) => {
     return new Promise((resolve, reject) => {
         if(!_.isString(resource)){
@@ -101,6 +115,7 @@ const setDefaultPolicyAndRightsAtCreate = (system_uuid, session, resource) => {
                 }
                 Promise.all(promisesR)
                     .then((res2)=>{
+                        //-- メンバー登録の設定-----
                         AuthorityController.assignPolicyToUsers(
                             system_uuid, session,
                             {
@@ -109,11 +124,13 @@ const setDefaultPolicyAndRightsAtCreate = (system_uuid, session, resource) => {
                             },
                             'create'
                         ).then((res3)=>{
+                            //すべて実行成功
                             resolve({result: true, reason: API_STATUS.SUCCESS});
                         }).catch((err3)=>{
                             Log.connectionLog(5, `community.api.setDefaultPolicyAndRightsAtCreate : authority set Right err! ${JSON.stringify(err3)}`);
                             reject(err3);
                         });
+                        //--------------
                     })
                     .catch((err2)=>{
                         Log.connectionLog(5, `community.api.setDefaultPolicyAndRightsAtCreate : authority set Right err! ${JSON.stringify(err2)}`);
@@ -128,6 +145,16 @@ const setDefaultPolicyAndRightsAtCreate = (system_uuid, session, resource) => {
 };
 
 
+/**
+ * 権限設定に失敗した時に権限とルームを削除する
+ *
+ * @param {string} system_uuid - 権限管理を利用するシステムのUUID
+ * @param {object} session - リリクエストを行ったユーザ情報
+ * @param {object} resource - リソースID（ルームID）
+ * @param {Array} actionMenberJIDs 配列の1番目をオーナーとしたメンバーのJID
+ *
+ * @return {promise} 正常に更新できた場合はresolve, 失敗した場合はreject
+ */
 const deleteRoomAndMemberAuthority = (system_uuid, session, resource) => {
     return new Promise((resolve, reject) => {
         if(!_.isString(resource)){
@@ -135,9 +162,12 @@ const deleteRoomAndMemberAuthority = (system_uuid, session, resource) => {
             return;
         }
         const accessToken = session.getAccessToken();
+        // ここに権限失敗したので削除処理追加
         AuthorityController.deleteRightPolicyOfResource(
             system_uuid, session,{resource:resource})
             .then((res2) =>{
+                //失敗した権限の削除に成功した
+                //ルームの削除を実行
                 sendDeleteGroupRequestToXmpp(accessToken, resource)
                     .then((res3) => {
                         if(res3.result){
@@ -149,6 +179,7 @@ const deleteRoomAndMemberAuthority = (system_uuid, session, resource) => {
                                 deleted: true
                             });
                         }else{
+                            //システムトラブルは無かったが削除に失敗した
                             Log.connectionLog(3, `community.api.deleteRoomAndMemberAuthority: authority cleaned, clean xmpp dose not err!:${JSON.stringify(res3)}`);
                             reject({
                                 result: false,
@@ -158,6 +189,7 @@ const deleteRoomAndMemberAuthority = (system_uuid, session, resource) => {
                             });
                         }
                     }).catch((err3) => {
+                        //権限削除は成功したが、ルーム削除に失敗した。
                         Log.connectionLog(3, `community.api.setDefaultPolicyAndRightsAtCreat: not clean xmpp err!:${JSON.stringify(err3)}`);
                         reject({
                             result: false,
@@ -167,7 +199,9 @@ const deleteRoomAndMemberAuthority = (system_uuid, session, resource) => {
                         });
                     });
             }).catch((err2) =>{
+                //DBなどシステムトラブルでエラーとなった
                 Log.connectionLog(2, `community.api.deleteRoomAndMemberAuthority: not authority clean err! ${JSON.stringify(err2)}`);
+                //エラーコードは権限作成に付いてのエラーコードを返す。
                 reject({
                     result: false,
                     reason: API_STATUS.INTERNAL_SERVER_ERROR,
@@ -178,8 +212,16 @@ const deleteRoomAndMemberAuthority = (system_uuid, session, resource) => {
     });
 };
 
+/**
+ * システムとしてのコミュニティ削除要求をXMPPに送信する
+ *
+ * @param  {string} accessToken アクセストークン
+ * @param  {string} roomId      対象のルームID
+ * @return {function}           プロミスの関数を返却する。resolveの場合は、object、rejectの場合はstringを返却。
+ */
 function sendDeleteGroupRequestToXmpp(accessToken, roomId) {
     return new Promise((resolve, reject) => {
+        // パラメータチェック
         if (! _.isString(accessToken) || accessToken == '') {
             Log.connectionLog(4, 'accessToken is invalid. community::api::sendDeleteGroupRequestToXmpp');
             reject('invalid parameter');
@@ -190,11 +232,13 @@ function sendDeleteGroupRequestToXmpp(accessToken, roomId) {
             reject('invalid parameter');
             return;
         }
+        // リクエストの作成
         const _accessToken = accessToken;
         const _content = {
             type: RequestData.DELETE_GROUP_TYPE_COMMUNITY_ROOM,
             roomId: roomId
         };
+        // リクエストの送出
         const _synchronousBridgeNodeXmpp = SynchronousBridgeNodeXmpp.getInstance();
         _synchronousBridgeNodeXmpp.deleteGroup(
             _accessToken,

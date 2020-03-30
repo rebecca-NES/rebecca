@@ -1,18 +1,3 @@
-/*
-Copyright 2020 NEC Solution Innovators, Ltd.
-
-Licensed under the Apache License, Version 2.0 (the "License");
-you may not use this file except in compliance with the License.
-You may obtain a copy of the License at
-
-    http://www.apache.org/licenses/LICENSE-2.0
-
-Unless required by applicable law or agreed to in writing, software
-distributed under the License is distributed on an "AS IS" BASIS,
-WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-See the License for the specific language governing permissions and
-limitations under the License.
-*/
 "use strict";
 
 const SessionDataMannager = require("../../session_data_manager");
@@ -25,13 +10,16 @@ exports.receive = (_globalSnsDB, socket, request, processCallback, callBackRespo
     _log.connectionLog(7, 'do func profile.list.api.request(...');
     const _content = request.content;
     const _type = _content.type;
+    //typeが正しくない場合などのデフォルト値
     let _ret = {
+        //errorCode エラーコード（9=トークンが無効,1=必要パラメーターが無い場合,0=その他）
         errorCode : 1,
         content : {
             result: false,
             reason: Const.API_STATUS.NOT_FOUND
         }
     };
+    //トークンが無効
     if(typeof _content != 'object' ||
        typeof _type != 'string' ||
         !Validation.accessTokenValidationCheck(request.accessToken, true)){
@@ -55,6 +43,9 @@ exports.receive = (_globalSnsDB, socket, request, processCallback, callBackRespo
         case 'getAffiliationList':
             _ret = getAffiliationList(_globalSnsDB, request.accessToken)
                     .then((res)=>{
+                        //httpレスポンスをここで実行
+                        //コールバックが最終レスポンスになるので
+                        //このブロックでreturnで返さない
                         callBackResponse(
                             processCallback,
                             request.accessToken,
@@ -67,6 +58,7 @@ exports.receive = (_globalSnsDB, socket, request, processCallback, callBackRespo
                             },res.content));
                     })
                     .catch((err)=>{
+                        //httpレスポンスをここで実行
                         callBackResponse(
                             processCallback,
                             request.accessToken,
@@ -80,6 +72,7 @@ exports.receive = (_globalSnsDB, socket, request, processCallback, callBackRespo
                     });
             break;
         default:
+                //httpレスポンスをここで実行
             callBackResponse(
                     processCallback,
                     request.accessToken,

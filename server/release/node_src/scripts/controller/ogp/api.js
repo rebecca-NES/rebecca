@@ -1,18 +1,3 @@
-/*
-Copyright 2020 NEC Solution Innovators, Ltd.
-
-Licensed under the Apache License, Version 2.0 (the "License");
-you may not use this file except in compliance with the License.
-You may obtain a copy of the License at
-
-    http://www.apache.org/licenses/LICENSE-2.0
-
-Unless required by applicable law or agreed to in writing, software
-distributed under the License is distributed on an "AS IS" BASIS,
-WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-See the License for the specific language governing permissions and
-limitations under the License.
-*/
 "use strict";
 
 const ogs = require('open-graph-scraper');
@@ -26,6 +11,18 @@ const Conf = require('../conf').getInstance();
 
 
 
+/**
+ * Open Graph Protocolの値をJSONで取得する関数。
+ * 内部でRedisにキャッシュし、一定期間はWebサイトに問い合わせずに値を返却する。
+ * requestには
+ *  .body.accessToken＝accsessToken,
+ *  .body.url=OGPを取得するURL
+ *
+ * @param request
+ * @param response
+ *
+ * @return レスポンスは正しく実行されればブラウザーへJsonが返される。
+ */
 exports.getOGP = (request, response) => {
     log.connectionLog(7,"do func  ogp.api.js getOGP(...");
     let _accessToken;
@@ -43,8 +40,10 @@ exports.getOGP = (request, response) => {
         });
         return;
     }
+    //URL拡張子からOGP取得しないもをを弾く
     if(request.body.url.replace(/\?[^?\s]*$/,'')
                        .match(new RegExp(/\.(pdf|txt|xlsx|png|jpg|jpeg)$/,"i"))){
+        //no ogp link
         response.json({
             result: true,
             reason: Const.API_STATUS.SUCCESS,
@@ -55,6 +54,7 @@ exports.getOGP = (request, response) => {
     _accessToken = request.body.accessToken;
     let _sessionDataMannager = SessionDataMannager.getInstance();
     let _sessionData = _sessionDataMannager.get(_accessToken);
+    //ログイン済みユーザー
     if(_sessionData){
         try{
             const redisclient = redis.createClient({
@@ -65,12 +65,14 @@ exports.getOGP = (request, response) => {
                 tls      : false,
                 connect_timeout : Conf.getConfData('REDIS_CONNECT_TIMEOUT')
             });
+            //単位は秒
             let cashtime = 60 * 60 * 24 * 7;
             const _cashtime = Conf.getConfData('OGP_CASH_TIME_LIFE');
             if(_cashtime != null &&
                /^\d+$/.test(_cashtime)){
                 cashtime = parseInt(_cashtime);
             }
+            // Redisにキャッシュが無いか問い合わせ
             new Promise((resolve, reject)=>{
                 redisclient.get(
                     "OGP_" + encodeURIComponent(request.body.url),
@@ -80,6 +82,7 @@ exports.getOGP = (request, response) => {
                             log.connectionLog(1,"ogp.api.js getOGP - redis error:" + err);
                             return;
                         }
+                        //値が見つからない場合はnullが戻される
                         resolve(data);
                         return;
                     });
@@ -93,6 +96,7 @@ exports.getOGP = (request, response) => {
                    typeof ogp_cash == 'object'){
                     log.connectionLog(7,"ogp.api.js getOGP - in cash data:" + request.body.url
                                       + ", val:" + ogp_cash_str);
+                    //キャッシュ期間なのでキャッシュを返す
                     response.json(ogp_cash.results);
                     redisclient.quit();
                     return;
@@ -100,6 +104,7 @@ exports.getOGP = (request, response) => {
                     log.connectionLog(7,"ogp.api.js getOGP - not in cash data:" + request.body.url
                                       + ", val:" + ogp_cash_str);
                 }
+                //OGPを取ってくる
                 let options = {
                     'url': request.body.url,
                     'strictSSL': false,
@@ -118,6 +123,7 @@ exports.getOGP = (request, response) => {
                 rp(options)
                     .then((body) => {
                         log.connectionLog(7,"ogp.api.js getOGP body.length:"+body.length);
+                        //1000k以上のHTML
                         if(body.length > 1000000 || !body.match(/^\s*\</)){
                             log.connectionLog(7,"ogp.api.js getOGP - urldata over 1000k : " + body.length);
                             redisclient.set("OGP_" + encodeURIComponent(request.body.url), JSON.stringify({results:{}}),'EX', cashtime);
@@ -169,6 +175,7 @@ exports.getOGP = (request, response) => {
                         return;
                     });
             }).catch((e)=>{
+                //redisの問い合わせエラー
                 log.connectionLog(1,"ogp.api.js getOGP - redis server error:"+e);
                 response.json({
                     result: false,
@@ -186,6 +193,7 @@ exports.getOGP = (request, response) => {
             return;
         }
     }else{
+        //accessTokenがないとき
         log.connectionLog(1,"ogp.api.js getOGP - not found accessToken:" + request.body.accessToken);
         response.json({
             result: false,

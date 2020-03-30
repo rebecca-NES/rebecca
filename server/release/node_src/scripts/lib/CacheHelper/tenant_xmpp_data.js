@@ -1,25 +1,15 @@
-/*
-Copyright 2020 NEC Solution Innovators, Ltd.
-
-Licensed under the Apache License, Version 2.0 (the "License");
-you may not use this file except in compliance with the License.
-You may obtain a copy of the License at
-
-    http://www.apache.org/licenses/LICENSE-2.0
-
-Unless required by applicable law or agreed to in writing, software
-distributed under the License is distributed on an "AS IS" BASIS,
-WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-See the License for the specific language governing permissions and
-limitations under the License.
-*/
 (function() {
     var GlobalSNSManagerDbConnector = require('../DbHelper/global_sns_manager_db_connector');
     var Utils = require('../../utils');
 
+    /**
+    *  テナントの保持するxmppサーバをリストするクラス
+    */
     function TenantXmppData() {
 
+        // redis でのデータ型の名称
         this.REDIS_DATA_TYPE = 'hash';
+        // redis でのキー名
         this.REDIS_KEY_NAME = 'tenant_xmpp_list';
 
         this.setFieldName(null);
@@ -28,6 +18,11 @@ limitations under the License.
 
     };
 
+    /**
+    * CacheCheff で使用する場合の生成メソッド
+    * @param {string} tenantUuid フィールド名であるテナントUUID名
+    * @return {object} TenantXmppData 生成したTenantDataを返却
+    */
     TenantXmppData.createAsOrder = function(tenantUuid) {
         if (tenantUuid == null || typeof tenantUuid != 'string' || tenantUuid == '') {
             return null;
@@ -41,6 +36,7 @@ limitations under the License.
 
     var _proto = TenantXmppData.prototype;
 
+    /// redisフィールド名
     _proto.setFieldName = function(fieldName) {
         this._REDIS_FIELD_NAME = fieldName;
     };
@@ -48,13 +44,27 @@ limitations under the License.
         return this._REDIS_FIELD_NAME;
     }
 
+    // 保持データ
     _proto.getData = function() {
+        /* EXAMPLE
+        data = '{ "xmpp_server_names": ["spf-dckr-of-aa944196-e5d5-11e5-84b4-000c29690167-01"], "tenant_name": "spf" }';
+        */
         var _data = {};
         _data['xmpp_server_names'] = this.getXmppServerNames();
         _data['tenant_name'] = this.getTenantName();
         return JSON.stringify(_data);
     }
 
+    /**
+    * Cach(redis)データからデータモデルインスタンスを生成するメソッド
+    * @param {string} tenantUuid フィールド名であるテナントUUID
+    * @param {string} data Redisから取得したJSON形式のデータ
+    *                 ex) '{
+    *                           "xmpp_server_names": ["spf-dckr-of-aa944196-e5d5-11e5-84b4-000c29690167-01"],
+    *                           "tenant_name": "spf"
+    *                      }'
+    * @return {object} TenantXmppData 生成したTenantDataを返却
+    */
     _proto.createDish = function(tenantUuid, data) {
         if (tenantUuid == null || typeof tenantUuid != 'string' || tenantUuid == '') {
             return null;
@@ -82,6 +92,12 @@ limitations under the License.
         return _tenantXmppData;
     }
 
+    /**
+    * DBデータからデータモデルインスタンスを生成するメソッド
+    * @param {string} tenantUuid フィールド名であるテナントUUID
+    * @param {object} datas DBから取得したデータ配列
+    * @return {object} TenantXmppData 生成したTenantDataを返却
+    */
     _proto.createDishByDBSource = function(tenantUuid, datas) {
         if (tenantUuid == null || typeof tenantUuid != 'string' || tenantUuid == '') {
             return null;
@@ -112,6 +128,10 @@ limitations under the License.
         return _tenantXmppData;
     }
 
+    /**
+    * Cach(redis) にデータがない場合にDB(globalsns_manager)に発行するSQL
+    * @return {string} SQL文
+    */
     _proto.getSql = function() {
         var _sql = '';
         _sql += ' SELECT t.name, x.server_name ';
@@ -121,6 +141,7 @@ limitations under the License.
         return _sql;
     }
 
+    // テナントUUID
     _proto.getTenantUuid = function() {
         return this.getFieldName();
     };
@@ -128,6 +149,7 @@ limitations under the License.
         this.setFieldName(tenantUuid);
     };
 
+    // XMPPサーバ名
     _proto.getXmppServerNames = function() {
         return this._xmppServerNames;
     };
@@ -135,6 +157,7 @@ limitations under the License.
         this._xmppServerNames = serverNames;
     };
 
+    // テナント名
     _proto.getTenantName = function() {
         return this._tenantName;
     };

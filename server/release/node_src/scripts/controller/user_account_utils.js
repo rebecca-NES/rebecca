@@ -1,18 +1,3 @@
-/*
-Copyright 2020 NEC Solution Innovators, Ltd.
-
-Licensed under the Apache License, Version 2.0 (the "License");
-you may not use this file except in compliance with the License.
-You may obtain a copy of the License at
-
-    http://www.apache.org/licenses/LICENSE-2.0
-
-Unless required by applicable law or agreed to in writing, software
-distributed under the License is distributed on an "AS IS" BASIS,
-WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-See the License for the specific language governing permissions and
-limitations under the License.
-*/
 var UserAccountManager = require('./user_account_manager');
 var UserAccountData = require('../model/user_account_data');
 var SynchronousBridgeNodeXmpp = require('./synchronous_bridge_node_xmpp');
@@ -23,10 +8,16 @@ var XmppUtils = require('./xmpp_utils');
 var _conf = Conf.getInstance();
 var _log = ServerLog.getInstance();
 
+/*
+ * アカウントデータに関するUtilクラス
+ */
 function UserAccountUtils() {
 }
 
 var _proto = UserAccountUtils.prototype;
+/*
+ * ログインアカウントからユーザアカウント情報を取得
+ */
 UserAccountUtils.getUserDataByTenantLoginAccount = function(tenantUuid, loginAccount,
         onGetUserAccountDataCallBack) {
     if (tenantUuid == null || typeof tenantUuid != 'string') {
@@ -51,6 +42,9 @@ UserAccountUtils.getUserDataByTenantLoginAccount = function(tenantUuid, loginAcc
         onGetUserAccountDataCallBack(result);
     }
 };
+/*
+ * jidからユーザアカウント情報を取得
+ */
 UserAccountUtils.getLoginAccountListByJidList = function(jidList,
         onGetUserAccountDataCallBack) {
     if (jidList == null || !(jidList instanceof Array)) {
@@ -96,6 +90,9 @@ UserAccountUtils.getLoginAccountListByJidList = function(jidList,
         onGetUserAccountDataCallBack(_ret);
     }
 };
+/*
+ * ログインアカウントからユーザアカウント情報を取得(アクティブユーザ)
+ */
 UserAccountUtils.getActiveUserDataByTenantLoginAccount = function(tenantUuid, loginAccount,
         onGetUserAccountDataCallBack) {
     if (tenantUuid == null || typeof tenantUuid != 'string') {
@@ -124,6 +121,15 @@ UserAccountUtils.getActiveUserDataByTenantLoginAccount = function(tenantUuid, lo
         onGetUserAccountDataCallBack(_ret);
     }
 };
+/**
+* ユーザデータ一覧件数取得
+* @param {SessionData} sessionData セッションデータ
+* @param {string} tenantId テナントID 省略可 nullの場合は省略とする
+* @param {Array} except 取得するユーザ一覧に含めないユーザ名(Openfireアカウント名)の配列
+* @param {Boolean} onSelectDelUsrFlg 削除済みユーザを含むかどうかのフラグ true:削除ユーザ含む、false:削除ユーザ含まない
+* @param {function} onGetUserListCountCallBack 実行結果後のコールバック
+* @returns {boolean} true : 処理成功 / false : 処理失敗
+*/
 UserAccountUtils.getUserListCountForAdmintool = function(
         sessionData, tenantId, except, onSelectDelUsrFlg, onGetUserListCountCallBack) {
     if (sessionData == null || typeof sessionData != 'object') {
@@ -151,6 +157,17 @@ UserAccountUtils.getUserListCountForAdmintool = function(
         onGetUserListCountCallBack(userListCount, userListCount_NotDelete);
     }
 };
+/**
+ * ユーザデータ一覧取得
+     * @param {SessionData} sessionData セッションデータ
+     * @param {string} tenantId テナントID 省略可 nullの場合は省略とする
+     * @param {Array} except 取得するユーザ一覧に含めないユーザ名(Openfireアカウント名)の配列
+     * @param {number} start 取得開始件数（何件目～）
+     * @param {number} count 取得件数
+     * @param {Boolean} onSelectDelUsrFlg 削除済みユーザを含むかどうかのフラグ true:削除ユーザ含む、false:削除ユーザ含まない
+     * @param {function} onGetUserListCallBack 実行結果後のコールバック
+     * @returns {boolean} true : 処理成功 / false : 処理失敗
+ */
 UserAccountUtils.getUserListForAdmintool = function(
         sessionData, tenantId, except, start, count, onSelectDelUsrFlg, onGetUserListCallBack) {
     if (sessionData == null || typeof sessionData != 'object') {
@@ -187,6 +204,13 @@ UserAccountUtils.getUserListForAdmintool = function(
         onGetUserListCallBack(userList);
     }
 };
+/**
+ * Openfireのアカウントを生成(※現在未使用)
+ * @param {String} loginAccount cubeeのログインアカウント
+ * @param {String} xmppServerName XMPPサーバ名
+ * @param {function} onCreateOpenfireAccountCallBack コールバック関数
+ * @returns {boolean} 処理開始成功 : true / 処理失敗 : false
+ */
 UserAccountUtils.createUniqueOpenfireAccount = function(loginAccount, xmppServerName, onCreateOpenfireAccountCallBack) {
     if(loginAccount == null || typeof loginAccount != 'string' || loginAccount == '') {
         _log.connectionLog(3, 'UserAccountUtils#createUniqueOpenfireAccount loginAccount is invalid');
@@ -203,6 +227,16 @@ UserAccountUtils.createUniqueOpenfireAccount = function(loginAccount, xmppServer
     var _userAccountManager = UserAccountManager.getInstance();
     return _userAccountManager.createUniqueOpenfireAccount(loginAccount, xmppServerName, onCreateOpenfireAccountCallBack);
 };
+/**
+ * ユーザ登録
+ *
+ * @param {SessionData} sessionData セッションデータ
+ * @param {PersonData} personData 登録する人情報
+ * @param {PersonData} password パスワード
+ * @param {RegisteredContactData} registeredContactData
+ * @param {function} onRegUserCallBack 実行結果後のコールバック
+ * @returns {boolean} true : 処理成功 / false : 処理失敗
+ */
 UserAccountUtils.create = function(sessionData, personData, password,
         registeredContactData, onRegUserCallBack) {
     if (sessionData == null || typeof sessionData != 'object') {
@@ -233,6 +267,14 @@ UserAccountUtils.create = function(sessionData, personData, password,
             registeredContactData, onRegUserCallBack);
 };
 
+/**
+ * ユーザのパスワードを更新する（adminj権限ユーザ用）
+ * @param {string} accessToken アクセストークン
+ * @param {string} loginAccount 登録するユーザ情報
+ * @param {string} password 登録するユーザのパスワード
+ * @param {function} onUpdateUserPasswordCallback コールバック関数
+ * @returns {Boolean} 更新を開始できた場合はtrue、更新に失敗した場合はfalse
+ */
 UserAccountUtils.updateUserPassword = function(sessionData, loginAccount, password,
         onUpdateUserPasswordCallback) {
     if (sessionData == null || typeof sessionData != 'object') {
@@ -272,6 +314,7 @@ UserAccountUtils.updateUserPassword = function(sessionData, loginAccount, passwo
         }
         var _openfireAccount = userAccountData.getOpenfireAccount();
         var _fromJid = sessionData.getJid();
+        //ここでXmppを取得しないと、Synchronousから実行したときにundefindとなる
         var _xmpp = require('./xmpp').Xmpp;
         var _xmppUpdateUserPassword = XmppUtils.checkCreateXmppData(_xsConn, function() {
             return _xmpp.createUpdateUserPasswordXmpp(_xmppServerName, _fromJid, _openfireAccount, password);
@@ -305,15 +348,47 @@ UserAccountUtils.updateUserPassword = function(sessionData, loginAccount, passwo
 };
 
 
+/**
+ * ユーザデータ一括登録
+ * @param {SessionData} sessionData セッションデータ
+ * @param {Array} createUserMap 登録するユーザ(createUserData)のマップ
+ *                  構造
+ *                    {
+ *                       【登録するユーザアカウント】 : {
+ *                             personData : PersonDataオブジェクト
+ *                             password : パスワード
+ *                             registeredContactData : RegisteredContactDataオブジェクト
+ *                        },
+ *                        ※2件目
+ *                    }
+ * @param {function} onExecBatchRegistration 実行結果後のコールバック
+ * @returns {boolean} true : 処理成功 / false : 処理失敗
+ */
 UserAccountUtils.execBatchRegistration = function(sessionData,createUserMap,onExecBatchRegistration) {
     var _userAccountManager = UserAccountManager.getInstance();
     return _userAccountManager.execBatchRegistration(sessionData,createUserMap,onExecBatchRegistration);
 };
+/**
+ * ユーザアカウントのステータス更新
+ * @param {string} tenantUuid テナントUUID
+ * @param {string} loginAccount ログインアカウント
+ * @param {number} accountStatus  ステータス(0:アクティブ 1:削除 2:休止)
+ * @param {function} onUpdateUserAccountStatusCallBack 実行結果後のコールバック
+ * @returns {boolean} true : 処理成功 / false : 処理失敗
+ */
 UserAccountUtils.updateUserAccountStatus = function(tenantUuid,loginAccount,accountStatus,onUpdateUserAccountStatusCallBack) {
     var _userAccountManager = UserAccountManager.getInstance();
     return _userAccountManager.updateUserAccountStatus(tenantUuid,loginAccount,accountStatus,onUpdateUserAccountStatusCallBack);
 };
 
+/**
+ * ユーザアカウントのメールアドレス更新
+ * @param {string} tenantUuid テナントUUID
+ * @param {string} loginAccount ログインアカウント
+ * @param {string} mailAddress メールアドレス
+ * @param {function} onUpdateUserAccountMailAddressCallBack 実行結果後のコールバック
+ * @returns {boolean} true : 処理成功 / false : 処理失敗
+ */
 UserAccountUtils.updateUserAccountMailAddress = function(tenantUuid, loginAccount, mailAddress, onUpdateUserAccountMailAddressCallBack) {
     var _userAccountManager = UserAccountManager.getInstance();
     return _userAccountManager.updateUserAccountMailAddress(tenantUuid, loginAccount, mailAddress, onUpdateUserAccountMailAddressCallBack);

@@ -753,7 +753,7 @@ textarea:disabled {
   list-style: none;
 }
 #left_sidebar .sidebar_list_content .sidebar_list li.active {
-  background-color: #e4f1f9;
+  background-color: #f9e4e4;
   border-left: solid 5px #32bea6;
 }
 #left_sidebar .sidebar_list_content .sidebar_list li a {
@@ -906,7 +906,7 @@ textarea:disabled {
 }
 .sidebar-collapse #left_sidebar .sidebar_list_content .list_ttl_ico:hover {
   opacity: 0.6;
-  background-color: #89bdde;
+  background-color: #de8989;
 }
 .sidebar-collapse #left_sidebar .sidebar_list_content .list_ttl_ico:hover + .sidebar_list_inner {
   width: 280px;

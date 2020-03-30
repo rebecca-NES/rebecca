@@ -1,18 +1,3 @@
-/*
-Copyright 2020 NEC Solution Innovators, Ltd.
-
-Licensed under the Apache License, Version 2.0 (the "License");
-you may not use this file except in compliance with the License.
-You may obtain a copy of the License at
-
-    http://www.apache.org/licenses/LICENSE-2.0
-
-Unless required by applicable law or agreed to in writing, software
-distributed under the License is distributed on an "AS IS" BASIS,
-WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-See the License for the specific language governing permissions and
-limitations under the License.
-*/
 "use strict";
 
 const SessionDataMannager = require("../session_data_manager");
@@ -22,17 +7,29 @@ const _log = require("../server_log").getInstance();
 const NotificateApi = require('../notificate/api');
 const UserFollowDbStore = require('./dbif');
 
+/**
+ * cubee_web_api.js のリクエストタイプで分岐された状態で実行されるAPIベース
+ *
+ * @param _globalSnsDB globalSnsDBのインスタンス
+ * @param socket ソケット
+ * @param request リクエストJSON
+ * @param processCallback 上位で設定のコールバック
+ * @param callBackResponse レスポンスコールバック
+ */
 exports.receive = (_globalSnsDB, socket, request, processCallback, callBackResponse) => {
     _log.connectionLog(7, 'do func user_follow.api.request(...');
     const _content = request.content;
     const _type = _content.type;
+    //typeが正しくない場合などのデフォルト値
     let _ret = {
+        //errorCode エラーコード（9=トークンが無効,1=必要パラメーターが無い場合,0=その他）
         errorCode : 1,
         content : {
             result: false,
             reason: Const.API_STATUS.NOT_FOUND
         }
     };
+    //トークンが無効
     if(typeof _content != 'object' ||
        typeof _type != 'string' ||
         !Validation.accessTokenValidationCheck(request.accessToken, true)){
@@ -50,6 +47,7 @@ exports.receive = (_globalSnsDB, socket, request, processCallback, callBackRespo
         const _myJid = _sessionData.getJid();
         switch(_type){
         case 'addUserFollow':
+                //リクエスト値をチェック
             if(typeof _content.followeeJid != 'string' ||
                    !Validation.jidValidationCheck(_content.followeeJid, true) ||
                    _content.followeeJid == _myJid){
@@ -72,6 +70,7 @@ exports.receive = (_globalSnsDB, socket, request, processCallback, callBackRespo
             _ret = addUserFollow(_globalSnsDB, request.accessToken,
                                      _content.followeeJid)
                     .then((res)=>{
+                        //httpレスポンスをここで実行
                         callBackResponse(
                             processCallback,
                             request.accessToken,
@@ -88,6 +87,7 @@ exports.receive = (_globalSnsDB, socket, request, processCallback, callBackRespo
                                 personInfo: res.content.personInfo
                             });
                         const notifyuser = _content.followeeJid.replace(/.{4}\@[^\@]+$/,"");
+                        //通知はここで処理
                         NotificateApi.notifyPush(request.accessToken,
                                                  [notifyuser],
                                                  request.request,
@@ -99,6 +99,7 @@ exports.receive = (_globalSnsDB, socket, request, processCallback, callBackRespo
                             });
                     })
                     .catch((err)=>{
+                        //httpレスポンスをここで実行
                         callBackResponse(
                             processCallback,
                             request.accessToken,
@@ -110,6 +111,7 @@ exports.receive = (_globalSnsDB, socket, request, processCallback, callBackRespo
                     });
             break;
         case 'delUserFollow':
+                //リクエスト値をチェック
             if(typeof _content.followeeJid != 'string' ||
                    !Validation.jidValidationCheck(_content.followeeJid, true) ||
                    _content.followeeJid == _myJid){
@@ -132,6 +134,7 @@ exports.receive = (_globalSnsDB, socket, request, processCallback, callBackRespo
             _ret = delUserFollow(_globalSnsDB, request.accessToken,
                                      _content.followeeJid)
                     .then((res)=>{
+                        //httpレスポンスをここで実行
                         callBackResponse(
                             processCallback,
                             request.accessToken,
@@ -148,6 +151,7 @@ exports.receive = (_globalSnsDB, socket, request, processCallback, callBackRespo
                                 personInfo: res.content.personInfo
                             });
                         const notifyuser = _content.followeeJid.replace(/.{4}\@[^\@]+$/,"");
+                        //通知はここで処理
                         NotificateApi.notifyPush(request.accessToken,
                                                  [notifyuser],
                                                  request.request,
@@ -159,6 +163,7 @@ exports.receive = (_globalSnsDB, socket, request, processCallback, callBackRespo
                             });
                     })
                     .catch((err)=>{
+                        //httpレスポンスをここで実行
                         callBackResponse(
                             processCallback,
                             request.accessToken,
@@ -189,6 +194,7 @@ exports.receive = (_globalSnsDB, socket, request, processCallback, callBackRespo
             }
             _ret = getFollowInfo(_globalSnsDB, request.accessToken, _content.jid)
                     .then((res)=>{
+                        //httpレスポンスをここで実行
                         callBackResponse(
                             processCallback,
                             request.accessToken,
@@ -201,6 +207,7 @@ exports.receive = (_globalSnsDB, socket, request, processCallback, callBackRespo
                             },res.content));
                     })
                     .catch((err)=>{
+                        //httpレスポンスをここで実行
                         callBackResponse(
                             processCallback,
                             request.accessToken,
@@ -231,6 +238,7 @@ exports.receive = (_globalSnsDB, socket, request, processCallback, callBackRespo
             }
             _ret = getFolloweeList(_globalSnsDB, request.accessToken, _content.jid)
                     .then((res)=>{
+                        //httpレスポンスをここで実行
                         callBackResponse(
                             processCallback,
                             request.accessToken,
@@ -246,6 +254,7 @@ exports.receive = (_globalSnsDB, socket, request, processCallback, callBackRespo
                             });
                     })
                     .catch((err)=>{
+                        //httpレスポンスをここで実行
                         callBackResponse(
                             processCallback,
                             request.accessToken,
@@ -276,6 +285,7 @@ exports.receive = (_globalSnsDB, socket, request, processCallback, callBackRespo
             }
             _ret = getFollowerList(_globalSnsDB, request.accessToken, _content.jid)
                     .then((res)=>{
+                        //httpレスポンスをここで実行
                         callBackResponse(
                             processCallback,
                             request.accessToken,
@@ -291,6 +301,7 @@ exports.receive = (_globalSnsDB, socket, request, processCallback, callBackRespo
                             });
                     })
                     .catch((err)=>{
+                        //httpレスポンスをここで実行
                         callBackResponse(
                             processCallback,
                             request.accessToken,
@@ -303,6 +314,7 @@ exports.receive = (_globalSnsDB, socket, request, processCallback, callBackRespo
             break;
         default:
             _log.connectionLog(3, '  user_follow.api.request not type:' + _type);
+                //httpレスポンスをここで実行
             callBackResponse(
                     processCallback,
                     request.accessToken,
@@ -316,6 +328,14 @@ exports.receive = (_globalSnsDB, socket, request, processCallback, callBackRespo
     }
 };
 
+/**
+ * API実行者が指定ユーザーをフォローする
+ * ※フォローするユーザーはAPI実行ユーザー
+ *
+ * @param globalSnsDB globalSnsDBのインスタンス
+ * @param accessToken アクセストークン
+ * @param followeeJid フォローされるユーザーJID
+ */
 const addUserFollow = (globalSnsDB, accessToken, followeeJid) => {
     _log.connectionLog(7, 'do func user_follow.api.addUserFollow(...');
     return new Promise((resolve, reject) => {
@@ -349,6 +369,14 @@ const addUserFollow = (globalSnsDB, accessToken, followeeJid) => {
     });
 };
 
+/**
+ * API実行者が指定ユーザーのフォロー解除
+ * ※フォローするユーザーはAPI実行ユーザー
+ *
+ * @param globalSnsDB globalSnsDBのインスタンス
+ * @param accessToken アクセストークン
+ * @param followeeJid フォロー解除されるユーザーJID
+ */
 const delUserFollow = (globalSnsDB, accessToken, followeeJid) => {
     _log.connectionLog(7, 'do func user_follow.api.delUserFollow(...');
     return new Promise((resolve, reject) => {
@@ -382,6 +410,13 @@ const delUserFollow = (globalSnsDB, accessToken, followeeJid) => {
     });
 };
 
+/**
+ * フォローの状態（フォローされている人数、フォローしている人数）を取得
+ *
+ * @param globalSnsDB globalSnsDBのインスタンス
+ * @param accessToken アクセストークン
+ * @param jid 状態を取得するユーザーのJID
+ */
 const getFollowInfo = (globalSnsDB, accessToken, jid) => {
     _log.connectionLog(7, 'do func user_follow.api.getFollowInfo(...');
     return new Promise((resolve, reject) => {
@@ -414,6 +449,13 @@ const getFollowInfo = (globalSnsDB, accessToken, jid) => {
     });
 };
 
+/**
+ * 指定ユーザーがフォローしているリストを取得
+ *
+ * @param globalSnsDB globalSnsDBのインスタンス
+ * @param accessToken アクセストークン
+ * @param jid フォローしているユーザーのJID(指定ユーザー)
+ */
 const getFolloweeList = (globalSnsDB, accessToken, jid) => {
     _log.connectionLog(7, 'do func user_follow.api.getFolloweeList(...');
     return new Promise((resolve, reject) => {
@@ -446,6 +488,13 @@ const getFolloweeList = (globalSnsDB, accessToken, jid) => {
     });
 };
 
+/**
+ * 指定ユーザーがフォローされているリストを取得
+ *
+ * @param globalSnsDB globalSnsDBのインスタンス
+ * @param accessToken アクセストークン
+ * @param jid フォローされているユーザーのJID(指定ユーザー)
+ */
 const getFollowerList = (globalSnsDB, accessToken, jid) => {
     _log.connectionLog(7, 'do func user_follow.api.getFollowerList(...');
     return new Promise((resolve, reject) => {

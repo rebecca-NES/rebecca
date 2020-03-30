@@ -1,18 +1,3 @@
-/*
-Copyright 2020 NEC Solution Innovators, Ltd.
-
-Licensed under the Apache License, Version 2.0 (the "License");
-you may not use this file except in compliance with the License.
-You may obtain a copy of the License at
-
-    http://www.apache.org/licenses/LICENSE-2.0
-
-Unless required by applicable law or agreed to in writing, software
-distributed under the License is distributed on an "AS IS" BASIS,
-WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-See the License for the specific language governing permissions and
-limitations under the License.
-*/
 (function(){
 
     function SessionData() {
@@ -38,6 +23,7 @@ limitations under the License.
 
     var _proto = SessionData.prototype;
 
+    // AccessToken
     _proto.getAccessToken = function() {
         return this._accessToken;
     };
@@ -50,6 +36,7 @@ limitations under the License.
         }
         this._accessToken = accessToken;
     };
+    // IpAddress
     _proto.getIpAddress = function() {
         return this._ipAddress;
     };
@@ -62,6 +49,7 @@ limitations under the License.
         }
         this._ipAddress = ipAddress;
     };
+    // userName(ここにはOpenfireのユーザ名をセットする)
     _proto.getUserName = function() {
         return this._userName;
     };
@@ -74,6 +62,7 @@ limitations under the License.
         }
         this._userName = userName;
     };
+    // password
     _proto.getPassword = function() {
         return this._password;
     };
@@ -86,6 +75,7 @@ limitations under the License.
         }
         this._password = password;
     };
+    // JID
     _proto.getJid = function() {
         return this._jid;
     };
@@ -98,6 +88,7 @@ limitations under the License.
         }
         this._jid = jid;
     };
+    // Socket.IO Socket
     _proto.getSocketIoSock = function() {
         return this._socketIoSock;
     };
@@ -111,6 +102,7 @@ limitations under the License.
         }
         this._socketIoSock = socketIoSock;
     };
+    // Openfire Socket
     _proto.getOpenfireSock = function() {
         return this._openfireSock;
     };
@@ -124,6 +116,7 @@ limitations under the License.
         }
         this._openfireSock = openfireSock;
     };
+    // DisconnectDatetime
     _proto.getDisconnectDatetime = function() {
         return this._disconnectDatetime;
     };
@@ -137,6 +130,7 @@ limitations under the License.
         }
         this._disconnectDatetime = disconnectDatetime;
     };
+    // callback
     _proto.getCallback = function(id) {
         return this._callback[id];
     };
@@ -161,6 +155,7 @@ limitations under the License.
         }
         delete this._callback[id];
     };
+    // IndependentClientNumber
     _proto.getIndependentClientNumber = function() {
         return this._independentClientNumber;
     };
@@ -173,6 +168,7 @@ limitations under the License.
         }
         this._independentClientNumber = independentClientNumber;
     };
+    // loginAccout
     _proto.getLoginAccout = function() {
         return this._loginAccount;
     };
@@ -185,6 +181,7 @@ limitations under the License.
         }
         this._loginAccount = loginAccount;
     };
+    // tenantUuid
     _proto.getTenantUuid = function() {
         return this._tenantUuid;
     };
@@ -197,6 +194,7 @@ limitations under the License.
         }
         this._tenantUuid = tenantUuid;
     };
+    // xmppServerName
     _proto.getXmppServerName = function() {
         return this._xmppServerName;
     };
@@ -209,6 +207,7 @@ limitations under the License.
         }
         this._xmppServerName = xmppServerName;
     };
+    // xmppServerPort
     _proto.getXmppServerPort = function() {
         return this._xmppServerPort;
     };
@@ -221,6 +220,7 @@ limitations under the License.
         }
         this._xmppServerPort = xmppServerPort;
     };
+    // tenantUuid+loginAccount
     _proto.getLoginAccountInTenant = function() {
         if (this._loginAccount == null || this._loginAccount == '') {
             return null;

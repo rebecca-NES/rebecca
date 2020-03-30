@@ -1,18 +1,3 @@
-/*
-Copyright 2020 NEC Solution Innovators, Ltd.
-
-Licensed under the Apache License, Version 2.0 (the "License");
-you may not use this file except in compliance with the License.
-You may obtain a copy of the License at
-
-    http://www.apache.org/licenses/LICENSE-2.0
-
-Unless required by applicable law or agreed to in writing, software
-distributed under the License is distributed on an "AS IS" BASIS,
-WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-See the License for the specific language governing permissions and
-limitations under the License.
-*/
 (function() {
     var AbstractDbConnector = require('./abstract_db_connector').AbstractDbConnector;
     var NodeJsUtil = require('util');
@@ -22,21 +7,26 @@ limitations under the License.
     var _user = _conf.getConfData('GLOBAL_SNS_MANAGER_DB_USER', 'globalsns_admin');
     var _pw = _conf.getConfData('GLOBAL_SNS_MANAGER_DB_PW', '');
 
+    /**
+     * GlobalSNSManagerDbConnectorコンストラクタ
+     */
     function GlobalSNSManagerDbConnector(_dbConfig){
         AbstractDbConnector.call(this,_dbConfig);
     }
 
     var _proto = GlobalSNSManagerDbConnector.prototype;
 
+    //AbstractDbConnectorクラスを継承
     NodeJsUtil.inherits(GlobalSNSManagerDbConnector, AbstractDbConnector);
 
+    //接続設定
     var _dbConfig = {
-            host     : _host,             
-            user     : _user,             
-            password : _pw,               
-            database : 'globalsns_manager',     
-            connectionLimit : 50,               
-            insecureAuth: true,                 
+            host     : _host,             //接続先ホスト
+            user     : _user,             //ユーザー名
+            password : _pw,               //パスワード
+            database : 'globalsns_manager',     //DB名
+            connectionLimit : 50,               //同時コネクション数
+            insecureAuth: true,                 //認証方式でセキュアでないものを許す
     };
     var _globalSNSManagerDbConnector = new GlobalSNSManagerDbConnector(_dbConfig);
 

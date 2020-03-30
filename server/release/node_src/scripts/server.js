@@ -1,22 +1,9 @@
-/*
-Copyright 2020 NEC Solution Innovators, Ltd.
-
-Licensed under the Apache License, Version 2.0 (the "License");
-you may not use this file except in compliance with the License.
-You may obtain a copy of the License at
-
-    http://www.apache.org/licenses/LICENSE-2.0
-
-Unless required by applicable law or agreed to in writing, software
-distributed under the License is distributed on an "AS IS" BASIS,
-WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-See the License for the specific language governing permissions and
-limitations under the License.
-*/
+// cubeeのSocket.IO、WebAPI用フロントプログラム
 
 var ServerLog = require('./controller/server_log');
 var DBIF = require('./Authority/db/db_if');
 
+// 最低限の例外処理
 process.on('uncaughtException', function(err) {
     var _date = new Date();
     try {
@@ -30,12 +17,15 @@ process.on('uncaughtException', function(err) {
 
 function startServer() {
     var _log = ServerLog.getInstance();
+    // Socket.IO受信モジュールの読み込み
     var io = require('./controller/socket_io_receiver');
     io.start();
 
+    // Expressモジュール読み込み。HTTP受信も行う
     var express = require('../express_app/app.js');
     express.start();
 
+    // 権限管理DB接続の開始
     var dbif = DBIF.create().initialize('/opt/cubee/cmnconf/spf_rightctl_dbs.json',
         function(err) {
             if (err) {
@@ -48,4 +38,5 @@ function startServer() {
     _log.connectionLog(6,'CubeeServer is running.');
 };
 
+//サーバー起動
 startServer();

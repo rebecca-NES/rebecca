@@ -1,25 +1,15 @@
-/*
-Copyright 2020 NEC Solution Innovators, Ltd.
-
-Licensed under the Apache License, Version 2.0 (the "License");
-you may not use this file except in compliance with the License.
-You may obtain a copy of the License at
-
-    http://www.apache.org/licenses/LICENSE-2.0
-
-Unless required by applicable law or agreed to in writing, software
-distributed under the License is distributed on an "AS IS" BASIS,
-WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-See the License for the specific language governing permissions and
-limitations under the License.
-*/
 (function() {
     var GlobalSNSManagerDbConnector = require('../DbHelper/global_sns_manager_db_connector');
     var Utils = require('../../utils');
 
+    /**
+    * xmpp_server_store モデルクラス
+    */
     function XmppServerData() {
 
+        // redis でのデータ型の名称
         this.REDIS_DATA_TYPE = 'hash';
+        // redis でのキー名
         this.REDIS_KEY_NAME = 'xmpp_server_store';
 
         this.setFieldName(null);
@@ -28,6 +18,11 @@ limitations under the License.
 
     };
 
+    /**
+    * CacheCheff で使用する場合の生成メソッド
+    * @param {string} serverName string フィールド名であるXMPPサーバ名
+    * @return {object} XmppServerData 生成したTenantDataを返却
+    */
     XmppServerData.createAsOrder = function(serverName) {
         if (serverName == null || typeof serverName != 'string' || serverName == '') {
             return null;
@@ -40,6 +35,7 @@ limitations under the License.
 
     var _proto = XmppServerData.prototype;
 
+    /// redisフィールド名
     _proto.setFieldName = function(fieldName) {
         this._REDIS_FIELD_NAME = fieldName;
     };
@@ -47,6 +43,13 @@ limitations under the License.
         return this._REDIS_FIELD_NAME;
     }
 
+    /**
+    * Cach(redis)データからデータモデルインスタンスを生成するメソッド
+    * @param {string} serverName フィールド名であるXMPPサーバ名
+    * @param {string} data Redisから取得したJSON形式のデータ
+    *                 ex) '{ "tenant_uuid": "aa944196-e5d5-11e5-84b4-000c29690167", "port_clnt": "5222" }'
+    * @return {object} XmppServerData 生成したXmppServerDataを返却
+    */
     _proto.createDish = function(serverName, data) {
         if (serverName == null || typeof serverName != 'string' || serverName == '') {
             return null;
@@ -74,6 +77,12 @@ limitations under the License.
         return _xmppServerData;
     }
 
+    /**
+    * DBデータからデータモデルインスタンスを生成するメソッド
+    * @param {string} serverName フィールド名であるXMPPサーバ名
+    * @param {object} datas DBから取得したデータ配列
+    * @return {object} XmppServerData 生成したXmppServerDataを返却
+    */
     _proto.createDishByDBSource = function(serverName, datas) {
         if (serverName == null || typeof serverName != 'string' || serverName == '') {
             return null;
@@ -100,6 +109,10 @@ limitations under the License.
         return _xmppServerData;
     }
 
+    /**
+    * Cach(redis) にデータがない場合にDB(globalsns_manager)に発行するSQL
+    * @return {string} SQL文
+    */
     _proto.getSql = function() {
         var _self = this;
         var _sql = '';
@@ -109,6 +122,7 @@ limitations under the License.
         return _sql;
     }
 
+    // サーバ名
     _proto.getServerName = function() {
         return this.getFieldName();
     };
@@ -116,6 +130,7 @@ limitations under the License.
         this.setFieldName(serverName);
     };
 
+    // テナントUUID
     _proto.getTenantUuid = function() {
         return this._tenantUuid;
     };
@@ -123,6 +138,7 @@ limitations under the License.
         this._tenantUuid = tenantUuid;
     };
 
+    // クライアントポート
     _proto.getPortClnt = function() {
         return this._portClnt;
     };
@@ -130,7 +146,11 @@ limitations under the License.
         this._portClnt = portClnt;
     };
 
+    // 保持データ
     _proto.getData = function() {
+        /* EXAMPLE
+        data = '{ "tenant_uuid": "aa944196-e5d5-11e5-84b4-000c29690167", "port_clnt": "5222" }'
+        */
         var _data = {};
         _data['tenant_uuid'] = this.getTenantUuid();
         _data['port_clnt'] = this.getPortClnt();

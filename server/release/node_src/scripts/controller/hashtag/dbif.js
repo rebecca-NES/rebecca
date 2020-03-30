@@ -1,18 +1,3 @@
-/*
-Copyright 2020 NEC Solution Innovators, Ltd.
-
-Licensed under the Apache License, Version 2.0 (the "License");
-you may not use this file except in compliance with the License.
-You may obtain a copy of the License at
-
-    http://www.apache.org/licenses/LICENSE-2.0
-
-Unless required by applicable law or agreed to in writing, software
-distributed under the License is distributed on an "AS IS" BASIS,
-WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-See the License for the specific language governing permissions and
-limitations under the License.
-*/
 const log = require("../server_log").getInstance();
 const util = require('util');
 const Const = require("../const");
@@ -30,6 +15,15 @@ module.exports = class HashtagDbStore {
         }
     }
 
+    /**
+     * ハッシュタグ配列データを指定のメッセージID指定とJIDで登録
+     *
+     * @param hashtags タグ(配列)
+     * @param itemid メッセージID
+     * @param jid タグオーナーJID
+     *
+     * @return Promise
+     */
     setHastagArray(hashtags, item_id, jid){
         log.connectionLog(7,"do func hashtag.dbif.setHastagArray(...");
         return new Promise((resolve, reject)=>{
@@ -51,6 +45,7 @@ module.exports = class HashtagDbStore {
                 if(! hashtags ||
                    typeof hashtags != "object" ||
                    hashtags.length === undefined){
+                    //ハッシュタグの配列は空(0)でもタグが編集で無くなった場合など踏まえ通過させる。
                     log.connectionLog(2," hashtag.dbif.setHastagArray hashtags invalid.");
                     reject({
                         result:false
@@ -71,6 +66,7 @@ module.exports = class HashtagDbStore {
                         let tagAction = [];
                         let double_check = {};
                         for(let i=0;i<hashtags.length;i++){
+                            //1メッセージには同じタグ複数個保存しない
                             if(double_check[hashtags[i]]){
                                 continue;
                             }
@@ -127,6 +123,11 @@ module.exports = class HashtagDbStore {
         });
     }
 
+    /**
+     * ハッシュタグの最近からの利用数ベスト100取得
+     *
+     * @return Promise
+     */
     getHastagRanking(msgTo, dateFrom, dateTo, rankBottom, offset, limit){
         log.connectionLog(7,"do func hashtag.dbif.getHastagRanking(...");
         let msgToSQLTableJoin = "";
@@ -222,6 +223,15 @@ module.exports = class HashtagDbStore {
         });
     }
 
+    /**
+     * ハッシュタグデータを指定のメッセージID指定とJIDで登録
+     *
+     * @param tag タグ
+     * @param itemid メッセージID
+     * @param jid タグオーナーJID
+     *
+     * @return Promise
+     */
     insertHastagData(tag, itemid, jid){
         log.connectionLog(7,"do func hashtag.dbif.insertHastagData(...");
         return new Promise((resolve, reject)=>{
@@ -271,6 +281,13 @@ module.exports = class HashtagDbStore {
         });
     }
 
+    /**
+     * ハッシュタグデータをメッセージID指定で削除
+     *
+     * @param itemid メッセージID
+     *
+     * @return Promise
+     */
     deleteHastagDataInItemId(itemid){
         log.connectionLog(7,"do func hashtag.dbif.deleteHastagDataInItemId(...");
         return new Promise((resolve, reject)=>{
@@ -320,6 +337,9 @@ module.exports = class HashtagDbStore {
     }
 };
 
+/**
+ * 日付フォーマット関数
+ */
 const formatDate = (dateString) => {
     if(!dateString){
         return "";

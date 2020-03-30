@@ -1,18 +1,3 @@
-/*
-Copyright 2020 NEC Solution Innovators, Ltd.
-
-Licensed under the Apache License, Version 2.0 (the "License");
-you may not use this file except in compliance with the License.
-You may obtain a copy of the License at
-
-    http://www.apache.org/licenses/LICENSE-2.0
-
-Unless required by applicable law or agreed to in writing, software
-distributed under the License is distributed on an "AS IS" BASIS,
-WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-See the License for the specific language governing permissions and
-limitations under the License.
-*/
 "use strict";
 
 const SessionDataMannager = require("../session_data_manager");
@@ -23,17 +8,29 @@ const NotificateApi = require('../notificate/api');
 const MurmurDbStore = require('./dbif');
 const AUTHORITY_ACTIONS = require('../authority/const').AUTHORITY_ACTIONS;
 
+/**
+ * cubee_web_api.js のリクエストタイプで分岐された状態で実行されるAPIベース
+ *
+ * @param _globalSnsDB globalSnsDBのインスタンス
+ * @param socket ソケット
+ * @param request リクエストJSON
+ * @param processCallback 上位で設定のコールバック
+ * @param callBackResponse レスポンスコールバック
+ */
 exports.receive = (_globalSnsDB, socket, request, processCallback, callBackResponse) => {
     _log.connectionLog(7, 'do func murmur.api.request(...');
     const _content = request.content;
     const _type = _content.type;
+    //typeが正しくない場合などのデフォルト値
     let _ret = {
+        //errorCode エラーコード（9=トークンが無効,1=必要パラメーターが無い場合,0=その他）
         errorCode : 1,
         content : {
             result: false,
             reason: Const.API_STATUS.NOT_FOUND
         }
     };
+    //トークンが無効
     if(typeof _content != 'object' ||
        typeof _type != 'string' ||
         !Validation.accessTokenValidationCheck(request.accessToken, true)){
@@ -51,6 +48,7 @@ exports.receive = (_globalSnsDB, socket, request, processCallback, callBackRespo
         const _myJid = _sessionData.getJid();
         switch(_type){
         case 'GetColumnName':
+                //リクエスト値をチェック
             if(typeof _content.jid != 'string' ||
                    !Validation.jidValidationCheck(_content.jid, true)){
                 _log.connectionLog(4, '  murmur.api.request GetColumnNam invalid _content.jid:'
@@ -72,6 +70,7 @@ exports.receive = (_globalSnsDB, socket, request, processCallback, callBackRespo
             getColumnName(_globalSnsDB, request.accessToken,
                               _content.jid)
                     .then((res)=>{
+                        //httpレスポンスをここで実行
                         callBackResponse(
                             processCallback,
                             request.accessToken,
@@ -88,6 +87,7 @@ exports.receive = (_globalSnsDB, socket, request, processCallback, callBackRespo
                             });
                     })
                     .catch((err)=>{
+                        //httpレスポンスをここで実行
                         callBackResponse(
                             processCallback,
                             request.accessToken,
@@ -99,6 +99,7 @@ exports.receive = (_globalSnsDB, socket, request, processCallback, callBackRespo
                     });
             break;
         case 'SetColumnName':
+                //実行者がつぶやきカラムのオーナー
             if(typeof _content.jid != 'string' ||
                    !Validation.jidValidationCheck(_content.jid, true) ||
                    _content.jid !== _myJid){
@@ -116,6 +117,7 @@ exports.receive = (_globalSnsDB, socket, request, processCallback, callBackRespo
                     });
                 break;
             }
+                //リクエスト値をチェック
             if(typeof _content.columnName != 'string' ||
                    !Validation.murmurColumnNameValidationCheck(_content.columnName, true)){
                 _log.connectionLog(4, '  murmur.api.request SetColumnName invalid _content:'
@@ -137,6 +139,7 @@ exports.receive = (_globalSnsDB, socket, request, processCallback, callBackRespo
             setColumnName(_globalSnsDB, request.accessToken,
                               _content.jid, _content.columnName)
                     .then((res)=>{
+                        //httpレスポンスをここで実行
                         callBackResponse(
                             processCallback,
                             request.accessToken,
@@ -152,10 +155,12 @@ exports.receive = (_globalSnsDB, socket, request, processCallback, callBackRespo
                                 columnName: res.content.column_name,
                                 personInfo: res.content.person_info
                             });
+                        //自分のUIDは取り除く（通知は自分自身にはデフォルトで優先的に配信するため）
                         const _myUid = _myJid.replace(/.{4}\@[^\@]+$/,"");
                         res.content.noify_uids.splice(res.content.noify_uids.indexOf(_myUid),1);
                         const notifyusers = res.content.noify_uids;
                         try{
+                            //通知はここで処理
                             NotificateApi.notifyPush(request.accessToken,
                                                      notifyusers,
                                                      request.request,
@@ -173,6 +178,7 @@ exports.receive = (_globalSnsDB, socket, request, processCallback, callBackRespo
                         }
                     })
                     .catch((err)=>{
+                        //httpレスポンスをここで実行
                         callBackResponse(
                             processCallback,
                             request.accessToken,
@@ -185,6 +191,7 @@ exports.receive = (_globalSnsDB, socket, request, processCallback, callBackRespo
             break;
         default:
             _log.connectionLog(3, '  murmur.api.request not type:' + _type);
+                //httpレスポンスをここで実行
             callBackResponse(
                     processCallback,
                     request.accessToken,
@@ -198,6 +205,13 @@ exports.receive = (_globalSnsDB, socket, request, processCallback, callBackRespo
     }
 };
 
+/**
+ * 指定ユーザーのつぶやきカラム別名ががあれば取得する
+ *
+ * @param globalSnsDB globalSnsDBのインスタンス
+ * @param accessToken アクセストークン
+ * @param jid ユーザーJID
+ */
 const getColumnName = (globalSnsDB, accessToken, jid) => {
     _log.connectionLog(7, 'do func murmur.api.etColumnName(...');
     return new Promise((resolve, reject) => {
@@ -230,6 +244,14 @@ const getColumnName = (globalSnsDB, accessToken, jid) => {
     });
 };
 
+/**
+ * つぶやきカラムの別名を設定する
+ *
+ * @param globalSnsDB globalSnsDBのインスタンス
+ * @param accessToken アクセストークン
+ * @param jid 状態を取得するユーザーのJID
+ * @param column_name 登録変更する別名
+ */
 const setColumnName = (globalSnsDB, accessToken, jid, column_name) => {
     _log.connectionLog(7, 'do func murmur.api.setColumnName(...');
     return new Promise((resolve, reject) => {

@@ -1,19 +1,5 @@
-/*
-Copyright 2020 NEC Solution Innovators, Ltd.
-
-Licensed under the Apache License, Version 2.0 (the "License");
-you may not use this file except in compliance with the License.
-You may obtain a copy of the License at
-
-    http://www.apache.org/licenses/LICENSE-2.0
-
-Unless required by applicable law or agreed to in writing, software
-distributed under the License is distributed on an "AS IS" BASIS,
-WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-See the License for the specific language governing permissions and
-limitations under the License.
-*/
 (function() {
+    //DB接続用抽象クラス
 
     var ServerLog = require('../../controller/server_log');
 
@@ -21,12 +7,22 @@ limitations under the License.
 
     var _client;
     var _done;
-
+ 
+    /**
+     * AbstractPgConnectorコンストラクタ
+     */
     function AbstractPgConnector() {
     };
 
     var _proto = AbstractPgConnector.prototype;
 
+    /**
+     * DB接続
+     * @param {Object} err 接続時の異常
+     * @param {string} client 接続後の操作クライアント
+     * @param {string} done プールへのクライアント返却用関数
+     * @param {function} onResultCallBack 実行結果後のコールバック
+     */
     _proto.connect = function(err, client, done, onResultCallBack) {
         var _self = this;
         if(client == null) {
@@ -35,6 +31,7 @@ limitations under the License.
         if(done == null) {
             return false;
         }
+        //　クライアントオブジェクトと終了用の関数を保存
         this._client = client;
         this._done = done;
 
@@ -43,6 +40,11 @@ limitations under the License.
         onResultCallBack(err, _self);
     };
 
+    /**
+     * SQL発行
+     * @param {string} sql 実行SQL文
+     * @param {function} onSqlResultCallBack 実行結果後のコールバック
+     */
     _proto.query = function(sql, onSqlResultCallBack) {
         var _self = this;
         _self._client.query(sql, function(err, result) {
@@ -64,6 +66,10 @@ limitations under the License.
         _log.connectionLog(7, 'query');
     };
 
+    /**
+     * SQL終了処理
+     * @param {function} onEndSqlCallBack 実行結果後のコールバック
+     */
     _proto.end = function(onEndSqlCallBack) {
         var _self = this;
         _self._done();
@@ -71,6 +77,7 @@ limitations under the License.
         _log.connectionLog(7, 'end');
     };
 
+    //var _abstractPgConnector = new AbstractPgConnector();
 
     AbstractPgConnector.getInstance = function() {
         return new AbstractPgConnector();

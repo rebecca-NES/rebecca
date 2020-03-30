@@ -1,35 +1,83 @@
-/*
-Copyright 2020 NEC Solution Innovators, Ltd.
-
-Licensed under the Apache License, Version 2.0 (the "License");
-you may not use this file except in compliance with the License.
-You may obtain a copy of the License at
-
-    http://www.apache.org/licenses/LICENSE-2.0
-
-Unless required by applicable law or agreed to in writing, software
-distributed under the License is distributed on an "AS IS" BASIS,
-WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-See the License for the specific language governing permissions and
-limitations under the License.
-*/
+/**
+ * Cubee authority code definitions
+ * @module  src/scripts/controller/authority/const
+ */
 
 const AUTHORITY_ACTIONS = {
+    /**
+     * フィード閲覧権
+     * @type {String}
+     */
     FEED_VIEW: 'viewMessageInFeed',
+    /**
+     * フィード投稿権
+     * @type {String}
+     */
     FEED_SEND: 'sendMessageToFeed',
+    /**
+     * Groupchat 投稿権
+     * @type {String}
+     */
     GC_VIEW: 'viewMessageInGroupchat',
+    /**
+     * Groupchat 投稿権
+     * @type {String}
+     */
     GC_SEND: 'sendMessageToGroupchat',
+    /**
+     * Groupchat 管理権
+     * @type {String}
+     */
     GC_MANAGE: 'manageGroupchat',
+    /**
+     * Groupchat 作成権
+     * @type {String}
+     */
     GC_CREATE: 'createGroupchat',
+    /**
+     * コミュニティ 閲覧権
+     * @type {String}
+     */
     COMMUNITY_VIEW: 'viewMessageInCommunity',
+    /**
+     * コミュニティ 投稿権
+     * @type {String}
+     */
     COMMUNITY_SEND: 'sendMessageToCommunity',
+    /**
+     * コミュニティ 管理権
+     * @type {String}
+     */
     COMMUNITY_MANAGE: 'manageCommunity',
+    /**
+     * コミュニティ 作成権
+     * @type {String}
+     */
     COMMUNITY_CREATE: 'createCommunity',
+    /**
+     * つぶやき閲覧権
+     * @type {String}
+     */
     MURMUR_VIEW: 'viewMessageInMurmur',
+    /**
+     * つぶやき投稿権
+     * @type {String}
+     */
     MURMUR_SEND: 'sendMessageToMurmur',
 
+    /* ===============================
+     * 特別権限
+     * =============================== */
+    /**
+     * 全メッセージを検索できる権限
+     * @type {String}
+     */
     SEARCH_ALL_MESSAGES : 'searchAllMessages',
 
+    /**
+     * 全メッセージに対する削除権限
+     * @type {String}
+     */
     ADMIN_DELETE: 'deleteAllMessages'
 };
 

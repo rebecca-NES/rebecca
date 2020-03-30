@@ -1,18 +1,7 @@
-/*
-Copyright 2020 NEC Solution Innovators, Ltd.
-
-Licensed under the Apache License, Version 2.0 (the "License");
-you may not use this file except in compliance with the License.
-You may obtain a copy of the License at
-
-    http://www.apache.org/licenses/LICENSE-2.0
-
-Unless required by applicable law or agreed to in writing, software
-distributed under the License is distributed on an "AS IS" BASIS,
-WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-See the License for the specific language governing permissions and
-limitations under the License.
-*/
+/**
+ * Cubee Authority API interface module
+ * @module  src/scripts/controller/auhority/controller
+ */
 
 'use strict';
 
@@ -26,6 +15,14 @@ const LOG = require('../server_log').getInstance();
 const API_REQUEST = require('../const').API_REQUEST;
 const API_STATUS = require('../const').API_STATUS;
 
+/**
+ * 1. ロール一覧参照
+ *
+ * @param {string} system_uuid - 権限管理を利用するシステムのUUID
+ * @param {Object} session - リクエストを行ったユーザ情報
+ *
+ * @return {promise} データ取得が正常にできた場合はresolve, 失敗した場合はreject
+ */
 function listRoles(system_uuid, session) {
     return new Promise((resolve, reject) => {
         authorityManager.listRoles(system_uuid, session)
@@ -42,6 +39,15 @@ function listRoles(system_uuid, session) {
     });
 }
 
+/**
+ * 2. ロール詳細参照(id指定あり)
+ *
+  * @param {string} system_uuid - 権限管理を利用するシステムのUUID
+  * @param {Object} session - リクエストを行ったユーザ情報
+  * @param {string} userId - 取得したいユーザのID
+  *
+  * @return {promise} データ取得が正常にできた場合はresolve, 失敗した場合はreject
+ */
 function detailRoles(system_uuid, session, userId) {
     return new Promise((resolve, reject) => {
         if (!userId || typeof userId != "string") {
@@ -57,6 +63,7 @@ function detailRoles(system_uuid, session, userId) {
                         return _.pick(v, 'id', 't', 'rights');
                     });
                     returnData[0]['policies'] = policies;
+                    //const _role = _.pick(res[userId].role, 'id', 't')
                     resolve(_.extend({result: true, reason: API_STATUS.SUCCESS}, {role: returnData[0]}));
                 })
                 .catch((err) => {
@@ -67,6 +74,28 @@ function detailRoles(system_uuid, session, userId) {
     });
 }
 
+ /**
+  * getRoleAssignmentForUser
+  *
+  * 3. 指定ユーザのロール（アカウントタイプ）を取得する
+  * <pre>
+  * {
+  *   result: true,
+  *   reason: 0,
+  *   role: {
+  *     id: 'roleID',
+  *     t: {
+  *       ja: 'roleName'
+  *     }
+  *   }
+  * }
+  * </pre>
+  * @param {string} system_uuid - 権限管理を利用するシステムのUUID
+  * @param {Object} session - リクエストを行ったユーザ情報
+  * @param {string} userId - 取得したいユーザのID
+  *
+  * @return {promise} データ取得が正常にできた場合はresolve, 失敗した場合はreject
+  */
 function getRoleAssignmentForUser(system_uuid, session, userId=null) {
     return new Promise((resolve, reject) => {
         if (!userId || typeof userId != "string") {
@@ -89,6 +118,22 @@ function getRoleAssignmentForUser(system_uuid, session, userId=null) {
     });
 }
 
+/**
+ * assignRoleToUser
+ *
+ * 4. 指定したユーザにロール情報を設定する。既に別のロールの場合は付け替える
+ * <pre>
+ * {
+ *   result: true,
+ *   reason: 0
+ * }
+ * </pre>
+ * @param {string} system_uuid - 権限管理を利用するシステムのUUID
+ * @param {object} session - リリクエストを行ったユーザ情報
+ * @param {object} params - 設定したいユーザのIDと設定するロールのID
+ *
+ * @return {promise} 正常に行進できた場合はresolve, 失敗した場合はreject
+ */
 function assignRoleToUser(system_uuid, session, params={}) {
     return new Promise((resolve, reject) => {
         if (!system_uuid || !params ||
@@ -96,15 +141,19 @@ function assignRoleToUser(system_uuid, session, params={}) {
             !_.has(params, 'role_id') || typeof params.role_id != 'string') {
             reject({result: false, reason: API_STATUS.BAD_REQUEST});
         } else {
+            // ロール紐づけの前に、ユーザに紐づいているロールを確認する
             authorityManager.getRoleAssignmentForUser(system_uuid, session, params.user_id)
             .then((resGet) => {
+                // 結果が空の場合、何もしない（ユーザの新規作成時）
                 if (_.isEmpty(resGet)){
+                // 変更前と変更後のロールが同一の場合、紐付処理は行わない
                 } else if (params.role_id == _.pick(resGet[params.user_id].role, 'id', 't').id) {
                     resolve({result: true, reason: API_STATUS.SUCCESS});
                     return;
                 }
                 authorityManager.assignRoleToUser(system_uuid, session, params.user_id, params.role_id)
                 .then((res) => {
+                    // WebSocket通知を行う
                     let users = [params.user_id];
                     let content = {
                         type: API_REQUEST.API_ASSIGN_ROLE,
@@ -120,6 +169,7 @@ function assignRoleToUser(system_uuid, session, params={}) {
                         content
                     );
 
+                    // アサインが成功した場合は、レスポンスはresultとreasonのみ
                     resolve({result: true, reason: API_STATUS.SUCCESS});
                 }).catch((err) => {
                     LOG.connectionLog(5, `assignRoleToUser: ${JSON.stringify(err)}`);
@@ -133,6 +183,31 @@ function assignRoleToUser(system_uuid, session, params={}) {
     });
 }
 
+/**
+ * getRights
+ *
+ * 5 権限参照
+ * <pre>
+ * {
+ *   "rights": [
+ *     {
+ *       "action": "createCommunity",
+ *       "resource": "grouchchat_y-nishizawa-tsvxo_8",
+ *       "enable_flag": true
+ *     },
+ *     {
+ *       "action": "manageCommunity",
+ *       "enable_flag": true
+ *     },
+ *   ]
+ * }
+ * </pre>
+ * @param {string} system_uuid - 権限管理を利用するシステムのUUID
+ * @param {object} session - リリクエストを行ったユーザ情報
+ * @param {object} params - 設定したいユーザのIDと設定するロールのID
+ *
+ * @return {promise} 正常に更新できた場合はresolve, 失敗した場合はreject
+ */
 function getRights(system_uuid, session, params={}) {
     return new Promise((resolve, reject) => {
         const bywho = session.getLoginAccout();
@@ -163,6 +238,7 @@ function getRights(system_uuid, session, params={}) {
                     }
                 })
                 .catch((err) => {
+                    //404 or 403
                     LOG.connectionLog(5, `.getRights: ${JSON.stringify(err)}`);
                     reject({result: false, reason: API_STATUS.INTERNAL_SERVER_ERROR, code: err.code});
                 });
@@ -170,6 +246,22 @@ function getRights(system_uuid, session, params={}) {
     });
 }
 
+ /**
+  * createPolicy
+  *
+  * 6.1 ポリシー更新
+  * <pre>
+  * {
+  *   result: true,
+  *   reason: 200000
+  * }
+  * </pre>
+  * @param {string} system_uuid - 権限管理を利用するシステムのUUID
+  * @param {object} session - リリクエストを行ったユーザ情報
+  * @param {object} params - 設定したいユーザのIDと設定するロールのID
+  *
+  * @return {promise} 正常に行進できた場合はresolve, 失敗した場合はreject
+  */
 function createPolicy(system_uuid, session, params) {
     return new Promise((resolve, reject) => {
         if (!system_uuid || !params ||
@@ -188,9 +280,11 @@ function createPolicy(system_uuid, session, params) {
                 params.policy_tid,
                 params.translations)
                 .then((res) => {
+                    // アサインが成功した場合は、レスポンスはresultとreasonのみ
                     resolve({result: true, reason: API_STATUS.SUCCESS});
                 })
                 .catch((err) => {
+                    //404 or 403
                     LOG.connectionLog(5, `.createPolicy: ${JSON.stringify(err)}`);
                     reject({result: false, reason: API_STATUS.INTERNAL_SERVER_ERROR, code: err.code});
                 });
@@ -198,6 +292,22 @@ function createPolicy(system_uuid, session, params) {
     });
 }
 
+/**
+ * createRight
+ *
+ * 6.2 権限更新
+ * <pre>
+ * {
+ *   result: true,
+ *   reason: 200000
+ * }
+ * </pre>
+ * @param {string} system_uuid - 権限管理を利用するシステムのUUID
+ * @param {object} session - リリクエストを行ったユーザ情報
+ * @param {object} params - 設定したいユーザのIDと設定するロールのID
+ *
+ * @return {promise} 正常に行進できた場合はresolve, 失敗した場合はreject
+ */
 function createRight(system_uuid, session, params) {
     return new Promise((resolve, reject) => {
         if (!system_uuid || !params ||
@@ -228,6 +338,7 @@ function createRight(system_uuid, session, params) {
                 params.enable_flag
             )
                 .then((res) => {
+                    // アサインが成功した場合は、レスポンスはresultとreasonのみ
                     resolve({result: true, reason: API_STATUS.SUCCESS});
                 })
                 .catch((err) => {
@@ -238,6 +349,23 @@ function createRight(system_uuid, session, params) {
     });
 }
 
+/**
+ * assignPolicyToUsers
+ *
+ * 7 ポリシー紐付
+ * <pre>
+ * {
+ *   result: true,
+ *   reason: 200000
+ * }
+ * </pre>
+ * @param {string} system_uuid - 権限管理を利用するシステムのUUID
+ * @param {object} session - リリクエストを行ったユーザ情報
+ * @param {object} params - 設定したいユーザのIDと設定するロールのID
+ * @param {string} triger - create or update デフォルトはupdate。権限変更が実施された場合の処理を記載。通知にのせる。
+ *
+ * @return {promise} 正常に行進できた場合はresolve, 失敗した場合はreject
+ */
 function assignPolicyToUsers(system_uuid, session, params, triger='update') {
     return new Promise((resolve, reject) => {
         if (!system_uuid || !params ||
@@ -255,6 +383,7 @@ function assignPolicyToUsers(system_uuid, session, params, triger='update') {
                 params.users,
                 params.policy_id)
                 .then((res) => {
+                    // WebSocket通知を行う
                     let content = {
                         type: API_REQUEST.API_POLICY_ASSIGN_TO_USERS,
                         policy: _.pick(
@@ -270,12 +399,17 @@ function assignPolicyToUsers(system_uuid, session, params, triger='update') {
                         params.users,
                         content
                     );
+                    // DBからのレスポンスresを使ってAPIが返すJsonをここで生成
+                    // ここは「true」が入る
                     resolve({result: true, reason: API_STATUS.SUCCESS});
                 })
                 .catch((err) => {
                     LOG.connectionLog(5, `.assignPolicyToUsers: ${JSON.stringify(err)}`);
+                    //
                     if(_.has(err,"extra") && _.isArray(err.extra) &&
                        err.extra.length > 0){
+                        //ユーザ個別でエラーになった場合
+                        // WebSocket通知を行う。ただし、成功したユーザのみ
                         if (_.has(err,"policy")) {
                             let content = {
                                 type: API_REQUEST.API_POLICY_ASSIGN_TO_USERS,
@@ -293,12 +427,14 @@ function assignPolicyToUsers(system_uuid, session, params, triger='update') {
                                 content
                             );
                         }
+                        //error_usersに配列で入る
                         reject({
                             result: false,
                             reason: API_STATUS.NOT_FOUND,
                             error_users: err.extra
                         });
                     }else{
+                        //権限登録でユーザ個別のエラーでない場合
                         reject({result: false,reason: API_STATUS.INTERNAL_SERVER_ERROR, code: err.code});
                     }
                 });
@@ -306,6 +442,41 @@ function assignPolicyToUsers(system_uuid, session, params, triger='update') {
     });
 }
 
+/**
+ * getUserPoliciesByResource
+ *
+ * 8 リソース関連ユーザー情報参照
+ *
+ * <pre>
+ *
+ *{
+ *  "users": [
+ *    {
+ *      "user_id": "1",
+ *      "policies": [
+ *         {
+ *           "id": "policyID",
+ *            "rights": [
+ *               {
+ *                 "action": "action",
+ *                  "enable_flag": true
+ *                }
+ *           ]
+ *        }
+ *      ]
+ *    }
+ *  ],
+ *  "result": true,
+ *  "reason": 200000
+ *}
+ *
+ * </pre>
+ * @param {string} system_uuid - 権限管理を利用するシステムのUUID
+ * @param {object} session - リリクエストを行ったユーザ情報
+ * @param {object} params - 設定したいユーザのIDと設定するロールのID
+ *
+ * @return {promise} 正常に行進できた場合はresolve, 失敗した場合はreject
+ */
 function getUserPoliciesByResource(system_uuid, session, params) {
     return new Promise((resolve, reject) => {
         if (!system_uuid || !params ||
@@ -318,8 +489,10 @@ function getUserPoliciesByResource(system_uuid, session, params) {
                 session,
                 params.resource_id)
                 .then((res) => {
+                    // DBからのレスポンスresを使ってAPIが返すJsonをここで生成
                     let _res = [];
                     for(let re of res){
+                        //
                         let _pol = [];
                         if(_.isArray(re["policies"])){
                             for(let re_policies of re["policies"]){
@@ -356,6 +529,22 @@ function getUserPoliciesByResource(system_uuid, session, params) {
     });
 }
 
+/**
+ * unassignPolicyFromUser
+ *
+ * 9 ポリシー紐づけ解除
+ * <pre>
+ * {
+ *   result: true,
+ *   reason: 200000
+ * }
+ * </pre>
+ * @param {string} system_uuid - 権限管理を利用するシステムのUUID
+ * @param {object} session - リリクエストを行ったユーザ情報
+ * @param {object} params - 設定したいユーザのIDと設定するロールのID
+ *
+ * @return {promise} 正常に行進できた場合はresolve, 失敗した場合はreject
+ */
 function unassignPolicyFromUser(system_uuid, session, params) {
     return new Promise((resolve, reject) => {
         if (!system_uuid || !params ||
@@ -373,6 +562,7 @@ function unassignPolicyFromUser(system_uuid, session, params) {
                 params.users,
                 params.policy_id)
                 .then((res) => {
+                    // WebSocket通知を行う
                     let content = {
                         type: API_REQUEST.API_POLICY_UNASSIGN_FROM_USERS,
                         policy: _.pick(
@@ -386,12 +576,16 @@ function unassignPolicyFromUser(system_uuid, session, params) {
                         params.users,
                         content
                     );
+                    // DBからのレスポンスresを使ってAPIが返すJsonをここで生成
+                    // ここは「true」が入る
                     resolve({result: true, reason: API_STATUS.SUCCESS});
                 })
                 .catch((err) => {
                     LOG.connectionLog(5, `.unassignPolicyFromUser: ${JSON.stringify(err)}`);
                     if(_.isArray(err["extra"]) &&
                        err["extra"].length > 0){
+                        //ユーザ個別でエラーになった場合
+                        // WebSocket通知を行う。ただし、成功したユーザのみ
                         if (_.has(err,"policy")) {
                             let content = {
                                 type: API_REQUEST.API_POLICY_ASSIGN_TO_USERS,
@@ -407,12 +601,14 @@ function unassignPolicyFromUser(system_uuid, session, params) {
                                 content
                             );
                         }
+                        // error_usersに配列で入る
                         reject({
                             result: false,
                             reason: API_STATUS.NOT_FOUND,
                             error_users: err.extra
                         });
                     }else{
+                        //権限登録でユーザ個別のエラーでない場合
                         reject({result: false,reason: API_STATUS.INTERNAL_SERVER_ERROR, code: err.code});
                     }
                 });
@@ -420,6 +616,22 @@ function unassignPolicyFromUser(system_uuid, session, params) {
     });
 }
 
+/**
+ * checkUserHavePolicy
+ *
+ * 10 ユーザー権限保持チェック
+ * <pre>
+ * {
+ *   result: true,
+ *   reason: 200000
+ * }
+ * </pre>
+ * @param {string} system_uuid - 権限管理を利用するシステムのUUID
+ * @param {object} session - リリクエストを行ったユーザ情報
+ * @param {object} params - 設定したいユーザのIDと設定するロールのID
+ *
+ * @return {promise} 正常に行進できた場合はresolve, 失敗した場合はreject
+ */
 function checkUserHavePolicy(system_uuid, session, params={}) {
     return new Promise((resolve, reject) => {
         if (!system_uuid || !params ||
@@ -427,6 +639,7 @@ function checkUserHavePolicy(system_uuid, session, params={}) {
             typeof params.user_id != 'string' ||
             !_.has(params, 'action') ||
             typeof params.action != 'string' ||
+            // resource  確認したいリソースID（null指定可)
             !_.has(params, 'resource') ||
             (typeof params.resource != 'string' && params.resource != null)
            ) {
@@ -457,9 +670,28 @@ function checkUserHavePolicy(system_uuid, session, params={}) {
     });
 }
 
+/**
+ * deleteRightPolicyOfResource
+ *
+ * 11 ルームに紐付された権限とポリシーを削除
+ * <pre>
+ * {
+ *   result: true,
+ *   reason: 200000
+ * }
+ * </pre>
+ * @param {string} system_uuid - 権限管理を利用するシステムのUUID
+ * @param {object} session - リリクエストを行ったユーザ情報
+ * @param {object} params:{
+ *                    resource: - ポリシー、権限を削除したいリソースID（ルームID）
+ *                 }
+ *
+ * @return {promise} 正常に更新できた場合はresolve, 失敗した場合はreject
+ */
 function deleteRightPolicyOfResource(system_uuid, session, params={}) {
     return new Promise((resolve, reject) => {
         if (!system_uuid || !params ||
+            // resource  削除したいリソースID
             !_.has(params, 'resource') ||
             typeof params.resource != 'string'
            ) {

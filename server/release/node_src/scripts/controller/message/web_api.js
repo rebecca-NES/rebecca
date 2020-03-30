@@ -1,18 +1,9 @@
-/*
-Copyright 2020 NEC Solution Innovators, Ltd.
-
-Licensed under the Apache License, Version 2.0 (the "License");
-you may not use this file except in compliance with the License.
-You may obtain a copy of the License at
-
-    http://www.apache.org/licenses/LICENSE-2.0
-
-Unless required by applicable law or agreed to in writing, software
-distributed under the License is distributed on an "AS IS" BASIS,
-WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-See the License for the specific language governing permissions and
-limitations under the License.
-*/
+/**
+ * メッセージを管理するWeb(ネット)からのアクセスの口になるAPI
+ * cubee_web_api.jsから使われる
+ *
+ * @module src/scripts/controller/message/web_api
+ */
 'use strict';
 const _ = require('underscore');
 const Log = require('../server_log').getInstance();
@@ -28,6 +19,15 @@ const libxml = require("libxmljs");
 const Utils = require("../../utils");
 const Formatting = require('../formatting');
 
+/**
+ * 会話(thread)のタイトルのリストを取得
+ *
+ * @param {Object} socket - socket情報
+ * @param {Object} receiveObj - リクエスト情報
+ * @param {function} callback - クライアントへの応答CallBack
+ *
+ * @return {boolean}
+ */
 exports.getTreadTitleList = (socket, receiveObj={}, callback, apiUtil) => {
     Log.connectionLog(7, 'do func message/WebApi.getTreadTitleList(...');
     if(!_.has(receiveObj,"accessToken")||
@@ -46,12 +46,22 @@ exports.getTreadTitleList = (socket, receiveObj={}, callback, apiUtil) => {
                         }, 1, apiUtil);
         return;
     }
+    /*
+     * アクセストークン
+     * セッションデータ
+     * openfireのソケット
+     * openfireサーバネーム
+     * アクセス者のJIDを取得
+     */
     const _accessToken = receiveObj.accessToken;
     const _sessionDataMannager = SessionDataMannager.getInstance();
     const _sessionData = _sessionDataMannager.get(_accessToken);
     const _xsConn = _sessionData.getOpenfireSock();
     const _xmppServerHostName = _sessionData.getXmppServerName();
     const _fromJid = _sessionData.getJid();
+    /*
+     * Xmpp XMP 作成
+     */
     let _xmppSendMessage = XmppUtils.checkCreateXmppData(
         _xsConn, ()  => {
             return Xmpp.createGetThreadTitleListXmpp(
@@ -66,6 +76,9 @@ exports.getTreadTitleList = (socket, receiveObj={}, callback, apiUtil) => {
             );
         }
     );
+    /*
+     * _xmppSendMessage の値がnull
+     */
     if (_xmppSendMessage == null) {
         Log.connectionLog(3, '_xmppSendMessage is null');
         executeCallback(receiveObj,
@@ -76,6 +89,9 @@ exports.getTreadTitleList = (socket, receiveObj={}, callback, apiUtil) => {
         return;
     }
     const _xmppStr = _xmppSendMessage[0];
+    /*
+     * _xmppSendMessage の1番目の配列値がnull又は空の時
+     */
     if (_xmppStr == null || _xmppStr == '') {
         Log.connectionLog(3, '_xmppSendMessage[0] is invalid');
         executeCallback(receiveObj,
@@ -87,12 +103,18 @@ exports.getTreadTitleList = (socket, receiveObj={}, callback, apiUtil) => {
     }
     const _id = _xmppSendMessage[1];
 
+    /*
+     * openfireからresponstXMLにのXMPPのレスポンスが帰って来る
+     */
     _sessionData.setCallback(_id, (responstXML) => {
         let resContent = {
             result: false,
             reason: API_STATUS.INTERNAL_SERVER_ERROR,
         };
         let errorCode = 1;
+        /*
+         * openfireからのレスポンス値にエラーが有ればその値を
+         */
         const xmldoc = libxml.parseXml(responstXML);
         const iqElem = xmldoc.root();
 
@@ -107,6 +129,8 @@ exports.getTreadTitleList = (socket, receiveObj={}, callback, apiUtil) => {
                extrasElem.name() == "extras" &&
                extrasElem.childNodes().length > 0){
                 for(let i=0;i<extrasElem.childNodes().length;i++){
+                    //XMPPのデータでextrasは値は2018/8現在未実装、設定されていない。
+                    //_extras = extrasElem.text();
                 }
             }
             const itemsElem = Utils.getChildXmlElement(contentElem, "items");
@@ -164,6 +188,7 @@ exports.getTreadTitleList = (socket, receiveObj={}, callback, apiUtil) => {
                 }else{
                     Log.connectionLog(6, 'message/WebApi.getTreadTitleList(... openfire responce code - in error : ' + codeattr);
                 }
+                //エラーコードをopenfireが返して来た(しも3桁 "900" で識別)
                 if(codeattr.length == 3){
                     resContent = {
                         result: false,
@@ -194,6 +219,15 @@ exports.getTreadTitleList = (socket, receiveObj={}, callback, apiUtil) => {
     return;
 };
 
+/**
+ * 会話(thread)のタイトルを編集
+ *
+ * @param {Object} socket - socket情報
+ * @param {Object} receiveObj - リクエスト情報
+ * @param {function} callback - クライアントへの応答CallBack
+ *
+ * @return {boolean}
+ */
 exports.updateTreadTitle = (socket, receiveObj={}, callback, apiUtil) => {
     Log.connectionLog(7, 'do func message/WebApi.updateThreadTitle(...');
     if(!_.has(receiveObj,"accessToken")||
@@ -220,6 +254,13 @@ exports.updateTreadTitle = (socket, receiveObj={}, callback, apiUtil) => {
         return;
     }
 
+    /*
+     * アクセストークン
+     * セッションデータ
+     * openfireのソケット
+     * openfireサーバネーム
+     * アクセス者のJIDを取得
+     */
     const _accessToken = receiveObj.accessToken;
     const _sessionDataMannager = SessionDataMannager.getInstance();
     const _sessionData = _sessionDataMannager.get(_accessToken);
@@ -227,6 +268,9 @@ exports.updateTreadTitle = (socket, receiveObj={}, callback, apiUtil) => {
     const _xmppServerHostName = _sessionData.getXmppServerName();
     const _fromJid = _sessionData.getJid();
 
+    /*
+     * Xmpp XMP 作成
+     */
     let _xmppSendMessage = XmppUtils.checkCreateXmppData(
         _xsConn, ()  => {
             return Xmpp.createUpdateThreadTitleXmpp(
@@ -243,6 +287,9 @@ exports.updateTreadTitle = (socket, receiveObj={}, callback, apiUtil) => {
             );
         }
     );
+    /*
+     * _xmppSendMessage の値がnull
+     */
     if (_xmppSendMessage == null) {
         Log.connectionLog(3, '_xmppSendMessage is null');
         executeCallback(receiveObj,
@@ -253,6 +300,9 @@ exports.updateTreadTitle = (socket, receiveObj={}, callback, apiUtil) => {
         return;
     }
     const _xmppStr = _xmppSendMessage[0];
+    /*
+     * _xmppSendMessage の1番目の配列値がnull又は空の時
+     */
     if (_xmppStr == null || _xmppStr == '') {
         Log.connectionLog(3, '_xmppSendMessage[0] is invalid');
         executeCallback(receiveObj,
@@ -263,9 +313,15 @@ exports.updateTreadTitle = (socket, receiveObj={}, callback, apiUtil) => {
         return;
     }
     const _id = _xmppSendMessage[1];
+    /*
+     * openfireからresponstXMLにのXMPPのレスポンスが帰って来る
+     */
     _sessionData.setCallback(_id, (responstXML) => {
         let result = false;
         let reason = API_STATUS.INTERNAL_SERVER_ERROR;
+        /*
+         * openfireからのレスポンス値にエラーが有ればその値を
+         */
         const xmldoc = libxml.parseXml(responstXML);
         const iqElem = xmldoc.root();
         let errorCode = 1;
@@ -295,6 +351,7 @@ exports.updateTreadTitle = (socket, receiveObj={}, callback, apiUtil) => {
                 }else{
                     Log.connectionLog(6, 'message/WebApi.getTreadTitleList(... openfire responce code - in error : ' + codeattr);
                 }
+                //エラーコードをopenfireが返して来たた(しも3桁 "900" で識別)
                 result = false;
                 if(codeattr.length == 3){
                     reason = parseInt(codeattr + "900");
@@ -321,6 +378,16 @@ exports.updateTreadTitle = (socket, receiveObj={}, callback, apiUtil) => {
     return;
 };
 
+/**
+ * メッセージの全メッセージ検索API
+ * 投稿内容の管理ツールとして利用する想定のAPI
+ *
+ * @param {Object} socket - socket情報
+ * @param {Object} receiveObj - リクエスト情報
+ * @param {function} callback - クライアントへの応答CallBack
+ *
+ * @return {boolean}
+ */
 exports.searchAllMessage = (socket, receiveObj={}, callback, apiUtil) => {
     let _ret = false;
     if(!_.has(receiveObj,"accessToken")||
@@ -341,9 +408,13 @@ exports.searchAllMessage = (socket, receiveObj={}, callback, apiUtil) => {
 
     const _accessToken = receiveObj.accessToken;
     const _content = receiveObj.content;
+    /*
+     * xmppでルーム作成時に使われるコールバック
+     */
     const _getAllMessageCallback = (result, reason, extras, count, items) => {
         Object.assign(_content, { result, reason, extras, count, items });
         if(!result){
+            //作成失敗
             Log.connectionLog(3, `message.web_api#searchAllMessage Xmpp searchAllMessage error (xmpp reason: ${reason})`);
             executeCallback(receiveObj,
                             callback, {
@@ -352,9 +423,13 @@ exports.searchAllMessage = (socket, receiveObj={}, callback, apiUtil) => {
                             }, 1, apiUtil);
             return;
         }
+        //リクエスト値は不要なので削除
         delete _content.condition;
+        //結果取得に成功の一桁ステータスコードの戻り値から書き換え
         _content["reason"] = API_STATUS.SUCCESS;
 
+        //Jsonフォーマットなどはメッセージのタイプ毎の規定のフォーマットに生成済みで
+        //戻ってくるのでここから処理せず戻す。
         executeCallback(receiveObj, callback, _content, 0, apiUtil);
     };
     var _synchronousBridgeNodeXmpp = SynchronousBridgeNodeXmpp.getInstance();
@@ -364,8 +439,19 @@ exports.searchAllMessage = (socket, receiveObj={}, callback, apiUtil) => {
         _getAllMessageCallback);
 };
 
+/**
+ * メッセージの削除API
+ * 管理ツールとして利用する想定のAPI
+ *
+ * @param {Object} socket - socket情報
+ * @param {Object} receiveObj - リクエスト情報
+ * @param {function} callback - クライアントへの応答CallBack
+ *
+ * @return {boolean}
+ */
 exports.deleteMessage = (socket, receiveObj={}, callback, apiUtil) => {
     let _ret = false;
+    // パラメータのチェック
     if(!_.has(receiveObj, 'accessToken')       ||
        !_.has(receiveObj, 'content')           ||
        !_.has(receiveObj.content, 'type')      ||
@@ -384,8 +470,12 @@ exports.deleteMessage = (socket, receiveObj={}, callback, apiUtil) => {
     const _content = receiveObj.content;
     const _requestStr = receiveObj.request;
     const _type = _content.type;
+    /*
+     * メッセージ削除処理コールバック
+     */
     const _deleteMessageCallback = (result, reason) => {
         if(!result){
+            //作成失敗
             Log.connectionLog(4, `deletemessage.web_api#create Xmpp deleteMessage error (xmpp reason: ${reason})`);
             executeCallback(receiveObj,
                             callback, {
@@ -400,6 +490,8 @@ exports.deleteMessage = (socket, receiveObj={}, callback, apiUtil) => {
         _responceContent.reason = reason;
         _responceContent.type = _type;
 
+        //Jsonフォーマットなどはメッセージのタイプ毎の規定のフォーマットに生成済みで
+        //戻ってくるのでここから処理せず戻す。
         executeCallback(receiveObj,
                         callback, _responceContent, 0, apiUtil);
     };
@@ -443,6 +535,16 @@ exports.deleteMessage = (socket, receiveObj={}, callback, apiUtil) => {
         _deleteMessageCallback);
 };
 
+/**
+ * APIレスポンス作成の為のコールバック関数
+ * cubee_web_api.js内で利用されているコールバックを返す
+ *
+ * @param req リクエストデータ
+ * @param callback プロセスコールバック（セッションなどの情報をセットする）
+ * @param content リクエストで受け取ったcontent
+ * @param errorCode エラーコード（9=トークンが無効,1=必要パラメーターが無い場合,0=その他）
+ * @param apiUtil cubee_web_spiで作成された使われるコールバック関数
+ */
 function executeCallback(req,  callback, content, errorCode, apiUtil) {
     const _req = req.request,
             _id = req.id,
@@ -451,6 +553,14 @@ function executeCallback(req,  callback, content, errorCode, apiUtil) {
     apiUtil._callBackResponse(callback, _token, _req, _id, _version, errorCode, content);
 }
 
+/**
+ * 検索JSONの値とキーに不適合な文字列をチェック
+ * URLエンコード、日時、JIDなど検索に必要な値だけど通過させる。
+ *
+ * @param {object} filterjson 検索コンディション内のJSON
+ *
+ * @return {boolean} 文字列に問題があるかどうか
+ */
 function filterJsonEncodeCheck(filterjson){
     var rejsonkey = /^[a-zA-Z0-9-_]+$/;
     var rejsonval = /^[\w-+@\/:%!~\*\.\(\)'\s]+$/;

@@ -1,19 +1,9 @@
-/*
-Copyright 2020 NEC Solution Innovators, Ltd.
+/**
+ * Authority DB connection handling module
+ * @module  src/scripts/Auhority/db/db_connector
+ */
 
-Licensed under the Apache License, Version 2.0 (the "License");
-you may not use this file except in compliance with the License.
-You may obtain a copy of the License at
-
-    http://www.apache.org/licenses/LICENSE-2.0
-
-Unless required by applicable law or agreed to in writing, software
-distributed under the License is distributed on an "AS IS" BASIS,
-WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-See the License for the specific language governing permissions and
-limitations under the License.
-*/
-
+/* global require */
 var fs = require('fs');
 var DBError = require('./db_error').DBError;
 var Sequelize = require('sequelize');
@@ -21,22 +11,37 @@ var Models = require('./models/models');
 var log = require('../log');
 var _log = log.returnLogFunction();
 
+/**
+ * DBConnector クラス
+ * @class  DBConnector
+ * @constructor
+ */
 function DBConnector() {
     this.confFile = '';
     this.confFIle_mtime = null;
     this.dbs = {};
     this.models = {};
     this.start = false;
-    this.interval_monitoring_conf = 1000 * 5;   
+    this.interval_monitoring_conf = 1000 * 5;   // 5 sec
 }
 
 var _instance = new DBConnector();
 
+/**
+ * DBConnector のインスタンスを返却する
+ * @return {DBConnector} DBConnectorインスタンス
+ */
 function getInstance() {
     _log.connectionLog(7, 'DBConnector::getInstance()');
     return _instance;
 }
 
+/**
+ * DBとの接続を開始する
+ * @param  {string} confFilePath 設定ファイルへのパス
+ * @param  {Function} cb コールバック
+ * @return {Error} cb の 第1パラメータで返却する
+ */
 DBConnector.prototype.stayConnecting = function(confFilePath, cb) {
     if (confFilePath == null || typeof confFilePath != 'string') {
         _log.connectionLog(3, 'DBConnector::stayConnecting(), Invalid argument of confFilePath');
@@ -58,9 +63,15 @@ DBConnector.prototype.stayConnecting = function(confFilePath, cb) {
 
     _log.connectionLog(7, 'DBConnector::stayConnecting');
 
+    /**
+     * DB接続開始後のコールバック
+     * @param  {Error} err エラーがあれば。正常時は null。
+     * @return {Error} cb の 第1パラメータで返却する
+     */
     function _onLoadJson(err) {
         _log.connectionLog(7, 'DBConnector::stayConnecting()._onLoadJson()');
 
+        // First connecting success will callback and stay monitoring json file
         if (_self.start == false) {
             if (err) {
                 _log.connectionLog(3, 'DBConnector::stayConnecting()._onLoadJson(), got error: ' + err);
@@ -75,6 +86,7 @@ DBConnector.prototype.stayConnecting = function(confFilePath, cb) {
             });
             _self.start = true;
 
+            // Start to monitoring json file
             setInterval(function() {
                 var _mtime = 0;
                 try {
@@ -93,10 +105,17 @@ DBConnector.prototype.stayConnecting = function(confFilePath, cb) {
         }
 
     }
+    // JSON読み込みを行い、DB接続を開始する
     _self.loadJson(confFilePath, _onLoadJson);
 
 };
 
+/**
+ * 設定ファイルの読み込みと、DB接続の開始
+ * @param {string} confFIlePath confFilePath 設定ファイルへのパス
+ * @param  {Function} cb コールバック
+ * @return {Error} cb の 第1パラメータで返却する
+ */
 DBConnector.prototype.loadJson = function(confFilePath, cb) {
     if (confFilePath == null || typeof confFilePath != 'string') {
         _log.connectionLog(3, 'DBConnector::loadJson(), Invalid argument of confFilePath');
@@ -113,6 +132,7 @@ DBConnector.prototype.loadJson = function(confFilePath, cb) {
     _log.connectionLog(7, 'DBConnector::loadJson()');
 
     try {
+        // 同期的に読み込む
         _config = JSON.parse(fs.readFileSync(confFilePath, 'utf8'));
         _mtime = fs.statSync(confFilePath).mtime;
     } catch (ex) {
@@ -126,6 +146,7 @@ DBConnector.prototype.loadJson = function(confFilePath, cb) {
     _self.confFile = confFilePath;
     _self.confFIle_mtime = _mtime;
 
+    // Update connecting data
     var _now = Date.now();
     var _cnt = 0;
     var _max = _self.updateConnectionDef(_config, _self.dbs, _now);
@@ -138,6 +159,11 @@ DBConnector.prototype.loadJson = function(confFilePath, cb) {
         return;
     }
 
+    /**
+     * 接続完了時のコールバック
+     * @param  {Error} err エラーがあれば。正常時は null。
+     * @return {Error} cb の 第1パラメータで返却する
+     */
     function _onConnect(err) {
         _cnt += 1;
         if (err) {
@@ -175,15 +201,26 @@ DBConnector.prototype.loadJson = function(confFilePath, cb) {
 
 };
 
+/**
+ * Update local data from JSON file and flag should connect to DB.
+ * Private method.
+ * @param  {object} confJsonData Loaded json data from a file
+ * @param  {object} dbs          Definitions storing connection (DBConnector.dbs)
+ * @param  {date} now            flag to determine should connect
+ * @return {int}                 max count to handle connect.
+ */
 DBConnector.prototype.updateConnectionDef = function(confJsonData, dbs, now) {
+    // Max connections count to connect
     var _cnt_to_connect = 0;
 
+    // DB設定の数をカウントする
     var _confKeys = Object.keys(confJsonData);
     if (_confKeys == null || _confKeys.length == 0) {
         _log.connectionLog(3, 'DBConnector::updateConnectionDef(), JSON has no keys');
         return _cnt_to_connect;
     }
 
+    // Load all definitions
     for (var idx = 0; idx < _confKeys.length; idx++) {
         var _key = _confKeys[idx];
 
@@ -199,10 +236,10 @@ DBConnector.prototype.updateConnectionDef = function(confJsonData, dbs, now) {
 
         } else {
             dbs[_key] = {
-                'db'  : confJsonData[_key].db,       
+                'db'  : confJsonData[_key].db,       // 必須
                 'con' : null,
                 'opts': confJsonData[_key].opts || { logging: false },
-                'chk' : now                         
+                'chk' : now                         // 更新確認用
             };
         }
 
@@ -214,6 +251,12 @@ DBConnector.prototype.updateConnectionDef = function(confJsonData, dbs, now) {
 
 };
 
+/**
+ * DB接続を行うメソッド
+ * @param  {string} dbname 接続するDBの名前。権限管理を使用するシステムで一意
+ * @param  {Function} cb コールバック
+ * @return {Error} cb の 第1パラメータで返却する
+ */
 DBConnector.prototype.connect = function(dbname, cb) {
     if (dbname == null || typeof dbname != 'string') {
         _log.connectionLog(3, 'DBConnector::connect(), Invalid argument of dbname');
@@ -226,9 +269,11 @@ DBConnector.prototype.connect = function(dbname, cb) {
     var _self = this;
     _log.connectionLog(7, 'DBConnector::connect');
 
+    // DB接続オブジェクトの生成
     _self.dbs[dbname].con = new Sequelize(_self.dbs[dbname].db, _self.dbs[dbname].opts);
     _log.connectionLog(7, 'DBConnector::connect(), connecting.. (' + _self.dbs[dbname].db + ')');
 
+    // 認証の実行により、DB接続を行う
     _self.dbs[dbname].con.authenticate()
         .then(function() {
             _log.connectionLog(5, 'DBConnector::connect(), connected to: ' + dbname);
@@ -244,9 +289,15 @@ DBConnector.prototype.connect = function(dbname, cb) {
             });
         });
 
+    // 接続したDBにモデル定義をロードする
     _self.models = Models.generateModels(_self.dbs[dbname].con);
 };
 
+/**
+ * 指定されたDB名の、DBコネクションオブジェクトを返却する。
+ * @param  {string} dbname 接続するDBの名前。権限管理を使用するシステムで一意。JSONに記載のもの。
+ * @return {sequelize.dbconnectoin} 該当するものが無い場合は null
+ */
 DBConnector.prototype.getConnection = function(dbname) {
     if (dbname == null || typeof dbname != 'string') {
         _log.connectionLog(3, 'DBConnector::getConnection(), Invalid argument of dbname');

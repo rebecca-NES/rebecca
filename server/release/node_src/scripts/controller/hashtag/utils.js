@@ -1,39 +1,38 @@
-/*
-Copyright 2020 NEC Solution Innovators, Ltd.
-
-Licensed under the Apache License, Version 2.0 (the "License");
-you may not use this file except in compliance with the License.
-You may obtain a copy of the License at
-
-    http://www.apache.org/licenses/LICENSE-2.0
-
-Unless required by applicable law or agreed to in writing, software
-distributed under the License is distributed on an "AS IS" BASIS,
-WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-See the License for the specific language governing permissions and
-limitations under the License.
-*/
 'use strict';
 
 const _log = require("../server_log").getInstance();
 
+/**
+ * URLエンコードされているテキスト内からハッシュタグの取得する
+ *
+ * @param body URLエンコードされたメッセージbody
+ *
+ * @return 
+ */
 exports.getTagsArrayFromCodecBody = (body) => {
     _log.connectionLog(7, 'do func hashtag.utils.getTagsArrayFromCodecBody(...');
     const bodyStr = decodeURIComponent(body);
     return getTagsArrayFromBody(bodyStr);
 };
 
+/**
+ * プレーンなテキスト内からハッシュタグの取得する
+ *
+ * @param bodyStr メッセージbody
+ */
 const getTagsArrayFromBody = (bodyStr) => {
     _log.connectionLog(7, 'do func hashtag.utils.getTagsArrayFromBody(...');
+    //行頭かスペース後の＃からは始まる空文字ではない文字までの値
     const tags = [];
     bodyStr.replace(/(#[^ -\/:-@\[-`{-~\s]+?)(\s|$|>)/g,
                     (arg,p1,p2,offset,str)=>{
                         if(str.indexOf(p1) >= 0){
                             let lastw = str.substr(0,str.indexOf(p1));
-                            if(lastw.match(/(^|\s)$/) && p2 != '>'){
+                            if(lastw.match(/(^|\s)$/) && p2 != '>'){//スタンプふきだし以外は「>」を持たないため
                                 tags.push(p1);
                                 return arg;
-                            }
+                            }//タグの前が「＜」で行末が「＞」の場合はスタンプ吹出メッセージ内の文頭のタグ
+                            //その他文中のタグは条件式内で処理
                             else if(lastw.match(/</i) && str.match(/>/i)){
                                 tags.push(p1);
                                 return arg;
@@ -44,6 +43,7 @@ const getTagsArrayFromBody = (bodyStr) => {
     let taglist = [];
     if(tags != null && typeof tags == "object" && tags.length > 0){
         for (let i=0;i<tags.length;i++){
+            //タグ前に上のマッチでスペースを含むので削除
             let tag = tags[i].replace(/^\s+/,"");
             tag = tag.replace(/\s+$/,"");
             if(Array.from(tag).length > 31){

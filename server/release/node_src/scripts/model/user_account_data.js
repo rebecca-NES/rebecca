@@ -1,30 +1,26 @@
-/*
-Copyright 2020 NEC Solution Innovators, Ltd.
-
-Licensed under the Apache License, Version 2.0 (the "License");
-you may not use this file except in compliance with the License.
-You may obtain a copy of the License at
-
-    http://www.apache.org/licenses/LICENSE-2.0
-
-Unless required by applicable law or agreed to in writing, software
-distributed under the License is distributed on an "AS IS" BASIS,
-WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-See the License for the specific language governing permissions and
-limitations under the License.
-*/
 (function() {
     var Utils = require('../utils')
 
+    /**
+     * @class ユーザアカウントデータ
+     */
     function UserAccountData(userAccountDataContent) {
         var _self = this;
+        // id
         _self._id = null;
+        // ログインアカウント
         _self._loginAccount = null;
+        // openfireアカウント
         _self._openfireAccount = null;
+        // XMPPサーバー名
         _self._xmppServerName = null;
+        // レコード更新日時
         _self._updateTime = new Date();
+        // 削除フラグ(0:通常、1:削除済)
         _self._deleteFlg = UserAccountData.DELETE_FLG_OFF;
+        // メールアドレス
         _self._mailAddress = null;
+        // テナントUUID
         _self._tenantUuid = null;
 
         if(userAccountDataContent){
@@ -52,12 +48,15 @@ limitations under the License.
         return _userAccountData;
     };
 
+    // 定数定義
+    // 削除フラグ(0:通常、1:削除済、2:休止 )
     UserAccountData.DELETE_FLG_OFF = 0;
     UserAccountData.DELETE_FLG_ON = 1;
     UserAccountData.DELETE_FLG_SUSPEND = 2;
 
     var _proto = UserAccountData.prototype;
 
+    // id
     _proto.getId = function() {
         return this._id;
     };
@@ -67,6 +66,7 @@ limitations under the License.
         }
         this._id = id;
     };
+    // ログインアカウント
     _proto.getLoginAccount = function() {
         return this._loginAccount;
     };
@@ -76,6 +76,7 @@ limitations under the License.
         }
         this._loginAccount = loginAccount;
     };
+    // openfireアカウント
     _proto.getOpenfireAccount = function() {
         return this._openfireAccount;
     };
@@ -85,6 +86,7 @@ limitations under the License.
         }
         this._openfireAccount = openfireAccount;
     };
+    // XMPPサーバー名
     _proto.getXmppServerName = function() {
         return this._xmppServerName;
     };
@@ -94,6 +96,7 @@ limitations under the License.
         }
         this._xmppServerName = xmppServerName;
     };
+    // レコード更新日時
     _proto.getUpdateTime = function() {
         return this._updateTime;
     };
@@ -104,6 +107,7 @@ limitations under the License.
         }
         this._updateTime = updateTime;
     };
+    // 削除フラグ(0:通常、1:削除済)
     _proto.getDeleteFlg = function() {
         return this._deleteFlg;
     };
@@ -116,6 +120,7 @@ limitations under the License.
         }
         this._deleteFlg = deleteFlg;
     };
+    // メールアドレス
     _proto.getMailAddress = function() {
         return this._mailAddress;
     };
@@ -125,6 +130,7 @@ limitations under the License.
         }
         this._mailAddress = mailAddress;
     };
+    // テナントUUID
     _proto.getTenantUuid = function() {
         return this._tenantUuid;
     };

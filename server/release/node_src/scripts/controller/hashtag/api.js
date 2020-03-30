@@ -1,20 +1,6 @@
-/*
-Copyright 2020 NEC Solution Innovators, Ltd.
-
-Licensed under the Apache License, Version 2.0 (the "License");
-you may not use this file except in compliance with the License.
-You may obtain a copy of the License at
-
-    http://www.apache.org/licenses/LICENSE-2.0
-
-Unless required by applicable law or agreed to in writing, software
-distributed under the License is distributed on an "AS IS" BASIS,
-WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-See the License for the specific language governing permissions and
-limitations under the License.
-*/
 "use strict";
 
+// セッション管理モジュールの読み込み
 const SessionDataMannager = require("../session_data_manager");
 const _log = require("../server_log").getInstance();
 const HashTagUtils = require('./utils');
@@ -22,6 +8,16 @@ const HashtagDbStore = require('./dbif');
 const Validation = require('../validation');
 const Const = require("../const");
 
+/**
+ * メッセージ本文からハッシュタグを抜き出しDBに保存
+ *
+ * @param globalSnsDB cubee_web_api内で設定されるDBセッション
+ * @param _accessToken アクセストークン
+ * @parm  body メッセージの本分
+ * @param itemId itemId
+ *
+ * @return new Promis
+ */
 exports.setHashtagToDb = (globalSnsDB, _accessToken, body, itemId) => {
     _log.connectionLog(7, 'do func hashtag.api.setHashtagToDb(...');
     return new Promise((resolve, reject)=>{
@@ -64,6 +60,7 @@ exports.setHashtagToDb = (globalSnsDB, _accessToken, body, itemId) => {
                 return;
             }
         }else{
+            //タグを含む本文自体がない
             reject({
                 result:false
             });
@@ -96,6 +93,7 @@ exports.getHashtagRanking = (globalSnsDB, accessToken, _content) => {
             });
             return;
         }
+        //
         getHashtagRankingFromDb(globalSnsDB, accessToken,
                                 _content.msgTo,
                                 _content.dateFrom,
@@ -117,6 +115,7 @@ const getHashtagRankingFromDb = (globalSnsDB, accessToken, msgTo, dateFrom, date
         let _sessionData = _sessionDataMannager.get(accessToken);
         if(_sessionData){
             let tenantuuId = _sessionData.getTenantUuid();
+            //let jid = _sessionData.getJid();
             let hashtagdb = new HashtagDbStore(globalSnsDB, tenantuuId);
             hashtagdb.getHastagRanking(msgTo, dateFrom, dateTo, rankBottom, offset, limit)
                      .then((res)=>{

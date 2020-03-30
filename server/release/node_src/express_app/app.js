@@ -1,40 +1,35 @@
-/*
-Copyright 2020 NEC Solution Innovators, Ltd.
-
-Licensed under the Apache License, Version 2.0 (the "License");
-you may not use this file except in compliance with the License.
-You may obtain a copy of the License at
-
-    http://www.apache.org/licenses/LICENSE-2.0
-
-Unless required by applicable law or agreed to in writing, software
-distributed under the License is distributed on an "AS IS" BASIS,
-WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-See the License for the specific language governing permissions and
-limitations under the License.
-*/
 (function() {
 
+    // SSL 3.0無効化用モジュール読み込み
     var constants = require('constants');
+    // 設定ファイルデータモジュールの読み込み
     var fs = require('fs');
     var Utils = require('../scripts/utils');
     var Conf = require('../scripts/controller/conf');
     var _conf = Conf.getInstance();
+    // ログAPIモジュールの読み込み
     var ServerLog = require('../scripts/controller/server_log');
     var log = ServerLog.getInstance();
 
+    // CubeeWepAPIモジュールの読み込み
     var CubeeWebApi = require('../scripts/controller/cubee_web_api');
 
+    // ImageFileUtilsモジュールの読み込み
     var ImageFileUtils = require('../scripts/controller/image_file_utils');
 
+    // FileUtilsモジュールの読み込み
     var FileUtils = require('../scripts/controller/file_utils');
 
+    // urlモジュールの読み込み
     var _url = require('url');
 
+    // セッション管理モジュールの読み込み
     var SessionDataMannager = require('../scripts/controller/session_data_manager');
 
+    // 　XMPPサーバ接続用ラッパー
     var SynchronousBridgeNodeXmpp = require('../scripts/controller/synchronous_bridge_node_xmpp');
 
+    //
     var ShortenURLUtils = require('../scripts/controller/shorten_url_utils');
 
     var RequestData = require('../scripts/model/request_data').RequestData;
@@ -42,22 +37,28 @@ limitations under the License.
     var FileConvert = require('../scripts/controller/file_convert');
     var _fileConv = FileConvert.getInstance();
 
+    // AccessTokenをキーとした中継先情報の時限延長モジュールの読み込み
     var StoreVolatileChef = require('../scripts/lib/CacheHelper/store_volatile_chef');
 
     let CodiMDApi = require('../scripts/controller/codimd/api');
     let OGPApi    = require('../scripts/controller/ogp/api');
     let GlobalSnsDB = require('../scripts/controller/codimd/db_store');
 
+    // リクエストURLパス
     var REQUEST_URL_PATH_USER = 'user';
     var REQUEST_URL_PATH_USER_TYPE_AVATAR = 'avatar';
     var REQUEST_URL_PATH_COMM = 'comm';
     var REQUEST_URL_PATH_COMM_TYPE_LOGO = 'logo';
 
+    // テナントUUIDの正規表現
     var REG_EXP_TENANTUUID = '[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}';
 
+    //express処理
     var express = require('express')
       , login = require('./routes/login')
       , user = require('./routes/tenant/user/user')
+      // Terminate "signup" function
+      //, signup = require('./routes/signup')
       , path = require('path')
       , favicon = require('serve-favicon')
       , morgan = require('morgan')
@@ -75,10 +76,15 @@ limitations under the License.
 
     var location = _conf.getConfData('SYSTEM_LOCATION_ROOT');
 
+    // all environments
     app.set('views', __dirname + '/views');
     app.set('view engine', 'ejs');
+    // faviconは使用していないため、コメントアウト。
+    // nodejsのdockerイメージから、nginxが分離し、htmlファイル群も離れて参照不可となった点に注意
+    // app.use(favicon(path.join( __dirname , image_dir, 'favicon.ico')));
     app.use(morgan('combined'));
     app.use(function(req, res, next) {
+        // 非同期APIはcontent-typeがapplication/jsonでないとうまくbodyPaserでパースできないので、上書きする
         var _index = req.url.indexOf(location + '/asynchronous');
         if(_index == 0) {
             req.headers['content-type'] = 'application/json';
@@ -96,32 +102,59 @@ limitations under the License.
         }
     }));
 
+    // Terminate "signup" function
     app.use(location + '/admintool', serveStatic (path.join(__dirname, '/public')));
 
+    // development only
     if ('development' == app.get('env')) {
         app.use(errorHandler());
     }
 
+    // Terminate "signup" function
+    ////signupの設定
+    ////ユーザ新規登録画面表示(セルフ登録)
+    //app.get(location + '/signup', signup.show);
+    //app.post(location + '/signup', signup.createUser);
 
 
+    // 短縮URLをredirect
     app.get(location + '/redir/*', onRedirect);
     app.post(location + '/redir/*', onRedirectPost);
 
+    //ログイン画面表示
     app.get(location + '/admintool', login.start);
+    //ログイン処理実行
     app.post(location + '/admintool/login', login.execLogin);
+    // ※ ※ ※ ※ ※ ※ ※ ※ ※ ※ ※ ※ ※ ※ ※ ※ ※ ※ ※ ※ ※ ※ ※
+    // ※ここから下はログイン認証が通ってから、リクエストを受け付けること ※
+    // ※ ※ ※ ※ ※ ※ ※ ※ ※ ※ ※ ※ ※ ※ ※ ※ ※ ※ ※ ※ ※ ※ ※
+    //ユーザ一覧画面表示
     app.get(location + '/admintool/tenant/:tid/user', _loginCheckForAdminTool, user.list);
+    //ユーザ新規登録画面表示
     app.get(location + '/admintool/tenant/:tid/user/new', _loginCheckForAdminTool, user.reg);
+    //ユーザ一括登録
     app.get(location + '/admintool/tenant/:tid/user/csvreg', _loginCheckForAdminTool, user.csvreg);
+    //ユーザ一括更新
     app.get(location + '/admintool/tenant/:tid/user/csvupd', _loginCheckForAdminTool, user.csvupd);
+    //ユーザパスワード再設定
     app.get(location + '/admintool/tenant/:tid/user/:uid/update', _loginCheckForAdminTool, user.update);
+    //ユーザ削除(app.delはexpress的に実装のないアプリケーション関数と思われるので一時コメントアウト、ソース的にエラーになっていたため)
+    //    app.del(location + '/admintool/tenant/:tid/user/:uid', _loginCheckForAdminTool, user.deleteUser);
+    //ユーザ新規登録処理
     app.post(location + '/admintool/tenant/:tid/user/new', _loginCheckForAdminToolWithCsrfMeasure, user.createUser);
+    //ユーザパスワード再設定処理
     app.post(location + '/admintool/tenant/:tid/user/:uid/update', _loginCheckForAdminToolWithCsrfMeasure, user.updateUser);
+    //ユーザ一括登録処理
     app.post(location + '/admintool/tenant/:tid/user/csvreg', _loginCheckForAdminToolWithCsrfMeasure, user.execBatchCreate);
+    //ユーザ一括更新処理
     app.post(location + '/admintool/tenant/:tid/user/csvupd', _loginCheckForAdminToolWithCsrfMeasure, user.execBatchUpdate);
+    //ユーザ一覧ファイル取得処理
     app.get(location + '/admintool/tenant/:tid/user/csvuserlist', _loginCheckForAdminTool, user.getUserListCsvFile);
+    //ユーザステータス更新処理
     app.post(location + '/admintool/tenant/:tid/user/:uid/status', _loginCheckForAdminToolWithCsrfMeasure, user.updateUserAccountStatus);
 
 
+    //cubee用の設定
     app.get(location + '/' + REG_EXP_TENANTUUID + '/user/*', _onRequest);
     app.get(location + '/' + REG_EXP_TENANTUUID + '/comm/*', _onRequest);
     app.get(location + '/asynchronous/*', _onRequest);
@@ -134,6 +167,7 @@ limitations under the License.
     app.post(location + '/filedownload', _onFileDownload);
 
     let _globalSnsDB = new GlobalSnsDB('/opt/cubee/cmnconf/spf_globalsns_dbs.json');
+    // ノート機能設定を参照し、TRUEの場合のみエンドポイントを有効化する
     var enableNote = _conf.getConfData('ENABLE_NOTE').toUpperCase();
     if (enableNote == 'TRUE') {
         log.connectionLog(7, 'note enabled!');
@@ -166,21 +200,26 @@ limitations under the License.
                     CodiMDApi.renameNoteOnCubee(req,res,_globalSnsDB)
                 });
     }
-
+    
+    //OGPApi
     app.post(location + '/i/ogp/get',
             (req,res)=>{
                 OGPApi.getOGP(req, res);
             });
 
     function start() {
+        // HTTP
         var _httpPort = parseInt(_conf.getConfData('HTTP_PORT'));
         if (isNaN(_httpPort)) {
             log.connectionLog(6, 'HTTP Port Setting is nothing');
         } else {
+            // httpモジュールの読み込み
             var _http = require('http');
+            //HTTP Webサーバオブジェクト生成
             _http.createServer(app).listen(_httpPort);
         }
 
+        // HTTPS
         var _httpsPort = parseInt(_conf.getConfData('HTTPS_PORT'));
         if (isNaN(_httpsPort)) {
             log.connectionLog(6, 'HTTP SSL Port Setting is nothing');
@@ -196,12 +235,15 @@ limitations under the License.
                     secureProtocol: 'SSLv23_method',
                     secureOptions: constants.SSL_OP_NO_SSLv3
                 };
+                //HTTPS通信モジュール読み込み
                 var _https = require('https');
+                //HTTPS Webサーバオブジェクト生成
                 _https.createServer(_option, app).listen(_httpsPort);
             }
         }
     };
 
+    //クライアントからサーバーにリクエストイベントがあった時に発生するコールバック関数
     function _onRequest(request, response) {
         var _pathName = _url.parse(request.url).pathname;
         var _userRegExpStr = '\/' + REG_EXP_TENANTUUID + '\/' + REQUEST_URL_PATH_USER + '\/';
@@ -217,6 +259,7 @@ limitations under the License.
         }
     };
 
+    //CubeeWebApiの受け付け処理
     function serverExec(request, response) {
         var pathname = _url.parse(request.url).pathname;
         var remoteIP = request.connection.remoteAddress;
@@ -232,12 +275,15 @@ limitations under the License.
         request.setEncoding('utf8');
         var _requestData = '';
 
+        //JSON文字列へ変換
         _requestData = JSON.stringify(request.body);
         CubeeWebApi.getInstance().receive(socket, _requestData, callBack, true);
 
         function callBack(responseStr){
             log.connectionLog(7, 'do func app.js serverExec  responce do callBack');
+            //クライアントとのセッションをクリア　& 30分間接続がなければOpenfireとのセッションをクリアする
             CubeeWebApi.getInstance().notifyDisconnect(socket);
+            //レスポンス
             response.set({
                 "Content-Type" : "application/json",
                 "Access-Control-Allow-Origin": "*"
@@ -250,11 +296,13 @@ limitations under the License.
         };
     };
 
+    //画像ファイルデータなどのユーザデータの受け付け処理
     function _onUserDataRequest(request, response) {
         var _pathName = _url.parse(request.url).pathname;
         var _extensionAvatarImageStr = '\/' + REG_EXP_TENANTUUID + '\/' + REQUEST_URL_PATH_USER + '\/.+\/' + REQUEST_URL_PATH_USER_TYPE_AVATAR + '\/';
         var _extensionAvatarImageReg = new RegExp(_extensionAvatarImageStr, 'i');
         if(_pathName.match(_extensionAvatarImageReg)){
+             //アバター画像取得かどうか
             _onGetAvatarImageRequest(request, response);
             return;
         }
@@ -263,6 +311,7 @@ limitations under the License.
         response.end();
     };
 
+    //アバター画像取得の受け付け処理
     function _onGetAvatarImageRequest(request, response) {
         var _requestData = '';
         var _pathName = _url.parse(request.url).pathname;
@@ -296,11 +345,13 @@ limitations under the License.
         _requestData = '';
     };
 
+    //コミュニティデータの受け付け処理
     function _onCommunityDataRequest(request, response) {
         var _pathName = _url.parse(request.url).pathname;
         var _logoImageRegExpStr = '\/' + REG_EXP_TENANTUUID + '\/' + REQUEST_URL_PATH_COMM + '\/.+\/' + REQUEST_URL_PATH_COMM_TYPE_LOGO + '\/';
         var _logoImageRegExp = new RegExp(_logoImageRegExpStr, 'i');
         if(_pathName.match(_logoImageRegExp)){
+             //コミュニティロゴ画像取得かどうか
             _onGetCommunityLogoImageRequest(request, response);
             return;
         }
@@ -309,6 +360,7 @@ limitations under the License.
         response.end();
     };
 
+    //コミュニティロゴ画像取得の受け付け処理
     function _onGetCommunityLogoImageRequest(request, response) {
         var _requestData = '';
         var _pathName = _url.parse(request.url).pathname;
@@ -342,6 +394,10 @@ limitations under the License.
         _requestData = '';
     };
 
+    //admintool用のログインチェック処理
+    // 使い方
+    //     app.post(url, loginCheckForAdminTool, 処理);
+    //     app.get(url, loginCheckForAdminTool, 処理);
     function _loginCheckForAdminTool(req, res, next) {
         if(req.session.accessToken){
             var _sessionDataMannager = SessionDataMannager.getInstance();
@@ -349,9 +405,11 @@ limitations under the License.
             if(_sessionData == null) {
                 res.redirect(location + '/admintool');
             } else {
+                // URLのテナントUUIDとsessionDataのテナントUUIDが等しいくない場合はログイン画面へリダイレクト
                 if(req.params.tid != _sessionData.getTenantUuid()) {
                     res.redirect(location + '/admintool');
                 } else {
+                    // Redisの中継先情報の時限を更新する
                     StoreVolatileChef.getInstance().extend(req.session.accessToken, null);
                     next();
                 }
@@ -361,9 +419,13 @@ limitations under the License.
         }
     };
 
+    // CSRF(クロスサイト・リクエストフォージェリ)対策したログインチェック
+    // 主にデータ更新やデータ追加の処理の場合にここを使う
     function _loginCheckForAdminToolWithCsrfMeasure(req, res, next) {
         upload(req, res, function(err){
+            // CSRF対策関数
             function csrfMeasures() {
+                // アクセストークンのハッシュがパラメータとして含まれているか確認
                 var _accessToken = req.session.accessToken;
                 var _accessTokenHash = req.body.ATH;
                 if(Utils.sha256Hex(_accessToken) == _accessTokenHash) {
@@ -372,10 +434,12 @@ limitations under the License.
                     res.redirect(location + '/admintool');
                 }
             }
+            // まずはアクセストークンチェック
             _loginCheckForAdminTool(req, res, csrfMeasures);
         })
     };
 
+    //アバター画像アップロード時のコールバック関数
     function _onUploadUserAvatar(request, response) {
         var _data = {result : "failed"};
         var _accessToken = request.body.accesstoken;
@@ -396,6 +460,7 @@ limitations under the License.
         }
         var _avatarFileSize = _avatarFile.size;
         var _tmpFilePath = _avatarFile.path;
+        //700KB以上ならエラー
         if(_avatarFileSize > 700 * 1024){
             log.connectionLog(3, '_onUploadUserAvatar:: _avatarFileSize is Over 700KB ');
             _sendResponce(_data);
@@ -446,6 +511,7 @@ limitations under the License.
         };
     };
 
+    // コミュニティロゴ画像アップロード時
     function _onUploadCommunityLogo(request, response) {
         upload(request, response, function(err){
             var _data = {result : "failed"};
@@ -469,6 +535,7 @@ limitations under the License.
             }
             var _logoFileSize = _logoFile.size;
             var _tmpFilePath = _logoFile.path;
+            //700KB以上ならエラー
             if(_logoFileSize > 700 * 1024){
                 log.connectionLog(3, '_onUploadCommunityLogo:: _logoFileSize is Over 700KB ');
                 _sendResponce(_data);
@@ -490,6 +557,7 @@ limitations under the License.
             }
             var _tenantUuid = _sessionData.getTenantUuid();
 
+            // コミュニティオーナーかチェック
             var _synchronousBridgeNodeXmpp = SynchronousBridgeNodeXmpp.getInstance();
             var _getCommunityMemberContent = {
                 type : 'CommunityMemberInfo',
@@ -534,17 +602,20 @@ limitations under the License.
                 if(_ownerItems != null) {
                     for(var _i = 0; _i < _ownerItems.length; _i++) {
                         if(_ownerItems[_i].userName == _account && _ownerItems[_i].status == 0) {
+                            // メンバーであるのでOK
                             isFind = true;
                             break;
                         }
                     }
                 }
                 if(isFind == false) {
+                    // オーナーではないのでエラー
                     log.connectionLog(3, '_onUploadCommunityLogo(onGetCommunityMember):: ' + _account + ' is not owner :' + _communityRoomId);
                     _sendResponce(_data);
                     fs.unlinkSync(_tmpFilePath);
                     return;
                 }
+                // 正常なデータであるので、参照できる場所にファイルをコピーする
                 _fileCopyToCommDir();
             };
 
@@ -589,6 +660,7 @@ limitations under the License.
     };
 
     var upload = multer({dest: './tmp'}).any();
+    //ファイルアップロード
     function _onFileUpload(request, response) {
         upload(request, response, function(err){
             var _data = {result : "failed"};
@@ -610,6 +682,7 @@ limitations under the License.
 
             var _uploadFileSize = _uploadFile.size;
             var _tmpFilePath = _uploadFile.path;
+            //20MB以上ならエラー
             if(_uploadFileSize > 20 * 1024 * 1024){
                 log.connectionLog(3, '_onFileUpload:: _uploadFileSize is Over 20MB ');
                 _sendResponce(_data);
@@ -633,6 +706,7 @@ limitations under the License.
             }
 
             var _tenantUuid = _sessionData.getTenantUuid();
+            // 格納フォルダを生成し、ファイルを移動する
             FileUtils.getInstance().moveToFilePath(_tenantUuid, _tmpFilePath, _uploadFile.originalname, _onMoveToFilePathComplete);
 
             function _onMoveToFilePathComplete(newPath) {
@@ -649,8 +723,11 @@ limitations under the License.
 
                 log.connectionLog(7, '_onFileUpload:: newPath : ' + newPath);
 
+                // サムネイルのURL用パス
                 var _thumbnailPath = newPath;
+                // 添付ファイルのURLにはテナントUUIDを含めないので、URLエンコード前に除外する
                 _thumbnailPath = newPath.replace(new RegExp(REG_EXP_TENANTUUID + '\/'),'');
+                // ファイル名とパスをURLエンコード
                 var _newFileName = encodeURI(path.basename(_thumbnailPath));
                 var _newFilePath = encodeURI(_thumbnailPath);
                 var _data = {
@@ -659,11 +736,14 @@ limitations under the License.
                     filename:_newFileName,
                 };
 
+                // ファイル加工
                 _fileConv.preConvertProcess(newPath, 'thumbnail', _onPreConvert);
 
                 function _onPreConvert(startFunc){
+                    // 正常終了
                     _sendResponce(_data);
 
+                    // ファイル加工開始
                     if(startFunc != null){
                         setTimeout(function(){
                             log.connectionLog(7, '_onPreConvert:: convert start : ' + newPath);
@@ -699,6 +779,7 @@ limitations under the License.
         })
     };
 
+    //ファイルダウンロード
     function _onFileDownload(request, response) {
         var _proccessResult = false;
         var _accessToken = request.body.accesstoken;
@@ -725,6 +806,7 @@ limitations under the License.
         }
 
         var _tenantUuid = _sessionData.getTenantUuid();
+        // ダウンロードファイルのパスを抽出
         FileUtils.getInstance().getRelativeFilePathFromURL(_tenantUuid, _downloadURL, _system_location_root, _onGetDownloadFilePathComplete);
 
         function _onGetDownloadFilePathComplete(relativeFilePath) {
@@ -735,8 +817,10 @@ limitations under the License.
                 return;
             }
 
+            // ファイル名取得
             var _fileName = path.basename(relativeFilePath);
 
+            // RFC 2231 形式での URIエンコード
             _fileName = FileUtils.getInstance().rawurlencode(_fileName);
             log.connectionLog(7, '_onGetDownloadFilePathComplete# RFC 2231 _fileName:  ' + _fileName);
 
@@ -765,6 +849,7 @@ limitations under the License.
                     'Content-Length' : stat.size
                 });
 
+                // Start to stream
                 log.connectionLog(7, '_onGetDownloadFilePathComplete# Start to strem.. ' + relativeFilePath);
                 strm.pipe(response);
 
@@ -789,6 +874,7 @@ limitations under the License.
     function onRedirect(request, response) {
         var _urlid = _extractionRedirectIdFromUrlPath(request.path);
         if (_urlid == null) {
+            // 短縮URLでないものが来た
             log.connectionLog(4, "onRedirect: not shorten url:" + request.path);
             response.writeHead(404);
             response.end();
@@ -798,13 +884,16 @@ limitations under the License.
         ShortenURLUtils.getExpandedURL(_urlid, onGetExpandedURL);
 
         function onGetExpandedURL(err, originalURL) {
+            // 応答する
             _responseExpandedURL(err, originalURL, request, response);
         }
     };
 
+    // 短縮URLのPOSTでのアクセス（ログの出力機能付き）
     function onRedirectPost(request, response) {
         var _urlid = _extractionRedirectIdFromUrlPath(request.path);
         if (_urlid == null) {
+            // 短縮URLでないものが来た
             log.connectionLog(4, "onRedirectPost: not shorten url:" + request.path);
             response.writeHead(404);
             response.end();
@@ -813,13 +902,18 @@ limitations under the License.
         ShortenURLUtils.getExpandedURL(_urlid, onGetExpandedURL);
 
         function onGetExpandedURL(err, originalURL) {
+            // 先に応答する
             _responseExpandedURL(err, originalURL, request, response);
 
+            // ログに出力する
             if (err != null || originalURL == null) {
+                // エラーなので終了
                 return;
             }
+            // ロギングするデータを収集する
             var _accessToken = request.body.accesstoken;
             var _itemId = request.body.itemId;
+            // アカウントを取得
             var _account = '';
             var _nickName = '';
             var _affiliation = [];
@@ -834,14 +928,17 @@ limitations under the License.
                 if(requestResult) {
                     if(requestItems != null && requestItems[0] != null) {
                         var _data = requestItems[0];
+                        // ニックネームを取り出す
                         if(_data.nickName != null) {
                             _nickName = _data.nickName;
                         }
+                        // 所属を取り出す
                         if(_data.groupItems != null) {
                             _affiliation = _data.groupItems;
                         }
                     }
                 }
+                // ファイルにログを出力する
                 _writeLogExpandedURL(_account, _nickName, _affiliation, _itemId, originalURL);
             }
             var _isRequestedUserData = false;
@@ -852,6 +949,7 @@ limitations under the License.
                     _account = '';
                 }
                 if(_account != '') {
+                    // ニックネーム、所属を取得する
                     var _synchronousBridgeNodeXmpp = SynchronousBridgeNodeXmpp.getInstance();
                     var _requestData = {
                         type : RequestData.GET_PERSON_LIST_TYPE_SEARCH,
@@ -876,6 +974,7 @@ limitations under the License.
                 log.connectionLog(3, 'onRedirectPost:: _sessionData is Invalid ');
             }
             if(_isRequestedUserData == false) {
+                // ログにエラー（情報が取れなかった）として出力
                 var _ERROR_REASON_XMPP_SERVER = 6
                 _onSearchPersonCallback(false, _ERROR_REASON_XMPP_SERVER, {}, 0, {});
             }
@@ -884,15 +983,17 @@ limitations under the License.
 
     function _extractionRedirectIdFromUrlPath(path) {
         var _urlid = null
+        // 短縮URLの形式は、/cubee/redir/XXXXXX(ただしエンコード済み)。ここから最後のXXXXXXを取り出す。
         log.connectionLog(7, "_extractionRedirectIdFromUrlPath: " + path);
         var pat = _conf.getConfData('SYSTEM_LOCATION_ROOT') + "/redir/(.*)";
-        try { 
+        try { // 引数の解析
             var _match = path.match("/([0-9A-Za-z]+)$");
             if (_match != null && _match.length == 2) {
                 _urlid = _match[1];
                 log.connectionLog(7, "_extractionRedirectIdFromUrlPath: urlid = " + _urlid);
             }
-        } catch (e) { 
+        } catch (e) { // 解析時に例外発生
+            //response.writeHead(500);
             log.connectionLog(4, "_extractionRedirectIdFromUrlPath: err = " + e + ", path = " + path);
         }
         return _urlid;
@@ -913,6 +1014,7 @@ limitations under the License.
             response.writeHead(404);
             response.end();
         } else {
+            // originalURLはエンコードされている
             var decodedURL = decodeURIComponent(originalURL.replace(/\+/g, '%20'));
             decodedURL = ShortenURLUtils.encodeURIconsideringPunyCode(decodedURL);
             log.connectionLog(7, "_responseExpandedURL: OriginalURL: " + decodedURL);
@@ -922,13 +1024,17 @@ limitations under the License.
         return;
     }
 
+    // 短縮URLの展開したという情報をログに出力する
     function _writeLogExpandedURL (account, nickName, affiliation, itemId, originalURL) {
+        // 出力ディレクトリがあるか確認
         var _logPath = path.join(__dirname, '../logs');
         var _expandedLogPath = path.join(_logPath, 'expandedurl');
         if(!fs.existsSync(_expandedLogPath)) {
+            // ディレクトリがない場合は作成
             fs.mkdirSync(_expandedLogPath);
         }
 
+        // nickName, affiliation, originalURLはエンコードされている
         var _date = new Date;
         var _yearStr = '' + _date.getFullYear();
         var _monthStr = ('0' + (_date.getMonth() + 1)).substr(-2);
@@ -942,17 +1048,24 @@ limitations under the License.
         }
         _decodedaffiliationString = _decodedaffiliation.join('\n');
         var _decodedURL = decodeURIComponent(originalURL.replace(/\+/g, '%20'));
+        // 年のディレクトリを作る
         _expandedLogPath = path.join(_expandedLogPath, _yearStr);
         if(!fs.existsSync(_expandedLogPath)) {
+            // ディレクトリがない場合は作成
             fs.mkdirSync(_expandedLogPath);
         }
+        // 月のディレクトリを作る
         _expandedLogPath = path.join(_expandedLogPath, _monthStr);
         if(!fs.existsSync(_expandedLogPath)) {
+            // ディレクトリがない場合は作成
             fs.mkdirSync(_expandedLogPath);
         }
+        // 出力データ
         var _writeStringData = '"' + _fullDateString.replace(/\"/g, '""') + '","' + _timeString.replace(/\"/g, '""') + '","' + account.replace(/\"/g, '""') + '","' + _decodedNickName.replace(/\"/g, '""') + '","' + _decodedaffiliationString.replace(/\"/g, '""') + '","' + itemId.replace(/\"/g, '""') + '","' + _decodedURL.replace(/\"/g, '""') + '"';
+        // ファイル名（パスを含む）
         var _fileName = 'expandedurl' + _fullDateString.replace(/\//g, '') + '.log';
         var _filePath = path.join(_expandedLogPath, _fileName);
+        // ファイルに追記で出力する
         Utils.appendDataFile(_filePath, _writeStringData, Utils.ENCODING_UTF8);
     }
 

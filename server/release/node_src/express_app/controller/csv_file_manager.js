@@ -1,33 +1,36 @@
-/*
-Copyright 2020 NEC Solution Innovators, Ltd.
-
-Licensed under the Apache License, Version 2.0 (the "License");
-you may not use this file except in compliance with the License.
-You may obtain a copy of the License at
-
-    http://www.apache.org/licenses/LICENSE-2.0
-
-Unless required by applicable law or agreed to in writing, software
-distributed under the License is distributed on an "AS IS" BASIS,
-WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-See the License for the specific language governing permissions and
-limitations under the License.
-*/
 var csv = require('ya-csv');
 var fs = require('fs');
 var path = require('path');
 var exec = require('child_process').exec;
 var Iconv = require('iconv').Iconv;
 
+//===================================================================================
+//2019/01/15
+// このエラーハンドリングの為のthrow処理の記述がソースコード内に無く、
+// 外部ライブラリーのエラーをキャッチししてエラー処理となっていたため
+// コメントアウトして暫定運用する、
+//===================================================================================
+//非同期処理のエラーをハンドリングするため
+//domainモジュールを読み込む
+//var Domain = require('domain');
 
 var ServerLog = require('../../scripts/controller/server_log');
 var _log = ServerLog.getInstance();
 
+/*
+ * CsvFileManagerクラス
+ */
 function CsvFileManager() {
 }
 
 var _proto = CsvFileManager.prototype;
 
+/**
+ * CSVファイルをArrayデータにパースする
+ * @param {string} filePath パース対象のファイルパス
+ * @param {function} onToArrayCallBack パース後のコールバック
+ * @return {Boolean} パース処理が正常に開始されればtrue, そうでなければfalse
+ */
 CsvFileManager.toArray = function(filePath, onToArrayCallBack) {
     if (filePath == null || typeof filePath != 'string') {
         _log.connectionLog(4, 'filePath is invalid');
@@ -39,8 +42,16 @@ CsvFileManager.toArray = function(filePath, onToArrayCallBack) {
     }
 
 
+    //csvファイルをUTF8,改行コードをLFに変換する
     var _tmpFilePath = filePath;
     var command = 'nkf -w -Lu --overwrite ' + _tmpFilePath;
+    //===================================================================================
+    //2019/01/15
+    // このエラーハンドリングの為のthrow処理の記述がソースコード内に無く、
+    // 外部ライブラリーのエラーをキャッチししてエラー処理となっていたため
+    // コメントアウトして暫定運用する、
+    //===================================================================================
+    //var _domain = Domain.create();
     exec(command, function(err, stdout, stderr) {
         if (err) {
             console.log(err);
@@ -49,16 +60,52 @@ CsvFileManager.toArray = function(filePath, onToArrayCallBack) {
             onToArrayCallBack(null);
             return;
         }
+        //===================================================================================
+        //2019/01/15
+        // このエラーハンドリングの為のthrow処理の記述がソースコード内に無く、
+        // 外部ライブラリーのエラーをキャッチししてエラー処理となっていたため
+        // コメントアウトして暫定運用する、
+        //===================================================================================
+        //_domain.run(function() {
+        //csvファイルをArrayデータ化する
         _toArrayFromCsvFile(_tmpFilePath, _onToArrayFromCsvFileCallBack);
+        //});
     });
 
+    //===================================================================================
+    //2019/01/15
+    // このエラーハンドリングの為のthrow処理の記述がソースコード内に無く、
+    // 外部ライブラリーのエラーをキャッチししてエラー処理となっていたため
+    // コメントアウトして暫定運用する、
+    //===================================================================================
+    //例外処理をハンドリング
+    //CSV以外のファイルを読み込もうとしたときの
+    //例外処理を想定
+    // _domain.on('error', function(err) {
+    //     _log.connectionLog(4, 'ERROR :: CSV File Read Fail. FilePath: ' + filePath);
+    //     if (err && err.message) {
+    //         _log.connectionLog(4, err.message);
+    //     }
+    //     if (err && err.stack) {
+    //         _log.connectionLog(4, err.stack);
+    //     }
+    //     onToArrayCallBack(null);
+    // });
+    // 
     return true;
 
+    //csvファイルをArrayデータ化後のコールバック
     function _onToArrayFromCsvFileCallBack(csvDataArray){
         onToArrayCallBack(csvDataArray);
     }
 };
 
+/**
+ * CSVファイル形式のデータを作成します
+ * @param {Array} recordArray 出力データ（2次元配列）
+ * @param {number} charCode 文字コードの指定（CsvFileManager.CHAR_CODE_xxxの値）
+ * @return {string} CSV形式の文字列（不正なデータの場合はnull）
+ */
 CsvFileManager.createCsvData = function(recordArray, charCode) {
     if (recordArray == null || typeof recordArray != 'object') {
         _log.connectionLog(4, 'recordArray is invalid');
@@ -98,8 +145,11 @@ CsvFileManager.createCsvData = function(recordArray, charCode) {
                 _retCsvData += _quote;
             }
             if(_field == null) {
+                // DO NOTHING
             } else {
+                // エスケープ
                 _field = _field.replace(/"/g, '""');
+                // 改行コードを"\r\n"にそろえる
                 _field = _field.replace(/\r\n/g, '\n');
                 _field = _field.replace(/\r/g, '\n');
                 _field = _field.replace(/\n/g, '\r\n');
@@ -112,10 +162,12 @@ CsvFileManager.createCsvData = function(recordArray, charCode) {
         _retCsvData += '\r\n';
     }
     if(_conv != null) {
+        // 文字コード変換
         _retCsvData = _conv.convert(_retCsvData);
     }
     return _retCsvData;
 
+    // クォートが必要か判定
     function isNeetQuote(data) {
         if(data == null || typeof data != 'string') {
             return false;
@@ -136,6 +188,9 @@ CsvFileManager.createCsvData = function(recordArray, charCode) {
     }
 };
 
+/**
+ * csvファイルをArrayデータ化する
+ */
 function _toArrayFromCsvFile(filePath, onToArrayFromCsvFileCallBack){
     if (filePath == null || typeof filePath != 'string') {
         _log.connectionLog(4, 'filePath is invalid');
@@ -150,15 +205,18 @@ function _toArrayFromCsvFile(filePath, onToArrayFromCsvFileCallBack){
     var i = 0;
     var csvDataArray = new Array();
 
+    // データ読み込み処理（1行読み込むごとに呼ばれる）
     reader.addListener('data', function(data) {
         csvDataArray[i] = data;
         i++;
     });
 
+    // データ読み込み終了
     reader.addListener('end', function() {
         onToArrayFromCsvFileCallBack(csvDataArray);
     });
 
+    // 処理失敗時
     reader.addListener('error', function(err) {
         _log.connectionLog(4, 'CsvFileManager#_toArrayFromCsvFile Error :: ' + err);
         onToArrayFromCsvFileCallBack(null);
@@ -166,11 +224,17 @@ function _toArrayFromCsvFile(filePath, onToArrayFromCsvFileCallBack){
 
 }
 
+/**
+ * テンポラリ領域に保存するユニークなファイルパス名を生成
+ */
 function _createUniqueTmpFilePath(fileName){
     var _ret = '';
+    // 最大100回トライする
     for(var _i = 0; _i < 100; _i++) {
         var _tmpFilePath = _createTmpFilePath();
+        // 探す
         if(!fs.existsSync(_tmpFilePath)) {
+            // 既にあるのでリトライ
             continue;
         }
         _ret = _tmpFilePath;
@@ -179,7 +243,11 @@ function _createUniqueTmpFilePath(fileName){
     return _ret;
 }
 
+/**
+ * テンポラリ領域に保存するファイルパス名を生成
+ */
 function _createUniqueTmpFilePath(){
+    //ファイル名を年月日時分秒ms
     var _now = new Date();
     var _year = _now.getFullYear();
     var _month = _now.getMonth();

@@ -1,18 +1,9 @@
-/*
-Copyright 2020 NEC Solution Innovators, Ltd.
-
-Licensed under the Apache License, Version 2.0 (the "License");
-you may not use this file except in compliance with the License.
-You may obtain a copy of the License at
-
-    http://www.apache.org/licenses/LICENSE-2.0
-
-Unless required by applicable law or agreed to in writing, software
-distributed under the License is distributed on an "AS IS" BASIS,
-WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-See the License for the specific language governing permissions and
-limitations under the License.
-*/
+/**
+ * グループチャットのnode内からも使うAPI
+ * Webからはweb_apiが口になり、このファイルの上位
+ *
+ * @module src/scripts/controller/groupchat/api
+ */
 'use strict';
 
 const _ = require('underscore');
@@ -24,6 +15,16 @@ const RequestData = require('../../model/request_data').RequestData;
 const SynchronousBridgeNodeXmpp = require('../synchronous_bridge_node_xmpp');
 const UserAccountManager = require('../user_account_manager');
 
+/**
+ * ルーム作成時に実行されるAPI（公開関数）
+ * Xmppでルーム作成が完了後の処理
+ *
+ * @param {string} system_uuid - 権限管理を利用するシステムのUUID
+ * @param {object} session - リリクエストを行ったユーザ情報
+ * @param {object} _content - リクエストとXmppから作成後に返された値
+ *
+ * @return {promise} 正常に更新できた場合はresolve, 失敗した場合はreject
+ */
 exports.doAfterCreatedRoom = (system_uuid, session, _content) => {
     return new Promise((resolve, reject) => {
         if(!_.has(_content,"items")||
@@ -40,11 +41,13 @@ exports.doAfterCreatedRoom = (system_uuid, session, _content) => {
         }
         let actionMenbers = actionMemberSelectFromContent(_content);
 
+        //メンバーリストをJIDからUIDへ変換して取得
         actionMemberSelectFromJID(
             _content.items[0].memberItems,
             actionMenbers,
             session.getXmppServerName())
             .then((memberUIDs) => {
+                //ルーム作成で複数処理がある場合、ここに追加すること
                 setDefaultPolicyAndRightsAtCreate(system_uuid, session,
                                                   _content.items[0].roomId,
                                                   memberUIDs)
@@ -61,6 +64,7 @@ exports.doAfterCreatedRoom = (system_uuid, session, _content) => {
                             .then((res2)=>{
                                 err["roomId"] = _content.items[0].roomId;
                                 err["deleted"] = res2.deleted;
+                                //ルーム削除は成功したが登録としては失敗なためreject
                                 reject(err);
                             }).catch((err2)=>{
                                 err["roomId"] = _content.items[0].roomId;
@@ -70,11 +74,19 @@ exports.doAfterCreatedRoom = (system_uuid, session, _content) => {
                     });
             })
             .catch((err) => {
+                //異常系処理(UIDリストがJIDで検索出来無かった)
                 reject({result: false, reason: API_STATUS.BAD_REQUEST});
             });
     });
 };
 
+/**
+ * 第1階層のキーの値にアクション名をもつオブジェクトからアクション名をキーにユーザIDのリストを作る
+ *
+ * @param _content 第1階層のキーの値にアクション名をもつオブジェクト
+ *
+ * @return JIDリストに存在するユーザIDだけで構成されてアクション名に対比するユーザーIDの配列をもったオブジェクト
+ */
 const actionMemberSelectFromContent = (_content) => {
     let actionMenbers = {};
     if(_.has(_content,AUTHORITY_ACTIONS.GC_MANAGE) &&
@@ -99,6 +111,20 @@ const actionMemberSelectFromContent = (_content) => {
     return actionMenbers;
 };
 
+/**
+ * アクション名の持っているユーザーIDでJIDのリストに無いものを取り除き
+ * アクション名に対比するユーザー名の配列のオブジェクトを返す、
+ * JIDのリストにありアクション名をキーに持つオブジェクトに無い値は全てマネージャーとして扱う。
+ *
+ * @param jidmenber jidの配列リスト
+ * @param actionMenbers  アクション名に対比するユーザー名の配列のオブジェクト
+ *        {
+ *          sendMessageXXX : ["user01"],
+ *          viewMessageXXX : ["user02"]
+ *        }
+ *
+ * @return JIDリストに存在するユーザIDだけで構成されてアクション名に対比するユーザーIDの配列をもったオブジェクト(Promise resolve)
+ */
 const actionMemberSelectFromJID = (jidmenber, actionMenbers, xmppServerName) => {
     return new Promise((resolve, reject) => {
         let _actionMenbers = {};
@@ -129,12 +155,21 @@ const actionMemberSelectFromJID = (jidmenber, actionMenbers, xmppServerName) => 
                 resolve(_actionMenbers);
             })
             .catch((err)=>{
+                //UIDの問い合せ時にエラーが有った。
                 Log.connectionLog(3,`groupchat.app.actionMemberSelectFromJID get UID Error (${err})`);
                 reject(err);
             });
     });
 };
 
+/**
+ * jidからアカウントidを持ち出す。
+ *
+ * @param jid JID
+ * @param xmppServerName Xmppのサーバ名
+ *
+ * @return アカウントID(Promise resolve)
+ */
 const jid2uid = (jid, xmppServerName) => {
     return new Promise((resolve, reject) => {
         const openfireAccount = jid.substring(0,jid.lastIndexOf('@'));
@@ -149,6 +184,7 @@ const jid2uid = (jid, xmppServerName) => {
                             Log.connectionLog(6,`groupchat/api.js jid2uid userAccountData.getLoginAccount() : ${userAccountData.getLoginAccount()}`);
                             resolve(userAccountData.getLoginAccount());
                         }else{
+                            //ユーザーアカウントが存在しなかった
                             Log.connectionLog(3,`groupchat.app.jid2uid userAccountData is null`);
                             reject('');
                         }
@@ -160,12 +196,32 @@ const jid2uid = (jid, xmppServerName) => {
                 resolve(res);
             })
             .catch((err) => {
+                //UIDの問い合せ時にエラーが有った。
                 Log.connectionLog(3,`groupchat.app.jid2uid getUidFromJID Promise err`);
                 reject(err);
             });
     });
 };
 
+/**
+ * ルーム作成時など、初期のポリシーと権限をルームに設定する
+ * 初期登録時のメンバーの権限設定も同時に行う
+ * すべて設定予定の権限作成に成功しなかった場合は作成された物も削除
+ * して元の状態にもどる。
+ * ※サブ関数としてプライベートな関数とする
+ *
+ * @param {string} system_uuid - 権限管理を利用するシステムのUUID
+ * @param {object} session - リリクエストを行ったユーザ情報
+ * @param {object} resource - リソースID（ルームID）
+ * @param {Object} actionMenbers {
+ *        manageGroupchat - 管理権限設定のユーザーID（配列）
+ *        sendMessageToGroupchat - 管理権限設定のユーザーID（配列）
+ *        viewMessageInGroupchat - 管理権限設定のユーザーID（配列）
+ *       }
+ * @param {Array} actionMenberJIDs 配列の1番目をオーナーとしたメンバーのJID
+ *
+ * @return {promise} 正常に更新できた場合はresolve, 失敗した場合はreject
+ */
 const setDefaultPolicyAndRightsAtCreate = (system_uuid, session, resource, actionMenbers) => {
     return new Promise((resolve, reject) => {
         Log.connectionLog(6, `groupchat.api.setDefaultPolicyAndRightsAtCreate - actionMenbers: ${JSON.stringify(actionMenbers)}`);
@@ -202,6 +258,7 @@ const setDefaultPolicyAndRightsAtCreate = (system_uuid, session, resource, actio
                 }
                 Promise.all(promisesR)
                     .then((res2)=>{
+                        //-- メンバー登録の設定-----
                         let _promises = [];
                         for(let action of actions){
                             if(actionMenbers[action].length == 0)
@@ -215,7 +272,9 @@ const setDefaultPolicyAndRightsAtCreate = (system_uuid, session, resource, actio
                             );
                         }
                         Promise.all(_promises).then((res3)=>{
+                            //すべて実行成功
                             resolve({result: true, reason: API_STATUS.SUCCESS});
+                            //reject({result:false});
                         }).catch((err3)=>{
                             Log.connectionLog(5, `groupchat.api.setDefaultPolicyAndRightsAtCreate : authority set Policy To User err! ${JSON.stringify(err3)}`);
                             reject(err3);
@@ -233,19 +292,33 @@ const setDefaultPolicyAndRightsAtCreate = (system_uuid, session, resource, actio
     });
 };
 
+/**
+ * 権限設定に失敗した時に権限とルームを削除する
+ *
+ * @param {string} system_uuid - 権限管理を利用するシステムのUUID
+ * @param {object} session - リリクエストを行ったユーザ情報
+ * @param {object} resource - リソースID（ルームID）
+ * @param {Array} actionMenberJIDs 配列の1番目をオーナーとしたメンバーのJID
+ *
+ * @return {promise} 正常に更新できた場合はresolve, 失敗した場合はreject
+ */
 const deleteRoomAndMemberAuthority = (system_uuid, session, resource, actionMenberJIDs) => {
     return new Promise((resolve, reject) => {
         const accessToken = session.getAccessToken();
         const createrJid = session.getJid();
+        // ここに権限失敗したので削除処理追加
         AuthorityController.deleteRightPolicyOfResource(
             system_uuid, session,{resource:resource}
         ).then(
             (res2) =>{
+                //メンバーリストからのクリエーターJIDを抜き取る
                 actionMenberJIDs = _.without(actionMenberJIDs, createrJid);
                 Log.connectionLog(6, `groupchat.api.deleteRoomAndMemberAuthority: sliced creater actionMenberJIDs:${JSON.stringify(actionMenberJIDs)}`);
+                //グループチャットのルームやユーザーを削除
                 sendRemoveMemberRequestToXmpp(
                     accessToken, resource, createrJid, actionMenberJIDs
                 ).then((res3)=>{
+                    //登録に失敗した権限の削除に成功した
                     Log.connectionLog(5, `groupchat.api.deleteRoomAndMemberAuthority: authority cleaned, clean xmpp done !`);
                     resolve({
                         result: true,
@@ -254,6 +327,7 @@ const deleteRoomAndMemberAuthority = (system_uuid, session, resource, actionMenb
                         deleted: true
                     });
                 }).catch((err3)=>{
+                    //権限削除は成功したが、ルーム削除に失敗した。
                     Log.connectionLog(3, `groupchat.api.setDefaultPolicyAndRightsAtCreat: not clean xmpp err!:${JSON.stringify(err3)}`);
                     reject({
                         result: false,
@@ -263,7 +337,9 @@ const deleteRoomAndMemberAuthority = (system_uuid, session, resource, actionMenb
                     });
                 });
             }).catch((err2) =>{
+                //DBなどシステムトラブルでエラーとなった
                 Log.connectionLog(2, `groupchat.api.deleteRoomAndMemberAuthority: not authority clean err! ${JSON.stringify(err2)}`);
+                //エラーコードは権限作成に付いてのエラーコードを返す。
                 reject({
                     result: false,
                     reason: API_STATUS.INTERNAL_SERVER_ERROR,
@@ -274,8 +350,19 @@ const deleteRoomAndMemberAuthority = (system_uuid, session, resource, actionMenb
     });
 };
 
+/**
+ * 作成に失敗したGroupChatの後始末を行う。
+ * メンバーを全て退会させ、Ownerも退会させ、システムとして削除した状態とする。
+ *
+ * @param  {string} accessToken アクセストークン
+ * @param  {string} roomId      ルームID
+ * @param  {string} ownerJid    GC所有者のJID
+ * @param  {string} memberJids  GCに属するメンバーのJIDの配列
+ * @return {function}           Promise関数を返却する。正常終了は、resolveで戻り値なし。異常終了は、rejectでerr文言を返却。
+ */
 function sendRemoveMemberRequestToXmpp(accessToken, roomId, ownerJid, memberJids) {
     return new Promise((resolve, reject) => {
+        // パラメータチェック
         if (! _.isString(accessToken) || accessToken == '') {
             Log.connectionLog(4, 'accessToken is invalid. community::api::sendDeleteGroupRequestToXmpp');
             reject('invalid parameter');
@@ -296,20 +383,25 @@ function sendRemoveMemberRequestToXmpp(accessToken, roomId, ownerJid, memberJids
             reject('invalid parameter');
             return;
         }
+        // リクエストの作成
         const _accessToken = accessToken;
         const _content = {
             type: RequestData.REMOVE_MEMBER_TYPE_GROUP_CHAT_ROOM,
             removeType: 'member',
             roomId: roomId
         };
+        // メンバーの退会
         let _promises = [];
         if (memberJids.length == 0) {
+            // メンバーなし
             _promises.push(Promise.resolve({result: true}));
         } else {
             _content.members = memberJids;
+            // メンバーを退会させる要求を出す
             _promises.push(sendRemoveMemberRequestToXmppWrap(_accessToken, _content));
         }
 
+        // プロミスチェーンを開始する
         Promise.all(_promises)
         .then((res)=> {
             if (res[0].result == true) {
@@ -319,6 +411,7 @@ function sendRemoveMemberRequestToXmpp(accessToken, roomId, ownerJid, memberJids
             }
             _content.removeType = 'own';
             _content.members = [ownerJid];
+            // 所有者を退会させ、論理削除状態とする要求を出す
             return sendRemoveMemberRequestToXmppWrap(_accessToken, _content);
         }).then((res)=> {
             if (res.result == true) {
@@ -326,6 +419,7 @@ function sendRemoveMemberRequestToXmpp(accessToken, roomId, ownerJid, memberJids
             } else {
                 Log.connectionLog(4, 'community::api::sendDeleteGroupRequestToXmpp, done to remove owner. but might be failed.' + _content.roomId);
             }
+            // システムとして削除状態とする要求を出す
             return sendDeleteGroupRequestToXmpp(_accessToken, _content.roomId);
         }).then((res)=> {
             if (res.result == true) {
@@ -341,9 +435,19 @@ function sendRemoveMemberRequestToXmpp(accessToken, roomId, ownerJid, memberJids
     });
 }
 
+/**
+ * メンバーをGCから退会させる要求を出すPromise関数を返却する。
+ * 内部からの呼び出しに限るため、パラメータチェックは行わない。
+ *
+ * @param  {string} accessToken アクセストークン
+ * @param  {object} content     削除要求のcontent
+ * @return {function}           Promise関数を返却する。正常終了は、resolve で、Objectを返却する。
+ */
 function sendRemoveMemberRequestToXmppWrap(accessToken, content) {
     return new Promise((resolve, reject) => {
+        // リクエストの送出
         const _synchronousBridgeNodeXmpp = SynchronousBridgeNodeXmpp.getInstance();
+        // メンバー削除要求送出
         let _res = _synchronousBridgeNodeXmpp.removeMember(
             accessToken,
             content,
@@ -367,13 +471,23 @@ function sendRemoveMemberRequestToXmppWrap(accessToken, content) {
     });
 }
 
+/**
+ * システムとしてのGroupChat削除要求をXMPPに送信する
+ * これを呼び出す前に、GCに属するメンバすべてをメンバー退会させる要求を創出しておく必要がある
+ *
+ * @param  {string} accessToken アクセストークン
+ * @param  {string} roomId      対象のルームID
+ * @return {function}           Promise関数を返却する。正常終了は、resolve で、Objectを返却する。
+ */
 function sendDeleteGroupRequestToXmpp(accessToken, roomId) {
     return new Promise((resolve, reject) => {
+        // リクエストの作成
         const _accessToken = accessToken;
         const _content = {
             type: RequestData.DELETE_GROUP_TYPE_GROUP_CHAT_ROOM,
             roomId: roomId
         };
+        // リクエストの送出
         const _synchronousBridgeNodeXmpp = SynchronousBridgeNodeXmpp.getInstance();
         let _res = _synchronousBridgeNodeXmpp.deleteGroup(
             _accessToken,

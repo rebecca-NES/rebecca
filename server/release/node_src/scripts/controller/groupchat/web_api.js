@@ -1,18 +1,8 @@
-/*
-Copyright 2020 NEC Solution Innovators, Ltd.
-
-Licensed under the Apache License, Version 2.0 (the "License");
-you may not use this file except in compliance with the License.
-You may obtain a copy of the License at
-
-    http://www.apache.org/licenses/LICENSE-2.0
-
-Unless required by applicable law or agreed to in writing, software
-distributed under the License is distributed on an "AS IS" BASIS,
-WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-See the License for the specific language governing permissions and
-limitations under the License.
-*/
+/**
+ * グループチャットを管理するWeb(ネット)からのアクセスの口になるAPI
+ *
+ * @module src/scripts/controller/groupchat/web_api
+ */
 'use strict';
 const _ = require('underscore');
 const API = require('./api');
@@ -23,8 +13,18 @@ const API_STATUS = require('../const').API_STATUS;
 const utils = require('../../utils');
 const Validation = require('../validation');
 
+/**
+ * グループチャット作成時実行のAPI
+ *
+ * @param {Object} socket - socket情報
+ * @param {Object} receiveObj - リクエスト情報
+ * @param {function} callback - クライアントへの応答CallBack
+ *
+ * @return {boolean}
+ */
 exports.create = (socket, receiveObj={}, callback, apiUtil) => {
     let _ret = false;
+    //memberItemsが設定れていない場合
     if(!_.has(receiveObj,"accessToken")||
        !_.has(receiveObj,"content")||
        !_.has(receiveObj.content,"memberItems")||
@@ -45,6 +45,9 @@ exports.create = (socket, receiveObj={}, callback, apiUtil) => {
             _session = SessionDataMannager.getInstance().get(_accessToken),
             _system_uuid = _session.getTenantUuid();
 
+    /*
+     * xmppでルーム作成時に使われるコールバック
+     */
     const afterCreatedRoomCallback = (result, reason, extras, count, items) => {
         _content["result"] = result;
         _content["reason"] = reason;
@@ -52,6 +55,7 @@ exports.create = (socket, receiveObj={}, callback, apiUtil) => {
         _content["count"]  = count;
         _content["items"]  = items;
         if(!result){
+            //作成失敗
             Log.connectionLog(4, `groupchat.web_api#create Xmpp createGroup error (xmpp reason: ${reason})`);
             executeCallback(receiveObj,
                             callback, _content, 1, apiUtil);
@@ -103,6 +107,16 @@ exports.create = (socket, receiveObj={}, callback, apiUtil) => {
     }
 };
 
+/**
+ * APIレスポンス作成の為のコールバック関数
+ * cubee_web_api.js内で利用されているコールバックを返す
+ *
+ * @param req リクエストデータ
+ * @param callback プロセスコールバック（セッションなどの情報をセットする）
+ * @param content リクエストで受け取ったcontent
+ * @param errorCode エラーコード（9=トークンが無効,1=必要パラメーターが無い場合,0=その他）
+ * @param apiUtil cubee_web_spiで作成された使われるコールバック関数
+ */
 function executeCallback(req,  callback, content=null, errorCode, apiUtil) {
     const cntlist = ["type","result","reason","extras","count","items"];
     let _content = {};

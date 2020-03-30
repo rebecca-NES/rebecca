@@ -1,18 +1,3 @@
-/*
-Copyright 2020 NEC Solution Innovators, Ltd.
-
-Licensed under the Apache License, Version 2.0 (the "License");
-you may not use this file except in compliance with the License.
-You may obtain a copy of the License at
-
-    http://www.apache.org/licenses/LICENSE-2.0
-
-Unless required by applicable law or agreed to in writing, software
-distributed under the License is distributed on an "AS IS" BASIS,
-WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-See the License for the specific language governing permissions and
-limitations under the License.
-*/
 "use strict";
 
 const fs = require('fs');
@@ -21,12 +6,23 @@ const log = require("../server_log").getInstance();
 const util = require('util');
 const Const = require("../const");
 
+/**
+ * Nodeから直接DBに接続するためのクラス。
+ * 2019/3末時点websocketで使わないのでapp.jsないで初期化し
+ * codimdで使うテーブル動作のみで使っている
+ *
+ */
 module.exports = class DbStore{
 
     constructor (confFilePath) {
         this.readConfig(confFilePath);
     }
 
+    /**
+     * 設定ファイルを読み込み、接続
+     *
+     * @param confFilePath 設定ファイルパス
+     */
     readConfig(confFilePath) {
         if(this.sequelize == undefined ||
            this.sequelize == null) {
@@ -64,6 +60,16 @@ module.exports = class DbStore{
         }
     }
 
+    /**
+     * 新規のNoteデータの作成またはタイトルなどの更新
+     *
+     * @param uuid テナントUUID
+     * @param jid  JID
+     * @param codimd_uid Codimd発行のUID
+     * @param title ノートタイトル
+     * @param urlpath ノートURL Path
+     * @param thread_root_id 紐付するThreadRoorId
+     */
     setNote(uuid, jid, codimd_uid, title, urlpath, thread_root_id){
         return new Promise((resolve, reject)=>{
             try{
@@ -148,6 +154,13 @@ module.exports = class DbStore{
         });
     }
 
+    /**
+     * 指定のNoteURLを持ったデータにTheadRootIdを登録する
+     *
+     * @param uuid テナントUUID
+     * @param urlpath ノートURL Path
+     * @param thread_root_id 紐付するThreadRoorId
+     */
     setThreadRootIdToNote(uuid, urlpath, thread_root_id){
         return new Promise((resolve, reject)=>{
             try{
@@ -207,6 +220,13 @@ module.exports = class DbStore{
         });
     }
 
+    /**
+     * Cubee上からaccsessTokenの認証を使い履歴から削除
+     *
+     * @param uuid テナントUUID
+     * @param jid  JID
+     * @param thread_root_id 紐付するThreadRoorId
+     */
     deleteNoteFromJid(uuid, jid, urlpath){
         return new Promise((resolve, reject)=>{
             try{
@@ -258,6 +278,7 @@ module.exports = class DbStore{
                                         data:selectres.data[0]
                                     });
                                 }else{
+                                    //not found delete note
                                     log.connectionLog(3," codimd.db_store.deleteNoteFromJid  note_store not found detete note id SQL:" + sql);
                                     reject({
                                         result:false
@@ -295,6 +316,14 @@ module.exports = class DbStore{
         });
     }
 
+    /**
+     * Codimdから直接削除の場合の関数の為
+     * 未使用。今後拡張などの為に残す。
+     *
+     * @param uuid テナントUUID
+     * @param codimd_uid Codimd発行のUID
+     * @param urlpath ノートURL Path
+     */
     deleteNoteFromCodimdUid(uuid, codimd_uid, urlpath){
         return new Promise((resolve, reject)=>{
             try{
@@ -356,6 +385,16 @@ module.exports = class DbStore{
         });
     }
 
+    /**
+     * thread_root_id と room_idの値のどちらかか両方に属するもの
+     * もしくは両方共無い場合はjidに紐付されたリストが返却される
+     *
+     * @param uuid テナントUUID
+     * @param jid  JID
+     * @param msgtype メッセージタイプ
+     * @param thread_root_id 紐付するThreadRoorId
+     * @param room_id CubeeのRoomId(Chatは相手のJID)
+     */
     getNoteList(uuid, jid, msgtype, thread_root_id, room_id){
         return new Promise((resolve, reject)=>{
             try{
@@ -483,6 +522,7 @@ module.exports = class DbStore{
                               + "   )"
                               + " )";
                 }else{
+                    //thread_root_id or roomid の指定が無い場合はJIDのリストを取得
                     if(jid){
                         selWhere += util.format(" n.ownjid= %s",this.sequelize[uuid]["globalsns"].escape(jid));
                     }else{
@@ -530,6 +570,13 @@ module.exports = class DbStore{
         });
     }
 
+    /**
+     * urlpathのnotoの情報を取得
+     *
+     * @param uuid テナントUUID
+     * @param jid  JID
+     * @param thread_root_id 紐付するThreadRoorId
+     */
     getNote(uuid, jid, urlpath){
         return new Promise((resolve, reject)=>{
             try{
@@ -630,6 +677,16 @@ module.exports = class DbStore{
         });
     }
 
+    /**
+     * threadrootidのnotoの情報を取得
+     *
+     * @param uuid,
+     * @param jid,
+     * @param note_url,
+     * @param  thread_root_id
+     *
+     * @return 指定ThreadRootIdのレコードの値を返す
+     */
     getNoteFromThreadRootId(uuid, jid, threadRootId){
         return new Promise((resolve, reject)=>{
             try{
@@ -727,6 +784,18 @@ module.exports = class DbStore{
         });
     }
 
+    /**
+     * notoの情報テーブルに
+     * thread_root_idの値を設定する。
+     * thread_root_idに値が既に設定されていれば一旦空「''」を設定すればthread_root_idを変更できる
+     *
+     * @param uuid,
+     * @param jid,
+     * @param note_url,
+     * @param  thread_root_id
+     *
+     * @return 変更後のレコードの値を返す
+     */
     joinNoteToCubeeMesssage(uuid, jid, note_url, thread_root_id){
         return new Promise((resolve, reject)=>{
             try{
@@ -865,6 +934,7 @@ module.exports = class DbStore{
                         return;
                     });
                 }else{
+                    //note_urlが空の時のSQL実行(指定のthreadRootId紐付け解除)
                     this.getNoteFromThreadRootId(uuid, jid, thread_root_id).then((selectres)=>{
                         if(selectres.result &&
                            typeof selectres.data[0] == "object"){
@@ -957,6 +1027,16 @@ module.exports = class DbStore{
         });
     }
 
+    /**
+     * noteにjidのアカントがあるか、登録中かを返却する
+     * noteのCubee側でアカウント情報テーブルを持ち
+     * アカントの二重登録を制御する。
+     *
+     * @param uuid,
+     * @param jid
+     *
+     * @return 変更後のレコードの値を返す
+     */
     getAccountStatus(uuid, jid){
         return new Promise((resolve, reject)=>{
             try{
@@ -980,6 +1060,7 @@ module.exports = class DbStore{
                 }else{
                     log.connectionLog(7," codimd.db_store.getAccountStatus  sequelize is ok");
                 }
+                //***
                 const sqlbase = "SELECT status FROM note_account_store WHERE jid = %s ";
                 let sql = util.format(sqlbase,
                                       this.sequelize[uuid]["globalsns"].escape(jid)
@@ -1014,6 +1095,7 @@ module.exports = class DbStore{
                         });
                         return;
                     });
+                //***
             }catch(e){
                 log.connectionLog(2," codimd.db_store.getAccountStatus try catch. " + e);
                 reject({
@@ -1025,6 +1107,16 @@ module.exports = class DbStore{
         });
     }
 
+    /**
+     * noteにjidのアカントがあるか、登録中かを返却する
+     * noteのCubee側でアカウント情報テーブルを持ち
+     * アカントの二重登録を制御する。
+     *
+     * @param uuid,
+     * @param jid
+     *
+     * @return 変更後のレコードの値を返す
+     */
     setAccountStatus(uuid, jid, status){
         return new Promise((resolve, reject)=>{
             try{
@@ -1058,6 +1150,7 @@ module.exports = class DbStore{
                 }else{
                     log.connectionLog(7," codimd.db_store.setAccountStatus  sequelize is ok");
                 }
+                //***
                 const sqlbase = "INSERT INTO note_account_store"
                             + "  (jid, status, created_at, updated_at) VALUES"
                             + "  (%s , %s    , now()     , now() )"
@@ -1087,6 +1180,7 @@ module.exports = class DbStore{
                         });
                         return;
                     });
+                //***
             }catch(e){
                 log.connectionLog(2," codimd.db_store.setAccountStatus try catch. " + e);
                 reject({
@@ -1098,6 +1192,16 @@ module.exports = class DbStore{
         });
     }
 
+    /**
+     * notoの情報テーブルのtitleを変更する。
+     *
+     * @param uuid,
+     * @param jid,
+     * @param note_url,
+     * @param title
+     *
+     * @return 変更後のレコードの値を返す
+     */
     renameNoteOnCubee(uuid, jid, note_url, title){
         log.connectionLog(7,"do func codimd.db_store.js.renameNoteOnCubee(");
         return new Promise((resolve, reject)=>{
