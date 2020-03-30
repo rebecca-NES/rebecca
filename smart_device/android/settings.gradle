@@ -1,0 +1,35 @@
+/*
+Copyright 2019 NEC Solution Innovators, Ltd.
+
+Licensed under the Apache License, Version 2.0 (the License);
+you may not use this file except in compliance with the License.
+You may obtain a copy of the License at
+
+    http://www.apache.org/licenses/LICENSE-2.0
+
+Unless required by applicable law or agreed to in writing, software
+distributed under the License is distributed on an "AS IS" BASIS,
+WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+See the License for the specific language governing permissions and
+limitations under the License.
+*/
+
+rootProject.name = 'EnterpriseSocialPlatform'
+include ':react-native-keychain'
+project(':react-native-keychain').projectDir = new File(rootProject.projectDir, '../node_modules/react-native-keychain/android')
+include ':react-native-image-picker'
+project(':react-native-image-picker').projectDir = new File(rootProject.projectDir, '../node_modules/react-native-image-picker/android')
+include ':react-native-device-info'
+project(':react-native-device-info').projectDir = new File(rootProject.projectDir, '../node_modules/react-native-device-info/android')
+include ':react-native-mail-compose'
+project(':react-native-mail-compose').projectDir = new File(rootProject.projectDir, '../node_modules/react-native-mail-compose/android')
+include ':react-native-photo-view'
+project(':react-native-photo-view').projectDir = new File(rootProject.projectDir, '../node_modules/react-native-photo-view/android')
+include ':react-native-push-notification'
+project(':react-native-push-notification').projectDir = new File(rootProject.projectDir, '../node_modules/react-native-push-notification/android')
+include ':react-native-fetch-blob'
+project(':react-native-fetch-blob').projectDir = new File(rootProject.projectDir, '../node_modules/react-native-fetch-blob/android')
+include ':react-native-vector-icons'
+project(':react-native-vector-icons').projectDir = new File(rootProject.projectDir, '../node_modules/react-native-vector-icons/android')
+
+include ':app'
