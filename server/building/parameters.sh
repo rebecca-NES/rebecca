@@ -10,8 +10,8 @@ export https_proxy=${https_proxy}
 export no_proxy=${no_proxy}
 
 ## 作業用ディレクトリ、構築用ディレクトリ
-export WORK_DIR=/root/cubee-dev/building/
-export BUILD_DIR=/root/cubee/building/
+export WORK_DIR=/root/rebecca-dev/building/
+export BUILD_DIR=/root/rebecca/building/
 
 ## FrontendサーバのIPアドレス
 export HOST_IPADDRESS=
@@ -32,7 +32,7 @@ export CUBEE_OPENFIRE_PW=password
 
 ## ログディレクトリ名とパス
 export HOST_NAME=center
-export LOG_DIR=/var/log/cubee/${HOST_NAME}/
+export LOG_DIR=/var/log/rebecca/${HOST_NAME}/
 
 ## 初期構築テナント名、UUID、ライセンスの定義
 export TENANT_NAME=spf
@@ -51,9 +51,6 @@ export APNS_PASSPHRASE='password'
 
 ## 作業日時の控え
 export NOWADAY=`date '+%Y%m%d-%H%M%S'`
-
-## release.zip のパス
-export RELEASE_ZIP=/root/cubee-dev/release.zip
 
 ## for note setting
 export ENABLE_NOTE=false

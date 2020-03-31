@@ -8,7 +8,7 @@
 
 1. [システム要件](./01.system_requirement.md)
 1. [システム構成](./02.system_configuration.md)
-1. [ファイルの配置](./03.providing.md)
+1. [ファイルの入手](./03.providing.md)
 1. [留意点](./04.notes.md)
 1. 構築手順
     1. [はじめに](./11.pre.md)
