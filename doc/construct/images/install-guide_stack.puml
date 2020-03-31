@@ -1,0 +1,61 @@
+'
+@startuml {install-guide_stack.png}
+title system configuration image
+
+rectangle "ブラウザ"
+rectangle "スマデバ"
+
+rectangle "Frontendサーバ" {
+
+	rectangle "container\n spf-px" {
+		rectangle "nginx" as px_nginx
+		rectangle "node.js" as px_nodejs {
+			rectangle "spf_proxy"
+		}
+	}
+
+	rectangle "container\n spf-nj" {
+		rectangle "nginx" as nj_nginx
+		rectangle "node.js" as nj_nodejs {
+			rectangle "spf_nodejs"
+		}
+	}
+
+	rectangle "container\n spf-of-<UUID>-01" {
+		rectangle "openfire" {
+			rectangle "globalSNS.jar"
+		}
+	}
+
+	rectangle "container\n redis" as redis
+}
+
+rectangle "DBサーバ" {
+	database "openfire-<UUID>-01" as openfire_db
+	database "rightctl_<UUID>" as rightctl_db
+	database "globalsns"
+}
+
+ブラウザ -> px_nginx: "443/tcp (https)"
+スマデバ -> px_nginx: "443/tcp (https)"
+
+ブラウザ -> nj_nginx: "3001/tcp (wss)"
+ブラウザ -> openfire: "5001-5003/tcp (https)"
+
+px_nginx -> spf_proxy: "3030/tcp"
+spf_proxy -> nj_nginx: "8080/tcp"
+
+nj_nginx -> spf_nodejs: "3001/tcp"
+nj_nginx -> spf_nodejs: "3003/tcp"
+
+spf_proxy -> redis: "6379/tcp"
+spf_nodejs -> redis: "6379/tcp"
+
+spf_nodejs -> openfire: "5222/tcp"
+
+openfire -> openfire_db: "5432/tcp"
+globalSNS.jar -> openfire_db: "5432/tcp"
+spf_nodejs -> globalsns: "5432/tcp"
+spf_nodejs -> rightctl_db: "5432/tcp"
+
+@enduml
