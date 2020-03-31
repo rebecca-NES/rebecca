@@ -37,7 +37,7 @@ export LOG_DIR=/var/log/cubee/${HOST_NAME}/
 ## 初期構築テナント名、UUID、ライセンスの定義
 export TENANT_NAME=spf
 export TENANT_UUID=XXXXXXXX-XXXX-XXXX-XXXX-XXXXXXXXXXXX
-export TENANT_LICENSE='XXXXX-XXXXX-XXXXX-XXXXX'
+export TENANT_LICENSE='QGX7R-R0034-809MJ-1G9FE'
 export TENANT_CONF='{"disclosable":{"ldap":{"ldapEnable":false,"ldapUpdatable":false},"passwordPolicy":{"complexityNumber":32}}}'
 
 ## 初期構築テナントのOpenfire管理コンソールのポート
