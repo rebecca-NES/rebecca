@@ -5,16 +5,16 @@
 ##
 
 # release.zip から解凍
-if [ ! -d ${BUILD_DIR}/release.${NOWADAY} ]; then
-  unzip ${RELEASE_ZIP} -d ${BUILD_DIR}/
-  mv ${BUILD_DIR}/release ${BUILD_DIR}/release.${NOWADAY}
-  cp -p ${RELEASE_ZIP} ${BUILD_DIR}/release.${NOWADAY}/
-fi
+#if [ ! -d ${BUILD_DIR}/release.${NOWADAY} ]; then
+#  unzip ${RELEASE_ZIP} -d ${BUILD_DIR}/
+#  mv ${BUILD_DIR}/release ${BUILD_DIR}/release.${NOWADAY}
+#  cp -p ${RELEASE_ZIP} ${BUILD_DIR}/release.${NOWADAY}/
+#fi
 
 ## 構築作業用ディレクトリの用意
 if [ -d ${BUILD_DIR}/spf_openfire ]; then
   # Docker Image（後半）構築ディレクトリをバックアップ
-  tar cvzf ${BUILD_DIR}/release.${NOWADAY}/spf_openfire.tar.gz.${NOWADAY} ${BUILD_DIR}/spf_openfire
+#  tar cvzf ${BUILD_DIR}/release.${NOWADAY}/spf_openfire.tar.gz.${NOWADAY} ${BUILD_DIR}/spf_openfire
   # 旧ファイル/ディレクトリを削除
   rm -rf ${BUILD_DIR}/spf_openfire
 fi
