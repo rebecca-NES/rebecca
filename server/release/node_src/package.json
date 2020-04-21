@@ -26,7 +26,7 @@
     "jade": "1.11.0",
     "libxmljs": "https://github.com/libxmljs/libxmljs.git#v0.18.7",
     "method-override": "2.3.10",
-    "morgan": "1.9.0",
+    "morgan": "1.10.0",
     "multer": "1.3.0",
     "mysql": "2.15.0",
     "node-redis-lock": "1.0.1",
