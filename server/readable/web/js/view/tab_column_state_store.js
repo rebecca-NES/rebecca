@@ -395,7 +395,7 @@ function TabColumnStateStore() {
         }
         for (var _i = 0; _i < _columnTypeList.getCount(); _i++) {
             var _curType = parseInt(_columnTypeList.get(_i));
-            if (_curType == NaN) {
+            if (isNaN(_curType)) {
                 continue;
             }
             sourceColumnTypeList.add(_curType);
