@@ -60,10 +60,13 @@
       // Terminate "signup" function
       //, signup = require('./routes/signup')
       , path = require('path')
-      , favicon = require('serve-favicon')
+  //    define favicon delete because of it is unused by TM  
+  //  , favicon = require('serve-favicon')
       , morgan = require('morgan')
       , cookieParser = require('cookie-parser')
       , cookieSession = require('cookie-session')
+      // add csurf. by TM 20200430
+      , csrf = require('csurf')
       , serveStatic = require('serve-static')
       , bodyParser = require('body-parser')
       , methodOverride = require('method-override')
@@ -72,7 +75,8 @@
 
 
     var app = express();
-    var image_dir = '../../html/images';
+    // image_dir is not used, so delete it. by TM
+    // var image_dir = '../../html/images';
 
     var location = _conf.getConfData('SYSTEM_LOCATION_ROOT');
 
@@ -94,13 +98,19 @@
     app.use(bodyParser.json());
     app.use(bodyParser.urlencoded({extended: true, uploadDir: './tmp'}));
     app.use(methodOverride());
-    app.use(cookieParser())
+    // add semi colum to end of sentense. by TM 20200430
+    app.use(cookieParser());
     app.use(cookieSession({
+        // The hard-coded value "admintool session" is used as key. 
+        // 環境変数にしたほうが良い
         secret:"admintool session",
         cookie: {
             maxAge: 60 * 30 * 1000
         }
     }));
+    // This cookie middleware is serving a request handler 5 Values without CSRF protection.
+    // add 
+    app.use(csrf({ cookie:true }));
 
     // Terminate "signup" function
     app.use(location + '/admintool', serveStatic (path.join(__dirname, '/public')));
@@ -362,7 +372,8 @@
 
     //コミュニティロゴ画像取得の受け付け処理
     function _onGetCommunityLogoImageRequest(request, response) {
-        var _requestData = '';
+        // local variable _requestData is not used.
+        // var _requestData = '';
         var _pathName = _url.parse(request.url).pathname;
         var _logoImageRegExpStr = '\/' + REG_EXP_TENANTUUID + '\/' + REQUEST_URL_PATH_COMM + '\/.+\/' + REQUEST_URL_PATH_COMM_TYPE_LOGO + '\/.+';
         var _logoImageRegExp = new RegExp(_logoImageRegExpStr, 'i');
@@ -371,7 +382,8 @@
             log.connectionLog(3, 'URL request is Invalid : ' + _pathName);
             response.writeHead(404);
             response.end();
-            _requestData = '';
+            // The value assigned to _requestData here is unused.
+            // _requestData = '';
            return;
         }
 
@@ -380,7 +392,8 @@
             log.connectionLog(3, '_imageFileData is null ');
             response.writeHead(404);
             response.end();
-            _requestData = '';
+            // The value assigned to _requestData here is unused.
+            // _requestData = '';
             return;
         }
         var _imageType = _imageFileData.type;
@@ -391,7 +404,8 @@
         });
         response.status(200).send(_imageBinary);
         response.end();
-        _requestData = '';
+        // The value assigned to _requestData here is unused.
+        // _requestData = '';
     };
 
     //admintool用のログインチェック処理
