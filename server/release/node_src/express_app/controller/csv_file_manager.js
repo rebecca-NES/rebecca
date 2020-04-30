@@ -1,6 +1,5 @@
 var csv = require('ya-csv');
 var fs = require('fs');
-var path = require('path');
 var exec = require('child_process').exec;
 var Iconv = require('iconv').Iconv;
 
@@ -246,7 +245,7 @@ function _createUniqueTmpFilePath(fileName){
 /**
  * テンポラリ領域に保存するファイルパス名を生成
  */
-function _createUniqueTmpFilePath(){
+function _createTmpFilePath(){
     //ファイル名を年月日時分秒ms
     var _now = new Date();
     var _year = _now.getFullYear();

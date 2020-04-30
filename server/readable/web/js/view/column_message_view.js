@@ -885,32 +885,6 @@ limitations under the License.
             return ViewUtils.urlAutoLink(shortenUrls, _message, true, null, false, itemId);
         }
     };
-    function getReadMoreMessageOverMaxLength(shortenUrls, message, abbreviationFlg, itemId, isReadMore) {
-        if (_validation({'message' : message}) == false) {
-            return message;
-        }
-
-        var _message = message.replace(/\n+$/g, '');
-
-        var _messageLen = ViewUtils.getCalculattionBody(_message);
-        if(_messageLen > Conf.getVal('MESSAGE_BODY_MAX_LENGTH')) {
-            var _targetStr = null;
-            var _readMoreLink = null;
-            if (isReadMore) {
-                _targetStr = ViewUtils.getSubstringBody(_message, Conf.getVal('MESSAGE_BODY_MAX_LENGTH'));
-                _readMoreLink = '<div class="read-more-link-base"><span class="read-more-comment">...</span><a href class="read-more-link">' + Resource.getMessage('whole_text') + '</a></div>';
-            }
-            else {
-                _targetStr = _message;
-                _readMoreLink = '<div class="read-more-link-base"><span class="read-more-comment">&nbsp;</span><a href class="read-more-link">' + Resource.getMessage('abbreviation') + '</a></div>';
-            }
-            var _rtnHtmlStr = ViewUtils.urlAutoLink(shortenUrls, _targetStr, true, null, false, itemId);
-            _rtnHtmlStr = ViewUtils.replaceHashtagElement(_rtnHtmlStr);
-            return _rtnHtmlStr.replace("</pre>", "</pre>" + _readMoreLink);
-        } else {
-            return ViewUtils.urlAutoLink(shortenUrls, _message, true, null, false, itemId);
-        }
-    };
     function subStringMessage(message, abbreviationFlg) {
         if (_validation({'message' : message}) == false) {
             return message;
