@@ -419,10 +419,14 @@
                     return;
                 }
                 if(response.code == 301 && response.headers.location) {
+                    // この後ろで使う準備
+                    var _ = require('lodash');
                     // redirect の location の 自ホスト部分を除去する
                     // 自ホストに該当する正規表現を組み立てる（Request Header の正規表現記号をエスケープし、組み立てる）
                     var _escapedMyHost = _myHost.replace(/[-\/\\^$*+?.()|[\]{}]/g, '\\$&');
-                    _locationRegExp = new RegExp('^http\:\/\/' + _escapedMyHost + '\:' + spfPort + '\/');
+                    // This regular expression is constructed from a user-provided value.
+                    var _safeEscapedMyHost =  _.escapeRegExp(_escapedMyHost); 
+                    _locationRegExp = new RegExp('^http\:\/\/' + _safeEscapedMyHost + '\:' + spfPort + '\/');
                     // 自ホスト部分を削除する
                     response.headers.location = response.headers.location.replace(_locationRegExp, '/');
                     serverResponse.writeHead(response.code, {'Location': response.headers.location});
