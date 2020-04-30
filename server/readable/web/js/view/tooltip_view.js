@@ -1411,6 +1411,9 @@ function TooltipView() {
                     break;
                 case Message.TYPE_COMMUNITY:
                     if(_message.getTo()){
+                        // The base expression of this property access is always undefined.
+                        // 上に、あったのは、コピーした。これが修正かどうかは、怪しいがとりあえず、エラー消し
+                        var pjInfo = TabManager.getInstance().getCommunityInfo();
                         if(_message.getParentRoomId() &&
                            _message.getParentRoomId() == pjInfo.getRoomId()){
                             _columnManager.addCommunityFeedColumn(_message.getTo(), true, false, _column);

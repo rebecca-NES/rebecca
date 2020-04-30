@@ -892,7 +892,8 @@ function ViewUtils() {
         if (typeof url == 'string') {
             return false;
         }
-        var _extensionReg = new RegExp("((https?|ftp)(:\/\/[-_.!~*\'()a-zA-Z0-9;\/?:\@&=+\$,%#]+))");
+        // The escape sequence '\$' is equivalent to just '$', so the sequence may still represent a meta-character when it is used in a regular expression.
+        var _extensionReg = new RegExp("((https?|ftp)(:\/\/[-_.!~*\'()a-zA-Z0-9;\/?:\@&=+$,%#]+))");
         var _extensionIndex = _url.search(_extensionReg);
         if (_extensionIndex < 0) {
             return false;
@@ -903,7 +904,8 @@ function ViewUtils() {
         if (_validation({'imageUrl' : imageUrl}) == false) {
             return false;
         }
-        var _extensionReg = new RegExp('^https?:\/\/.+(\.jpg|\.jpeg|\.png|\.gif|\.bmp)$', 'i');
+        // The escape sequence '\.' is equivalent to just '.', so the sequence may still represent a meta-character when it is used in a regular expression.
+        var _extensionReg = new RegExp('^https?:\/\/.+(.jpg|.jpeg|.png|.gif|.bmp)$', 'i');
         var _extensionIndex = imageUrl.search(_extensionReg);
         if (_extensionIndex < 0) {
             return false;
