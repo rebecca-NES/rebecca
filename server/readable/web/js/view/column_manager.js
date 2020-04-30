@@ -64,7 +64,7 @@ function ColumnManager() {
     };
     _proto.getImageMaxWidth = function() {
         return this._imageMaxWidth;
-    }
+    }; // add semicolon by TM 2020/04/30
     _proto._getColumnContainer = function() {
         return this._columnContainer;
     };
@@ -462,9 +462,10 @@ function ColumnManager() {
         if (_columnType == ColumnInformation.TYPE_COLUMN_TIMELINE) {
             ColumnTimelineView.setInstance(_columnObj);
         }
-        if (_columnObj == null) {
-            return _ret;
-        }
+        // This guard always evaluates to false.
+        // if (_columnObj == null) {
+        //    return _ret;
+        // }
         var _columnElement = _columnObj._htmlElement;
 
         var _container = _self._getColumnInnerContainer();
@@ -876,7 +877,7 @@ function ColumnManager() {
             }
         }
         return _ret;
-    }
+    }; // add semicolon by TM 2020/04/30
     _proto._getQuestionnaireMessageTargetColumnsIndex = function(questionnaireMessage) {
         var _self = this;
         var _ret = new ArrayList();
@@ -959,17 +960,19 @@ function ColumnManager() {
                 var _filterCondition = new TaskFilterAndSortCondition();
                 var _filterObj = _filterCondition.getFilterObject(_columnFilterCondition);
                 var _count = _target.length;
+                var _key;
                 for (var _l = 0; _l < _count; _l++) {
                     var _added = false;
-                    for (key in _filterObj) {
-                        if (_filterObj[key] == '') {
+                    // key is not defined. so define _key. replace variable to _key.
+                    for (_key in _filterObj) {
+                        if (_filterObj[_key] == '') {
                             continue;
                         }
-                        var _propertyVal = _target[_l].getPropertyByFilterKey(key);
+                        var _propertyVal = _target[_l].getPropertyByFilterKey(_key);
                         if (_propertyVal == '') {
                             continue;
                         }
-                        var _filterValArray = _filterObj[key].split(TaskFilterAndSortCondition.DELIMITER_STRING);
+                        var _filterValArray = _filterObj[_key].split(TaskFilterAndSortCondition.DELIMITER_STRING);
                         var _added = false;
                         var _filterValArrayCount = _filterValArray.length;
                         for (var _j = 0; _j < _filterValArrayCount; _j++) {
@@ -977,13 +980,13 @@ function ColumnManager() {
                                 _ret.add(_i);
                                 _added = true;
                                 break;
-                            } else if (key == TaskFilterAndSortCondition.FILTER_KEY_OWNER) {
+                            } else if (_key == TaskFilterAndSortCondition.FILTER_KEY_OWNER) {
                                 if (_filterValArray[_j] == _target[_l].getPreOwnerJid()) {
                                     _ret.add(_i);
                                     _added = true;
                                     break;
                                 }
-                            } else if (key == TaskFilterAndSortCondition.FILTER_KEY_STATUS) {
+                            } else if (_key == TaskFilterAndSortCondition.FILTER_KEY_STATUS) {
                                 if (_filterValArray[_j] == _target[_l].getPreStatus()) {
                                     _ret.add(_i);
                                     _added = true;
@@ -1049,18 +1052,19 @@ function ColumnManager() {
                     var _added = false;
                     var _itemId = _target[_l].getItemId();
                     var _childTask = CubeeController.getInstance().getChildrenTaskItemIds(_itemId);
+                    var _key;
                     if(_childTask != null){
                         return _ret;
                     }
-                    for (key in _filterObj) {
-                        if (_filterObj[key] == '') {
+                    for (_key in _filterObj) {
+                        if (_filterObj[_key] == '') {
                             continue;
                         }
-                        var _propertyVal = _target[_l].getPropertyByFilterKey(key);
+                        var _propertyVal = _target[_l].getPropertyByFilterKey(_key);
                         if (_propertyVal == '') {
                             continue;
                         }
-                        var _filterValArray = _filterObj[key].split(TaskFilterAndSortCondition.DELIMITER_STRING);
+                        var _filterValArray = _filterObj[_key].split(TaskFilterAndSortCondition.DELIMITER_STRING);
                         var _added = false;
                         var _filterValArrayCount = _filterValArray.length;
                         for (var _j = 0; _j < _filterValArrayCount; _j++) {
@@ -1068,7 +1072,7 @@ function ColumnManager() {
                                 _ret.add(_i);
                                 _added = true;
                                 break;
-                            } else if (key == TaskFilterAndSortCondition.FILTER_KEY_OWNER) {
+                            } else if (_key == TaskFilterAndSortCondition.FILTER_KEY_OWNER) {
                                 if (_filterValArray[_j] == _target[_l].getPreOwnerJid()) {
                                     _ret.add(_i);
                                     _added = true;
@@ -1221,7 +1225,8 @@ function ColumnManager() {
             } 
             else if(_i == -2){
                 if(msg.getType() != Message.TYPE_MURMUR){
-                    continue
+                    // add semicolon by TM.
+                    continue;
                 }
                 _idx = null;
                 _curColumn = null;
@@ -1229,7 +1234,8 @@ function ColumnManager() {
                 _curColumnObj = SideMenuMurmurView.getInstance();
             }else{
                 _idx = _targetColumnsIndex.get(_i);
-                _curColumn = _self.getColumnList().get(_idx);
+                // The value assigned to _curColumn here is unused.
+                // _curColumn = _self.getColumnList().get(_idx);
                 _columnObjList = _self.getColumnObjList();
                 _curColumnObj = _columnObjList.get(_idx);
             }
@@ -1650,7 +1656,8 @@ function ColumnManager() {
                         _curColumnObj.onNoteAssignChangedReceived(updateMessages, notification);
                         break;
                     case Notification_model.TYPE_QUESTIONNAIRE:
-                        var _doNotifyToColumnIcon = true;
+                        // The initial value of _doNotifyToColumnIcon is unused, since it is always overwritten.
+                        var _doNotifyToColumnIcon; // = true;
                         var _actionType = _questionnaireNotification.getActionType();
                         if (_actionType == QuestionnaireNotification.ACTION_TYPE_ADD) {
                             _curColumnObj.onAddMessageReceive(_message);
@@ -1891,12 +1898,14 @@ function ColumnManager() {
 
         function _margeColumnTargetIndexList(targetColumnsIndexList, otherTargetColumnsIndexList){
             var _ret = null;
-            if (targetColumnsIndexList == null) {
-                return _ret;
-            }
-            if (otherTargetColumnsIndexList == null) {
-                return _ret;
-            }
+            // This guard always evaluates to false.
+            // if (targetColumnsIndexList == null) {
+            //    return _ret;
+            //}
+            // This guard always evaluates to false.
+            // if (otherTargetColumnsIndexList == null) {
+            //    return _ret;
+            //}
             var _idxListCount = otherTargetColumnsIndexList.getCount();
             for (var _i = 0; _i < _idxListCount; _i++) {
                 var _idx = otherTargetColumnsIndexList.get(_i);
@@ -2020,14 +2029,15 @@ function ColumnManager() {
             return;
         }
         var _self = this;
-        _idx = _self._getColumnIndex(columnInfo);
+        // Variable _idx is used like a local variable, but is missing a declaration.
+        var _idx = _self._getColumnIndex(columnInfo);
         if(_idx < 0){
             return;
         }
         var _curColumnObj = _self._columnObjList.get(_idx);
         _curColumnObj.onChangeGroupChatPrivacyType(chatRoomInfo);
-    }
-
+    };
+    // Avoid automated semicolon insertion
 
     _proto.removeColumn = function(columnObject, isSoon) {
         var _self = this;
@@ -2063,7 +2073,9 @@ function ColumnManager() {
                 SideListView.getInstance().resizeContents();
             }
         }
-        if ((isSoon == null || isSoon == false) && _elem != null) {
+        // Variable '_elem' cannot be of type null, but it is compared to an expression of type null.
+        // if ((isSoon == null || isSoon == false) && _elem != null) {
+        if (isSoon == null || isSoon == false) {
             _elem.hide('clip', 'fast', function() {
                 removeColmnData();
                 $(this).off();
@@ -2171,7 +2183,8 @@ function ColumnManager() {
         if($("#left_sidebar").offset().left < 0){
             _offsetLeftbar = 0;
         }else{
-            _offsetLeftbar = parseInt($("#left_sidebar").width())
+            // Avoid automated semicolon insertion
+            _offsetLeftbar = parseInt($("#left_sidebar").width());
         }
         var _offsetLeft = _columnElement.offset().left; 
         _offsetLeft -= _offsetLeftbar + parseInt($("#columnInnerContainer").css("padding-left"));
@@ -2188,6 +2201,7 @@ function ColumnManager() {
                 return;
             }
         } else {
+            // This expression assigns variable _columnLeft to itself. not edited
             _columnLeft = _columnLeft;
         }
         if(_columnLeft < 0){
@@ -2247,7 +2261,9 @@ function ColumnManager() {
             return;
         }
         ColumnIconArea.getInstance().updateColumnIcon(_updateColumnIconIndex);
-    }
+    // Avoid automated semicolon insertion
+    };
+     
     _proto.showPersonListDialog = function(dialogPersonListView) {
         var _self = this;
         if(dialogPersonListView == null){
@@ -2264,7 +2280,8 @@ function ColumnManager() {
     _proto.sortColumn = function(originalIndex, newIndex, isMoveColumnView) {
         var _self = this;
         var _ret = false;
-        if (_validation({'index' : originalIndex, 'index' : newIndex}) == false) {
+        // This property is overwritten by another property in the same object literal.
+        if (_validation({'irugubakIndex' : originalIndex, 'newIndex' : newIndex}) == false) {
             return _ret;
         }
         if (isMoveColumnView != false) {
@@ -2287,7 +2304,8 @@ function ColumnManager() {
                 _targetColumnElement = _self._getColumnElement(newIndex);
                 _columnElement.detach();
                 _targetColumnElement.before(_columnElement);
-                _insertedPosition = newIndex;
+                // The value assigned to _insertedPosition here is unused.
+                // _insertedPosition = newIndex;
             } else {
                 var _targetIndex = -1;
                 if (originalIndex < newIndex) {
@@ -2301,7 +2319,8 @@ function ColumnManager() {
                 }
                 _columnElement.detach();
                 _targetColumnElement.after(_columnElement);
-                _insertedPosition = _targetIndex + 1;
+                // The value assigned to _insertedPosition here is unused.
+                // _insertedPosition = _targetIndex + 1;
             }
         }
 
@@ -2315,7 +2334,9 @@ function ColumnManager() {
     };
     _proto.sortColumnByColumnView = function(originalIndex, newIndex) {
         var _self = this;
-        _ret = _self.sortColumn(originalIndex, newIndex, false);
+        // Variable _ret is used like a local variable, but is missing a declaration.
+        // _ret = _self.sortColumn(originalIndex, newIndex, false);
+        var _ret = _self.sortColumn(originalIndex, newIndex, false);
         return _ret;
     };
     _proto.attentionColumn = function(index, isAttention) {
