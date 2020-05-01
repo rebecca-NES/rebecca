@@ -1878,7 +1878,9 @@ function ColumnManager() {
             _parentMessage = CubeeController.getInstance().getMessage(_parentItemId);
         }
         var _targetColumnsIndexParent = _self._getTargetColumnsIndex(_parentMessage);
-        if (_targetColumnsIndexParent == null || _targetColumnsIndexParent.getCount() == 0) {
+        // Variable '_targetColumnsIndex' cannot be of type null, but it is compared to an expression of type null.
+        // if (_targetColumnsIndexParent == null || _targetColumnsIndexParent.getCount() == 0) {
+        if (_targetColumnsIndexParent.getCount() == 0) {
           _targetColumnsIndex = _targetColumnsIndexBase;
         }else{
           _targetColumnsIndex = _margeColumnTargetIndexList(_targetColumnsIndexBase,_targetColumnsIndexParent);
