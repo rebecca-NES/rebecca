@@ -1245,7 +1245,9 @@ function EmotionPointNotification() {
         if(emotion_point == null || typeof emotion_point != 'number') {
             return;
         }
-        if(emotion_point == '') {
+        // Variable 'emotion_point' is of type number, but it is compared to an expression of type string.
+        // if(emotion_point == '') { 
+        if(emotion_point == 0) {
             return;
         }
         this._emotion_point = emotion_point;

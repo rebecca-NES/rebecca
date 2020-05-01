@@ -2991,10 +2991,14 @@
                 const _quotationElem = Utils.getChildXmlElement(_itemElem,'quotation');
                 const _quotationItemIdElem = Utils.getChildXmlElement(_quotationElem,'quotation_item_id');
                 let _quotationJson = {};
+                // Variable '_quotationItemIdElem' cannot be of type null, but it is compared to an expression of type null.
+                // if(_quotationElem != null &&
+                //    _quotationItemIdElem != undefined &&
+                //    _quotationItemIdElem != null &&
+                //    _quotationItemIdElem.text() != ""){
                 if(_quotationElem != null &&
                    _quotationItemIdElem != undefined &&
-                   _quotationItemIdElem != null &&
-                   _quotationItemIdElem.text() != ""){
+                   _quotationItemIdElem != null){
                     const _idElem = Utils.getChildXmlElement(_quotationElem,'id');
                     // id
                     if(_idElem != null){
@@ -3038,7 +3042,9 @@
                     }
 
                     // shareItemId <= quotationItemId (分析アクセスには開示)
-                    if(isPublicFlg && _quotationItemIdElem != null){
+                    // Variable '_quotationItemIdElem' cannot be of type null, but it is compared to an expression of type null.
+                    // if(isPublicFlg && _quotationItemIdElem != null){
+                    if(isPublicFlg){
                         //_quotationJson.quotationItemId = _quotationItemIdElem.text();
                         _quotationJson.shareItemId = _quotationItemIdElem.text();
                     }
@@ -5488,8 +5494,9 @@
         return _ret;
 
         function _onGetExistingReaderItems(items) {
-            if (onGetItemsCallBack != null
-                    && typeof onGetItemsCallBack == 'function') {
+            // Variable 'onGetItemsCallBack' is of type function, but it is compared to an expression of type null.
+            // if (onGetItemsCallBack != null && typeof onGetItemsCallBack == 'function') {
+            if (onGetItemsCallBack != undefined && typeof onGetItemsCallBack == 'function') {
                 onGetItemsCallBack(items);
             }
         }
@@ -7606,7 +7613,9 @@
             }
         }
         function _callCallbackFunc() {
-            if(onGetItemsCallBack != null && typeof onGetItemsCallBack == 'function') {
+            // Variable 'onGetItemsCallBack' is of type function, but it is compared to an expression of type null.
+            // if(onGetItemsCallBack != null && typeof onGetItemsCallBack == 'function') {
+            if(onGetItemsCallBack != undefined && typeof onGetItemsCallBack == 'function') {
                 setTimeout(function(){
                     onGetItemsCallBack(_retArray);
                 }, 1);
@@ -10949,7 +10958,9 @@
             }
         }
         function _returnCallback() {
-            if (onGetItemsCallBack != null
+            // Variable 'onGetItemsCallBack' is of type function, but it is compared to an expression of type null.
+            // if (onGetItemsCallBack != null
+            if (onGetItemsCallBack != undefined
                     && typeof onGetItemsCallBack == 'function') {
                 setTimeout(function() {
                     onGetItemsCallBack(_itemsData);
