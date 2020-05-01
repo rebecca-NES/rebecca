@@ -350,9 +350,7 @@ function LoginUser() {
     }
     _proto.setFolloweeList = function(followee){
         var _self = this;
-        // This expression is of type boolean, but it is compared to an expression of type string.
-        // if(!typeof followee == 'object'){
-        if(!(typeof followee == 'object')){
+        if(!typeof followee == 'object'){
             throw new Error('setFolloweeList followee is not array');
         }
         _self._followee = followee;
@@ -362,9 +360,7 @@ function LoginUser() {
     }
     _proto.setFollowerList = function(follower){
         var _self = this;
-        // This expression is of type boolean, but it is compared to an expression of type string.
-        // if(!typeof followee == 'object'){
-        if(!(typeof followee == 'object')){
+        if(!typeof follower == 'object'){
             throw new Error('setFollowerList follower is not array');
         }
         _self._follower = follower;

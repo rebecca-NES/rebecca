@@ -34,7 +34,7 @@ function CubeeServerConnector() {
     this._loginStatus = CubeeServerConnector._LOGIN_STATUS_TYPE_NO_LOGIN;
 };
 
-(function() {  
+(function() {
     CubeeServerConnector._LOGIN_STATUS_TYPE_NO_LOGIN = 0;
     CubeeServerConnector._LOGIN_STATUS_TYPE_CONNECTING = 1;
     CubeeServerConnector._LOGIN_STATUS_TYPE_CONNECTED = 2;
@@ -4683,9 +4683,7 @@ function CubeeServerConnector() {
         if (messageItem == null) {
             return null;
         }
-        // This expression is of type boolean, but it is compared to 'undefined' of type undefined.
-        // if(messageItem.readAllCount == undefined || !messageItem.readItems == undefined){
-        if(messageItem.readAllCount == undefined || !(messageItem.readItems == undefined)){
+        if(messageItem.readAllCount == undefined || !messageItem.readItems == undefined){
             return null;
         }
         var _existingReaderInfo = new MessageExistingReaderInfo();
@@ -5721,11 +5719,8 @@ function CubeeServerConnector() {
             switch(received.content.type){
                 case "SetColumnName":
                     var _notification = new MurmurSetColumnNameNotification();
-                    // This expression is of type boolean, but it is compared to an expression of type string.
-                    // if (! typeof received.content.jid == 'string' ||
-                    //     ! typeof received.content.columnName == 'string') {
-                    if (!(typeof received.content.jid == 'string') ||
-                        !(typeof received.content.columnName == 'string')) {
+                    if (! typeof received.content.jid == 'string' ||
+                        ! typeof received.content.columnName == 'string') {
                         console.log('threadTitle update error');
                         break;
                     }

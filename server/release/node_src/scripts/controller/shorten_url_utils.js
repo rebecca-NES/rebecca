@@ -129,9 +129,7 @@
         _log.connectionLog(7, 'enter getURLInfoFromOriginalURL:' + url);
 
         // 引数チェック
-        // Variable 'onGetURLInfoFromOriginalURL' is of type function, but it is compared to an expression of type null.
-        // if (onGetURLInfoFromOriginalURL == null || typeof onGetURLInfoFromOriginalURL != 'function') {
-        if (onGetURLInfoFromOriginalURL == undefined || typeof onGetURLInfoFromOriginalURL != 'function') {
+        if (onGetURLInfoFromOriginalURL == null || typeof onGetURLInfoFromOriginalURL != 'function') {
             _log.connectionLog(3, 'ShortenURLUtils#getURLInfoFromOriginalURL: null or non-function argument(onGetURLInfoFromOriginalURLCallBack)');
             return;
         }
