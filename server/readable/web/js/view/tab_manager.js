@@ -556,9 +556,7 @@ function TabManager() {
                     _mTipIndex--;
                 }
                 if(_mTipIndex < 0) {
-                    // Variable 'onRemoveCallback' is of type function, but it is compared to an expression of type null.
-                    // if(onRemoveCallback != null && typeof onRemoveCallback == 'function') {
-                    if(onRemoveCallback != undefined && typeof onRemoveCallback == 'function') {
+                    if(onRemoveCallback != null && typeof onRemoveCallback == 'function') {
                         onRemoveCallback();
                     }
                     return;

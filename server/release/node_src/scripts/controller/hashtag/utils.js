@@ -41,9 +41,7 @@ const getTagsArrayFromBody = (bodyStr) => {
                         return arg;
                     });
     let taglist = [];
-    // Variable 'tags' is of type object, but it is compared to an expression of type null.
-    // if(tags != null && typeof tags == "object" && tags.length > 0){
-    if(tags != undefined && typeof tags == "object" && tags.length > 0){
+    if(tags != null && typeof tags == "object" && tags.length > 0){
         for (let i=0;i<tags.length;i++){
             //タグ前に上のマッチでスペースを含むので削除
             let tag = tags[i].replace(/^\s+/,"");
