@@ -261,10 +261,11 @@
      * @return boolean 戻り値は正しければtureを戻すこと。
      */
     const varidieter = {
+        // duplicate *
         parentRoomId : (value) => {
             if(!_.isString(value) ||
                value.length > 272 ||
-               value.match(/[^a-zA-Z0-9_.*!#$%&*+-]/)){
+               value.match(/[^a-zA-Z0-9_.!#$%&*+-]/)){
                 return false;
             }else{
                 return true;
