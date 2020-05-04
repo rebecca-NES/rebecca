@@ -383,7 +383,8 @@
 
             return false;
         }
-        var regex = /^[a-zA-Z0-9¥.¥-]+$/;
+        // \. は、\\.。\- は、
+        var regex = /^[a-zA-Z0-9\\.-]+$/;
         if(!regex.test(hostname)) {
             _log.connectionLog(4,
                 'SpfListManager._validateHostname:: hostname format is wrong');
