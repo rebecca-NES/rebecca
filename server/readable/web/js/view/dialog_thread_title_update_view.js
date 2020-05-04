@@ -71,7 +71,9 @@ function DialogThreadTitleUpdateView(message) {
 
         _ret = '<div id="grouptitle_modal" class="card modal_card">';
         _ret += '    <div class="card_title">';
-        _ret += '      <p>' + Resource.getMessage('dialog_label_thread_title_update'); + '</p>';
+        // This expression has no effect.
+        // _ret += '      <p>' + Resource.getMessage('dialog_label_thread_title_update'); + '</p>';
+        _ret += '      <p>' + Resource.getMessage('dialog_label_thread_title_update') + '</p>';
         _ret += '    </div>';
         _ret += '    <div class="modal_content_wrapper">';
         _ret += '      <div class="modal_content">';
