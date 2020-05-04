@@ -192,7 +192,8 @@
 
             return false;
         }
-        var regex = /^[a-zA-Z0-9¥.¥-]+$/;
+        // Character '¥' is repeated here in the same character class.
+        var regex = /^[a-zA-Z0-9\\.-]+$/;
         if(!regex.test(hostname)) {
             _log.connectionLog(4,
                 'OutsideSocketIOServerListManager._validateHostname:: hostname format is wrong');

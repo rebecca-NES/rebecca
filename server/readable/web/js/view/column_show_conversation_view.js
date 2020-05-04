@@ -572,7 +572,8 @@ function ColumnShowConversationView(columnInformation) {
         }
         for(var _i = 0; _i < _itemIdArray.length; _i++) {
             var _compareItemId = _itemIdArray[_i];
-            if(_compareItemId == null || _compareItemId == null) {
+            // Operands _compar ... == null and _compar ... == null are identical.
+            if(_compareItemId == null) {
                 continue;
             }
             if(_targetItemId == _compareItemId) {
