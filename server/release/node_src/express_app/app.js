@@ -171,16 +171,27 @@
     app.post(location + '/' + REG_EXP_TENANTUUID + '/user/*', _onRequest);
     app.post(location + '/' + REG_EXP_TENANTUUID + '/comm/*', _onRequest);
     app.post(location + '/asynchronous/*', _onRequest);
-    app.post(location + '/uploaduseravatar', _onUploadUserAvatar);
+    // app.post(location + '/uploaduseravatar', _onUploadUserAvatar);
     app.post(location + '/uploadcommunitylogo', _onUploadCommunityLogo);
     app.post(location + '/fileupload', _onFileUpload);
     app.post(location + '/filedownload', _onFileDownload);
+    // This route handler performs 4 Values, but is not rate-limited.
+    // set up rate limiter: maximum of five requests per minute
+    var RateLimit = require('express-rate-limit');
+    var limiter = new RateLimit({
+        windowMs: 1*60*1000, // 1 minute
+        max: 5
+    });
+    // apply rate limiter to uploaduseravtar
+    app.use(location + '/uploaduseravatar', limiter);
+    app.post(location + '/uploaduseravatar', _onUploadUserAvatar);
 
     let _globalSnsDB = new GlobalSnsDB('/opt/cubee/cmnconf/spf_globalsns_dbs.json');
     // ノート機能設定を参照し、TRUEの場合のみエンドポイントを有効化する
     var enableNote = _conf.getConfData('ENABLE_NOTE').toUpperCase();
     if (enableNote == 'TRUE') {
         log.connectionLog(7, 'note enabled!');
+        app.use(location    + '/codimd/login', limiter);
         app.post(location   + '/codimd/login',
                 (req, res)=> {
                     CodiMDApi.Login(req,res,_globalSnsDB)
@@ -189,6 +200,7 @@
                 (req,res)=>{
                     CodiMDApi.getNewNoteUrl(req,res,_globalSnsDB)
                 });
+        app.use(location    + '/codimd/redirect', limiter);
         app.post(location   + '/codimd/redirect',
                 (req,res)=>{
                     CodiMDApi.LoginRedirect(req,res,_globalSnsDB)

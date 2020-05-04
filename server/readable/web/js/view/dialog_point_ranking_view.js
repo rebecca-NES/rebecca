@@ -21,14 +21,12 @@ function DialogPointRankingView(point) {
     this._monthRankingList = null;
     this._yearRankingList = null;
     DialogOkCancelView.call(this);
-};
-
 // his expression has no effect.
 // };(function() {
 
+};
 
-function() {
-
+(function() {
     DialogPointRankingView.prototype = $.extend({}, DialogOkCancelView.prototype);
     var _super = DialogOkCancelView.prototype;
     var _proto = DialogPointRankingView.prototype;
@@ -287,4 +285,4 @@ function() {
         return resultDate;
     };
 
-};
+}());

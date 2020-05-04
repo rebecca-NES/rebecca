@@ -738,7 +738,7 @@ function ViewUtils() {
               var _urlImage = 'images/add_attach_file.png';
                 var _style = 'style="margin-left: 2px; height: 20px; width: 20px; border: 0px;"';
                 if(!ViewUtils.isOldUploadFilePath(url)){
-                    ret = '<a href="javascript: void(0)" onClick="return CubeeController.getInstance().downloadfile(\'' + url.replace(/\'/g, "\\'") + '\',\'' + itemId + '\');" title="' + _decodedFile + '"' + _style + '><i class="fa fa-paperclip"></i>' + _decodedFile + '</a>';
+                    ret = '<a href="javascript: void(0)" onClick="return CubeeController.getInstance().downloadfile(\'' + url.replace(/\'/g, "''") + '\',\'' + itemId + '\');" title="' + _decodedFile + '"' + _style + '><i class="fa fa-paperclip"></i>' + _decodedFile + '</a>';
                 }
                 else {
                     ret = '<a href="' + url + '" target="_blank"><img src="' + _urlImage + '" class="image-thumbnail clickable" title="' + url + '" ' + _style + '/></a>';
