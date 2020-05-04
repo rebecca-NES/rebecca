@@ -182,7 +182,9 @@ function TaskRegister(parentObject, message, mode){
         if (_self._mode == TaskRegister.mode_edit && _self._getCommunityId() || _self._mode == TaskRegister.mode_edit && _self._client != loginUserID ) {
             _enabled = 'disabled';
         }
-        _ret += '<textarea class="field task-register-item register-owner-input ui-corner-all autocomplete" placeholder="' + Resource.getMessage('dialog_placeholder_account') + '" ' + _enabled + '>' + ((_ownerValue == null)? '' : _ownerValue) + '</textarea>';
+        // Variable '_ownerValue' is of type string, but it is compared to an expression of type null.
+        // 
+        _ret += '<textarea class="field task-register-item register-owner-input ui-corner-all autocomplete" placeholder="' + Resource.getMessage('dialog_placeholder_account') + '" ' + _enabled + '>' + _ownerValue + '</textarea>';
         _ret += '    </div>';
 
         _ret += '    <div class="modal_content w50 register-task-status">';
