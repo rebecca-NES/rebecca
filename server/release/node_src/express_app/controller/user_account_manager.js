@@ -291,7 +291,9 @@
             return false;
         }
         // @が含まれていて、最後が .(ドット)でないなら正しいとする
-        return Utils.checkRegExp(email, /([0-9A-Za-z]|-|[''_.*!#$%&*+/=?^`{|}])+@+[a-z0-9]+.+[^.]$/i);
+        // Character ''' is repeated here in the same character class.
+        // ' と　* が重複
+        return Utils.checkRegExp(email, /([0-9A-Za-z]|-|['_.!#$%&*+/=?^`{|}])+@+[a-z0-9]+.+[^.]$/i);
     };
     // パスワードのサイズチェック
     function _checkPasswordSize(password){
