@@ -2994,8 +2994,8 @@
                 // Variable '_quotationItemIdElem' cannot be of type null, but it is compared to an expression of type null.
                 // _quotationItemIdElem != null をコメントアウト
                 if(_quotationElem != null &&
-                   _quotationItemIdElem != undefined &&
-                   !(_quotationItemIdElem == null) &&
+                   _quotationItemIdElem !== undefined &&
+                   // !(_quotationItemIdElem == null) &&
                    _quotationItemIdElem.text() != ""){
                     const _idElem = Utils.getChildXmlElement(_quotationElem,'id');
                     // id

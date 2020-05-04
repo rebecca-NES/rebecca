@@ -44,10 +44,10 @@ exports.userValidationCheck = (_user, require=false) => {
         return true;
     }
     // Character '*' is repeated here in the same character class.
-    // *が重複している
+    // *が２つあるので、一方を削除
     if(typeof _user != 'string' ||
         _user.length > _userLength ||
-        !_user.match(/^[A-Za-z0-9_.!#$%&*+-]+$/)) {
+        !_user.match(/^[A-Za-z0-9_.*!#$%&+-]+$/)) {
         return false;
     }
     return true;

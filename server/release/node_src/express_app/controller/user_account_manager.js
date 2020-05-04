@@ -270,7 +270,7 @@
         }
         // Character ''' is repeated here in the same character class.
         // ' と　* が重複
-        if(!Utils.checkRegExp(account, /^([0-9A-Za-z]|-|['_.!#$%&*+/=?^`{|}])+$/i)) {
+        if(!Utils.checkRegExp(account, /^([0-9A-Za-z]|-|['_.*!#$%&+/=?^`{|}])+$/i)) {
             return false;
         }
         return true;
