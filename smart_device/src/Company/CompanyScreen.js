@@ -90,7 +90,8 @@ export default class CompanyScreen extends Component<{}> {
     this._attaches = []
     this._fetching = false    // 読み込み処理中かどうか
     this._mode = NORMAL_MODE
-    this.inputArea
+    // set value
+    this.inputArea = []
 
     this._datasource = new ListView.DataSource({rowHasChanged: (row1, row2) => row1 !== row2})
 
