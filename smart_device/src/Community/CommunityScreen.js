@@ -90,7 +90,8 @@ export default class CommunityScreen extends Component<{}> {
     this._fetching = false    // 読み込み処理中かどうか
     this._pop_return = true  //
     this._mode = NORMAL_MODE
-    this.inputArea
+    // 値を設定
+    this.inputArea = []
 
     this._datasource = new ListView.DataSource({rowHasChanged: (row1, row2) => row1 !== row2})
 
