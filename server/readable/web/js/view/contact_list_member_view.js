@@ -324,7 +324,9 @@ function ContactListMemberView(partsType, callbacks) {
                     _removeList.add(_personList[_index]);
                     _personList.splice(_index, 1);
                     _group.personCount--;
-
+                    // Removing an array item without adjusting the loop index '_index' causes the subsequent array item to be skipped.
+                    // もう一度、確認が必要
+                    _index -= 1;
                 }
             }
         }

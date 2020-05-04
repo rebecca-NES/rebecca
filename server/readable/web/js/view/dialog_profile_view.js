@@ -286,7 +286,9 @@ function DialogProfileView(title) {
             }
         }
 
-               function onChangeProfileCallback(result) {
+        // The indentation of this statement suggests that it is controlled by this statement, while in fact it is not.
+        // インデントがづれている。
+        function onChangeProfileCallback(result) {
             if (result) {
                 var _status = Number(_rootElement.find('#profile_status').children('option:selected').val());
                 var convertStrStatus = Utils.convertPresenceNumToStr(_status);
