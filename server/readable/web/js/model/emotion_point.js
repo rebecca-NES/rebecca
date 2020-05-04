@@ -125,9 +125,10 @@ function EmotionPointList() {
         return this._emotion_point;
     }
     _proto.setEmotionPoint = function(emotion_point) {
-        if(emotion_point == null || typeof emotion_point != 'number') {
-            return;
-        }
+        // Variable 'emotion_point' is of type number, but it is compared to an expression of type string.
+        // if (emotion_point == null || typeof emotion_point != 'number') {
+        //     return;
+        // }
         if(emotion_point == '') {
             return;
         }
