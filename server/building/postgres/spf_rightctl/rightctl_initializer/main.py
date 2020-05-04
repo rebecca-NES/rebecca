@@ -45,8 +45,9 @@ def main():
                           created_by = 'rightctl_initializer'
                       )
                 _session.add(rec)
-            else:
-                _session.commit()
+            # break しないときは、else は使わないほうが良いらしい。
+            # else:
+            _session.commit()
 
         elif key == 'rights':
             for dic in input_j[key]:
@@ -57,8 +58,9 @@ def main():
                           created_by = 'rightctl_initializer'
                       )
                 _session.add(rec)
-            else:
-                _session.commit()
+            # break しないときは、else は使わないほうが良いらしい。
+            # else:
+            _session.commit()
 
         elif key == 'policies':
             for dic in input_j[key]:
@@ -77,10 +79,12 @@ def main():
                                 right_id = right.id
                             )
                     _session.add(child)
-                else:
-                    _session.commit()
-            else:
+                # break しないときは、else は使わないほうが良いらしい。
+                # else:
                 _session.commit()
+            # break しないときは、else は使わないほうが良いらしい。
+            # else:
+            _session.commit()
 
         elif key == 'roles':
             for dic in input_j[key]:
@@ -99,13 +103,16 @@ def main():
                                 policy_id = policy.id
                             )
                     _session.add(child)
-                else:
-                    _session.commit()
-            else:
+                # break しないときは、else は使わないほうが良いらしい。
+                # else:
                 _session.commit()
-
-        else:
-            None
+            # break しないときは、else は使わないほうが良いらしい。
+            # else:
+            _session.commit()
+        # break しないときは、else は使わないほうが良いらしい。
+        # else:
+        # None もいらない
+        # None
 
 def parse_args():
     parser = argparse.ArgumentParser(__doc__)
