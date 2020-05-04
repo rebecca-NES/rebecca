@@ -374,7 +374,9 @@ module.exports = class UserFollowDbStore {
                             if(doubleCheck[res[0][i].jid]){
                                 continue;
                             }
-                            res[0][i].nickName = res[0][i].nickName.replace(/\+/,"%20");
+                            // This replaces only the first occurrence of /\+/.
+                            // gをつける
+                            res[0][i].nickName = res[0][i].nickName.replace(/\+/g,"%20");
                             userDoubleClean.push(res[0][i]);
                             doubleCheck[res[0][i].jid] = true;
                         }
