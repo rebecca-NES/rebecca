@@ -32,7 +32,8 @@ def main():
     spf_con.close()
     rightctl_con.close()
 
-    d = datetime.datetime.today()
+    # 使っていないので、コメントアウト
+    # d = datetime.datetime.today()
     print 'DONE. %s' % datetime.datetime.today()
 
 
