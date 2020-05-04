@@ -142,7 +142,9 @@ function ColumnCommunityTaskView(columnInformation, tabType) {
         if(_communityInfo != null) {
             var _communityName = _communityInfo.getRoomName();
             if(_communityName == null) {
-                _communityName == '';
+                // This expression has no effect.
+                // _communityName == '';
+                _communityName = '';
             }
         }
         var _ret = ViewUtils.createDisplayName(_self._info) + (_communityName == ''? '' : '(' + _communityName + ')');
