@@ -2958,10 +2958,12 @@ function ViewUtils() {
     };
 
     ViewUtils.replaceMentionElement = function(body, inHtml=true, isRepEmpty=false) {
-        let mentionMatchWithHtml = /(@[\w\-''_\.\*!#$%&+\/=?^`{\|}]+?)(\s|\&nbsp\;|<|$)/g;
+        // Duplicate ' 
+        let mentionMatchWithHtml = /(@[\w\-'_\.\*!#$%&+\/=?^`{\|}]+?)(\s|\&nbsp\;|<|$)/g;
         let mentionPrefixBFMatch = /(^|\s|>|\&nbsp\;)$/;
         if(!inHtml){
-            mentionMatchWithHtml = /(@[\w\-''_\.\*!#$%&+\/=?^`{\|}]+?)(\s|$)/g;
+            // Duplicate '
+            mentionMatchWithHtml = /(@[\w\-'_\.\*!#$%&+\/=?^`{\|}]+?)(\s|$)/g;
             mentionPrefixBFMatch = /(^|\s)$/;
         }
         return body.replace(mentionMatchWithHtml,
