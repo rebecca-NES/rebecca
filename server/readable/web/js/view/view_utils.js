@@ -1850,9 +1850,10 @@ function ViewUtils() {
                     _msgObj = new ColumnTaskMessageView(parent, message);
                 }
                 break;
-            case Message.TYPE_GROUP_CHAT:
-                _msgObj = new ColumnGroupChatMessageView(parent, message);
-                break;
+            // This case label is a duplicate of Message.TYPE_GROUP_CHAT　1839行
+            // case Message.TYPE_GROUP_CHAT:
+            //     _msgObj = new ColumnGroupChatMessageView(parent, message);
+            //     break;
             case Message.TYPE_MAIL:
                 _msgObj = new ColumnMailMessageView(parent, message);
                 break;
@@ -1887,8 +1888,9 @@ function ViewUtils() {
                 return ColumnView.DISPLAY_NAME_MY_TASK;
             case ColumnInformation.TYPE_COLUMN_INBOX:
                 return ColumnView.DISPLAY_NAME_INBOX;
-            case ColumnInformation.TYPE_COLUMN_TASK:
-                return ColumnView.DISPLAY_NAME_TASK;
+            // This case label is a duplicate of ColumnInformation.TYPE_COLUMN_TASK.1887行
+            // case ColumnInformation.TYPE_COLUMN_TASK:
+            //    return ColumnView.DISPLAY_NAME_TASK;
             case ColumnInformation.TYPE_COLUMN_SEARCH:
                 return ColumnView.DISPLAY_NAME_SEARCH;
             case ColumnInformation.TYPE_COLUMN_GROUP_CHAT:
