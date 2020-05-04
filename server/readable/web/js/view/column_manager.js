@@ -1884,7 +1884,10 @@ function ColumnManager() {
           _targetColumnsIndex = _margeColumnTargetIndexList(_targetColumnsIndexBase,_targetColumnsIndexParent);
 
         }
-        if (_targetColumnsIndex == null || _targetColumnsIndex.getCount() == 0) {
+        // Variable '_targetColumnsIndex' cannot be of type null, but it is compared to an expression of type null.
+        // _targetColumnsIndex == null は、常に偽
+        // if (_targetColumnsIndex == null || _targetColumnsIndex.getCount() == 0) {
+        if (_targetColumnsIndex.getCount() == 0) {
             return;
         }
 
