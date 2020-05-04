@@ -383,7 +383,10 @@ limitations under the License.
         if(_accountName == null || _accountName == ''){
             _accountName = ViewUtils.getCubeeAccountName(_from);
         }
-        var _status =(_person != null)? _person.getStatus() : Person.PROFILE_STATUS_ACTIVE;
+        // ariable '_person' cannot be of type null, but it is compared to an expression of type null.
+        // _person には、値がセットされている
+        // _status =(_person != null)? _person.getStatus() : Person.PROFILE_STATUS_ACTIVE;
+        var _status = _person.getStatus();
         var _date = Utils.getDate(_msg.getDate(), Utils.DISPLAY_STANDARD_DATE_FORMAT);
         var _updateDate = (_msg.getUpdatedAt()) ? Date.create(_msg.getUpdatedAt()).format(Utils.DISPLAY_STANDARD_DATE_FORMAT) : "";
         var _avatarHtml = ViewUtils.getAvatarDataHtmlFromPerson(_person);
@@ -439,7 +442,8 @@ limitations under the License.
         if(_accountName == null || _accountName == ''){
             _accountName = ViewUtils.getCubeeAccountName(_from);
         }
-        var _status =(_person != null)? _person.getStatus() : Person.PROFILE_STATUS_ACTIVE;
+        // _person には、値がセットされている。
+        var _status = _person.getStatus();
         var _date = Utils.getDate(_msg.getDate(), Utils.DISPLAY_STANDARD_DATE_FORMAT);
         var _updateDate = (_msg.getUpdatedAt()) ? Date.create(_msg.getUpdatedAt()).format(Utils.DISPLAY_STANDARD_DATE_FORMAT) : "";
         var _avatarHtml = ViewUtils.getAvatarDataHtmlFromPerson(_person);
