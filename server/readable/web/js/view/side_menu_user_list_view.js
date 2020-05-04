@@ -562,7 +562,9 @@ function SideMenuUserListView(partsType, viewType, parent) {
              + ' @' + Utils.convertEscapedTag(_accountName) + '">'
              + Utils.convertEscapedHtml(_nickname)
              + ViewUtils.getUserStatusString(_status)
-             + '<span class="sender-account">@' + Utils.convertEscapedHtml(_accountName) + '</span>';
+             // This expression has no effect.
+             // + '<span class="sender-account">@' + Utils.convertEscapedHtml(_accountName) + '</span>';
+             + '<span class="sender-account">@' + Utils.convertEscapedHtml(_accountName) + '</span>'
              + '</div>';
         return _ret;
     };

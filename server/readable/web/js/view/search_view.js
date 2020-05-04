@@ -351,7 +351,9 @@ function ContextSearchOptionView(htmlElement, onCloseCallBack) {
     };
     _proto.cleanup = function() {
         var _self = this;
-        _self._htmlElement == null;;
+        // This expression has no effect.
+        // _self._htmlElement == null;; 
+        _self._htmlElement = null;
     };
 
     _proto.toggleView = function() {

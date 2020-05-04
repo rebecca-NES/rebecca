@@ -68,7 +68,9 @@ function DialogMurmurColumnNameSetView(columnInfo) {
 
         _ret = '<div id="murmur-column-name-modal" class="card modal_card">';
         _ret += '    <div class="card_title">';
-        _ret += '      <p>' + Resource.getMessage('dialog_label_murmur_column_name_set'); + '</p>';
+        // This expression has no effect.
+        // _ret += '      <p>' + Resource.getMessage('dialog_label_murmur_column_name_set'); + '</p>';
+        _ret += '      <p>' + Resource.getMessage('dialog_label_murmur_column_name_set') + '</p>';
         _ret += '    </div>';
         _ret += '    <div class="modal_content_wrapper">';
         _ret += '      <div class="modal_content">';

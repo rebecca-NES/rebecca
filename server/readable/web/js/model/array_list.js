@@ -251,7 +251,9 @@ function StringMapedArrayList() {
         for (var _key in _self._map) {
             if (_self._map[_key] == _self._array[index]) {
                 delete _self._map[_key];
-                _self._map[_key] == obj;
+                // This expression has no effect.
+                // _self._map[_key] == obj;
+                _self._map[_key] = obj;
             }
         }
         _super.set.call(_self, index, obj);
@@ -395,7 +397,9 @@ function StringMapedStringArrayList() {
         for (var _key in _self._map) {
             if (_self._map[_key] == _self._array[index]) {
                 delete _self._map[_key];
-                _self._map[_key] == str;
+                // This expression has no effect.
+                // _self._map[_key] == str;
+                _self._map[_key] = str;
             }
         }
         _super.set.call(_self, index, str);

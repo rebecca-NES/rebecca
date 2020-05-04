@@ -97,7 +97,9 @@ if (Platform.OS === 'ios'){
     // 実行される処理を分ける
     var login = CubeeAPI.getLoginInfo()
     if ( login === null) {
-      _noProcessTapNotification === true
+      // This expression has no effect.
+      // _noProcessTapNotification === true
+      _noProcessTapNotification = true;
       return;
     }
 
