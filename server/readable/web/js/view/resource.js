@@ -733,7 +733,8 @@ limitations under the License.
             'read_in_bulk_attention_nonify_message': '※表示されているメッセージのみに適応されます。',
 
             'Send': 'Send',
-            'Favorite': 'Favorite',
+            // This property is duplicated here. 
+            // 'Favorite': 'Favorite',
             'Hashtag': 'Hashtag',
             'Favorite': 'Favorite',
             'List': 'List',
@@ -1362,7 +1363,8 @@ limitations under the License.
             'read_in_bulk_attention_nonify_message': '',
 
             'Send': 'Send',
-            'Favorite': 'Favorite',
+            // This property is duplicated here.
+            // 'Favorite': 'Favorite',
             'Hashtag': 'Hashtag',
             'Favorite': 'Favorite',
             'List': 'List',
