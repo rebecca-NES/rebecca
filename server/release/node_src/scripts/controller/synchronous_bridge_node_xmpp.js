@@ -2995,7 +2995,7 @@
                 // _quotationItemIdElem != null をコメントアウト
                 if(_quotationElem != null &&
                    _quotationItemIdElem != undefined &&
-                   // _quotationItemIdElem != null &&
+                   !(_quotationItemIdElem == null) &&
                    _quotationItemIdElem.text() != ""){
                     const _idElem = Utils.getChildXmlElement(_quotationElem,'id');
                     // id
