@@ -26,7 +26,8 @@ function DialogPointRankingView(point) {
 // his expression has no effect.
 // };(function() {
 
-(function() {
+
+function() {
 
     DialogPointRankingView.prototype = $.extend({}, DialogOkCancelView.prototype);
     var _super = DialogOkCancelView.prototype;
@@ -85,7 +86,7 @@ function DialogPointRankingView(point) {
         _self._monthRankingList = null;
         _self._yearRankingList = null;
         _self._point = null;
-    }
+    };
 
     _proto.getFrame = function() {
         var _self = this;
@@ -157,7 +158,7 @@ function DialogPointRankingView(point) {
         }).catch(function(err){
             _self._dialogInnerElement.find('#dialog-error').text(Resource.getMessage('dialog_error_get_ranking'))
         })
-    }
+    };
 
     _proto.showMonthRanking = function() {
         var _self = this;
@@ -187,7 +188,7 @@ function DialogPointRankingView(point) {
         }).catch(function(err){
             _self._dialogInnerElement.find('#dialog-error').text(Resource.getMessage('dialog_error_get_ranking'))
         })
-    }
+    };
 
     _proto.showYearRanking = function() {
         var _self = this;
@@ -217,7 +218,7 @@ function DialogPointRankingView(point) {
         }).catch(function(err){
             _self._dialogInnerElement.find('#dialog-error').text(Resource.getMessage('dialog_error_get_ranking'))
         })
-    }
+    };
 
     function setRankingListFrame(_self, _rankingList) {
         var _rankingCount= _rankingList.length;
@@ -273,7 +274,7 @@ function DialogPointRankingView(point) {
             _ret += '</a></li>';
         }
         return _ret;
-    }
+    };
 
     function getDate(_date) {
         var resultDate = "";
@@ -284,6 +285,6 @@ function DialogPointRankingView(point) {
             resultDate = y + "/" + m + "/" + d;
         }
         return resultDate;
-    }
+    };
 
-});
+};
