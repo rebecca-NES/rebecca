@@ -803,6 +803,8 @@
         }
         var _rootElem = _doc.root();
         var _childNodes = _rootElem.childNodes();
+        // Variable _i is used like a local variable, but is missing a declaration.
+        var _i;
         for (_i = 0; _i < _childNodes.length; _i++) {
             var _element = _childNodes[_i];
             if (_element.type() != 'element') {
@@ -7651,6 +7653,8 @@
 
         function _onGetUserAccountDataCallBack(mapData) {
             var _loginAccountMapData = mapData;
+            // Variable _i is used like a local variable, but is missing a declaration.
+            var _i;
             for ( var _i = 0; _i < _count; _i++) {
                 // ユーザ名(ログインアカウントの再設定)
                 if (_loginAccountMapData) {
@@ -7669,6 +7673,8 @@
         }
         var _memberArray = [];
         var _memberElemCount = memberElemArray.length;
+        // Variable _i is used like a local variable, but is missing a declaration.
+        var _i;
         for(_i = 0; _i < _memberElemCount; _i++){
             var _memberElem = memberElemArray[_i];
             var _item = _getPersonItemFromElement(_memberElem);
@@ -10799,7 +10805,8 @@
         // itemCount items
         if (_itemsElemArray != null) {
             _items = [];
-            _itemCount = _itemsElemArray.length;
+            // Variable _itemCount is used like a local variable, but is missing a declaration.
+            var _itemCount = _itemsElemArray.length;
             for ( var _i = 0; _i < _itemCount; _i++) {
                 var _itemElem = _itemsElemArray[_i];
                 var _itemData = {};
@@ -10944,7 +10951,8 @@
 
             function _callback(itemData) {
                 if (itemData != null) {
-                    _itemData = {
+                    // Variable _itemData is used like a local variable, but is missing a declaration.
+                    var _itemData = {
                         "itemId" : _itemId,
                         "jid" : itemData.jid,
                         "nickName" : itemData.nickName,
@@ -11770,7 +11778,8 @@
             _extras = {};
         }
         // items
-        _items = _getItemsFromUpdateCommunityOwnerResponceContent(_contentElem);
+        // Variable _items is used like a local variable, but is missing a declaration.
+        var _items = _getItemsFromUpdateCommunityOwnerResponceContent(_contentElem);
         if (_items == null) {
             _log
                     .connectionLog(
@@ -13384,7 +13393,8 @@
     function _isAttachedURL(url) {
         var localregexp = Utils.replaceAll(_conf.getConfData('SYSTEM_LOCATION_ROOT') + "/f/.*",
                                            "/", "%2F");
-        strmatch = url.match(localregexp);
+        // Variable strmatch is used like a local variable, but is missing a declaration.
+        var strmatch = url.match(localregexp);
         if (strmatch == null) {
             _log.connectionLog(7, '***_isAttachedURL false: ' + url);
             return false;
