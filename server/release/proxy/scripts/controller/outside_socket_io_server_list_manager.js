@@ -105,7 +105,8 @@
 
                 continue;
             }
-            _outsideData = [_splitServerData[1], _splitServerData[2]];
+            // Variable _outsideData is used like a local variable, but is missing a declaration.
+            var _outsideData = [_splitServerData[1], _splitServerData[2]];
             if(_retServerMap[_splitServerData[0]] == null) {
                 _retServerMap[_splitServerData[0]] = _outsideData;
             } else {
