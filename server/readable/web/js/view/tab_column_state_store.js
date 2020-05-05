@@ -234,9 +234,9 @@ function TabColumnStateStore() {
             _ret = _createCommunityTaskColumnInfo(localStrageData);
             break;
         case ColumnInformation.TYPE_COLUMN_MURMUR:
-            if(!_isAsync) {
-                _createMurmurColumnInfo(localStrageData, callback);
-            }
+            // This negation always evaluates to true.
+            // if(!_isAsync) {
+            _createMurmurColumnInfo(localStrageData, callback);
             return;
         default:
             break;
