@@ -736,9 +736,12 @@
             FileUtils.getInstance().moveToFilePath(_tenantUuid, _tmpFilePath, _uploadFile.originalname, _onMoveToFilePathComplete);
 
             function _onMoveToFilePathComplete(newPath) {
+                // Variable '_data' is used before its declaration.
+                // 冒頭（543行）とこの後ろの2か所で、定義している。
+                var _dataRespFail = {result : "failed"};
                 if(newPath == null){
                     log.connectionLog(3, '_onFileUpload:: newPath is Invalid ');
-                    _sendResponce(_data);
+                    _sendResponce(_dataRespFail);
                     fs.exists(_tmpFilePath, function (exists){
                         if(exists) {
                             fs.unlink(_tmpFilePath, _onUnlinkComplete);
@@ -756,7 +759,8 @@
                 // ファイル名とパスをURLエンコード
                 var _newFileName = encodeURI(path.basename(_thumbnailPath));
                 var _newFilePath = encodeURI(_thumbnailPath);
-                var _data = {
+                // 543行の定義と紛らわしいので、名前を変更
+                var _dataSuccess = {
                     result:"success",
                     path:_newFilePath,
                     filename:_newFileName,
@@ -767,7 +771,7 @@
 
                 function _onPreConvert(startFunc){
                     // 正常終了
-                    _sendResponce(_data);
+                    _sendResponce(_dataSuccess);
 
                     // ファイル加工開始
                     if(startFunc != null){
