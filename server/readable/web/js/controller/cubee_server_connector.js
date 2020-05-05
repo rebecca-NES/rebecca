@@ -929,6 +929,8 @@ function CubeeServerConnector() {
             profile.setAvatarData('');
         }
         var _apiStr = null;
+        // Variable _api is used like a local variable, but is missing a declaration.
+        var _api;
         if (LoginUser.getInstance().isUpdatablePersonData()) {
             _api = ApiCubee.createChangeProfileRequest(_self._accessToken, profile);
         } else {
@@ -3031,6 +3033,8 @@ function CubeeServerConnector() {
                     reject(false);
                 }
             }
+            // Variable key is used like a local variable, but is missing a declaration.
+            var key;
             for (key in extras) {
                 if (key != "Logged" && key != "recentFilter" && key != "backgroundImage") {
                     reject(false);
