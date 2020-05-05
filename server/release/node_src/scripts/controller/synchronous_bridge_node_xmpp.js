@@ -6709,10 +6709,11 @@
             // memberCount
             var _memberCount = ((_ownerArray) ? _ownerArray.length : 0)
                     + ((_generalMemberArray) ? _generalMemberArray.length : 0);
+            // This use of variable '_ownerArray' always evaluates to true.
+            // This use of variable '_generalMemberArray' always evaluates to true.
             var _memberItems = {
-                ownerItems : (_ownerArray) ? _ownerArray : [],
-                generalMemberItems : (_generalMemberArray) ? _generalMemberArray
-                        : []
+                ownerItems : _ownerArray,
+                generalMemberItems : _generalMemberArray
             };
             // 詰め込む
             _retArray[_itemIndex] = {
