@@ -336,6 +336,8 @@ function View() {
                 var _loginUserJid = LoginUser.getInstance().getJid();
                 var _isContainLoginUser = false;
                 var _count = _removedMemberList.getCount();
+                // Variable _j is used like a local variable, but is missing a declaration.
+                var _j;
                 for(_j = 0; _j < _count; _j++) {
                     if(_loginUserJid == _removedMemberList.get(_j)) {
                         _isContainLoginUser = true;
@@ -480,6 +482,8 @@ function View() {
                     var _isContainLoginUser = false;
                     var _removedMemberList = communityNotification.getRemovedMemberList();
                     var _count = _removedMemberList.getCount();
+                    // Variable _i is used like a local variable, but is missing a declaration.
+                    var _i;
                     for(_i = 0; _i < _count; _i++) {
                         var _removedMember = _removedMemberList.get(_i);
                         if(_loginUserJid == _removedMember) {
