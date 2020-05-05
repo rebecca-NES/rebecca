@@ -212,7 +212,8 @@ function ColumnShowConversationView(columnInformation) {
 
     _proto.setConversationColumnSize = function(depth) {
         var _self = this;
-        min_width = _self.columnMinSize;
+        // Variable min_width is used like a local variable, but is missing a declaration.
+        var in_width = _self.columnMinSize;
         if (depth + _self.messageBodyMinSize > min_width) {
             min_width = depth + _self.messageBodyMinSize;
         }
@@ -342,6 +343,8 @@ function ColumnShowConversationView(columnInformation) {
         new MessageColumnLink($(_linkElm), msg);
 
         var _toolTipBaseElement;
+        // Variable _insertedElement is used like a local variable, but is missing a declaration.
+        var _insertedElement;
         if(_msgType == Message.TYPE_CHAT){
             _toolTipBaseElement = _content.children().not('.' + ColumnView.TOGGLE_REPLY_CLS_NAME).eq(0);
         } else if(_isReply) {
