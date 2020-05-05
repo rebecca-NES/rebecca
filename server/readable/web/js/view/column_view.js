@@ -1639,9 +1639,11 @@ function ColumnView(columnInfo) {
             return false;
         }
         var _sourceColumnType = _self.getColumnInfo().getSourceColumnType();
+        // '_begginingColumnType' may be a typo for variable _beginningColumnType.
+        //  _beginningColumnType. を修正
         var _beginningColumnType = null;
         if (_sourceColumnType == ColumnInformation.TYPE_COLUMN_FILTER) {
-            _begginingColumnType = _self.getColumnInfo().getBeginningColumnType();
+            _beginningColumnType = _self.getColumnInfo().getBeginningColumnType();
         }
         return (_sourceColumnType == ColumnInformation.TYPE_COLUMN_SEARCH || _sourceColumnType == ColumnInformation.TYPE_COLUMN_RECENT || _sourceColumnType == ColumnInformation.TYPE_COLUMN_TOME || _beginningColumnType == ColumnInformation.TYPE_COLUMN_TOME)
     }
