@@ -437,7 +437,8 @@ export default class Common {
         let names = reName.split(' ');
         displayName = Array.from(names[0])[0] + Array.from(names[1])[0];
       } else {
-        chars = Array.from(reName);
+        // Variable chars is used like a local variable, but is missing a declaration.
+        var chars = Array.from(reName);
         displayName = chars[0] + (1 < chars.length ? chars[1] : "");
       }
     } else {
