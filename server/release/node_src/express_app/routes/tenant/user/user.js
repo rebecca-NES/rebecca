@@ -305,7 +305,8 @@
             _locals.accountTypeList = roleList;
 
             //ライセンスチェック
-            _allCount = ( typeof extras.notDeleteCount === "undefined" )? 0 : parseInt(extras.notDeleteCount);
+            // Variable _allCount is used like a local variable, but is missing a declaration.
+            var _allCount = ( typeof extras.notDeleteCount === "undefined" )? 0 : parseInt(extras.notDeleteCount);
             var _license = _licenseManager.getLicensedUserCount(req.params.tid);
             var _cl = _checkLicense(_license, result, _allCount);
             _locals.error = _cl.error;
@@ -357,7 +358,8 @@
             var _locals = _getExecBatchCreateLocals(req, _tName, null)
 
             //ライセンスチェック
-            _allCount = ( typeof extras.notDeleteCount === "undefined" )? 0 : parseInt(extras.notDeleteCount);
+            // Variable _allCount is used like a local variable, but is missing a declaration.
+            var _allCount = ( typeof extras.notDeleteCount === "undefined" )? 0 : parseInt(extras.notDeleteCount);
             var _license = _licenseManager.getLicensedUserCount(req.params.tid);
             var _cl = _checkLicense(_license, result, _allCount);
             _locals.error = _cl.error;
@@ -870,6 +872,8 @@
                     }
 
                     function _toArrayFromCsvFileCallback(csvDataArray) {
+                        // Variable _over is used like a local variable, but is missing a declaration.
+                        var _over;
                         if(!csvDataArray) {
                            //ファイルリードエラー
                            _render( [ { "result" : false, "message" : ERR_FAIL_READ_CSV } ] );
