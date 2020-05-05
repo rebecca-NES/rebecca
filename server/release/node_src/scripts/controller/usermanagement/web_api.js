@@ -300,8 +300,10 @@ function updateUser(receiveObject, callback, apiUtil) {
             }
         } else {
             // 失敗した場合（5000000）
-            Log.connectionLog(3, `tenantAdmin-WEB_API updateUser:` +
-                `User update process failed. There is a possibility that the` +
+            // This string appears to be missing a space after 'updateUser:'.
+            // This string appears to be missing a space after 'the'.
+            Log.connectionLog(3, `tenantAdmin-WEB_API updateUser: ` + 
+                `User update process failed. There is a possibility that the ` +
                 `user does not exist or internal processing has failed.`);
             _errContent = createErrorReasonResponse(receiveObject, API_STATUS.INTERNAL_SERVER_ERROR);
             executeCallback(receiveObject, callback, _errContent, 0, apiUtil);
