@@ -1158,7 +1158,9 @@ getEraYear = function( date, cal, era, sortable ) {
 						break;
 					case "g": case "gg":
 						var eraName = matchGroup;
-						if ( !eraName || !cal.eras ) return null;
+						// This negation always evaluates to false.
+						// if ( !eraName || !cal.eras ) return null;
+						if ( !cal.eras ) return null;
 						eraName = trim( eraName.toLowerCase() );
 						for ( var i = 0, l = cal.eras.length; i < l; i++ ) {
 							if ( eraName === cal.eras[i].name.toLowerCase() ) {
@@ -1413,7 +1415,9 @@ Globalize.findClosestCulture = function( name ) {
 	else if ( typeof name === "object" ) {
 		return name;
 	}
-	return match || null;
+	// This use of variable 'match' always evaluates to false.
+	// return match || null;
+	return null;
 };
 
 Globalize.format = function( value, format, cultureSelector ) {

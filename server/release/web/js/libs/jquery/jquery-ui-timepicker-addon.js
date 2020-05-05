@@ -634,7 +634,9 @@ $.extend(Timepicker.prototype, {
 
 		if(!this._defaults.showTimepicker) { return; } // No time so nothing to check here
 
-		if($.datepicker._get(dp_inst, 'minDateTime') !== null && $.datepicker._get(dp_inst, 'minDateTime') !== undefined && dp_date){
+		// This use of variable 'dp_date' always evaluates to true.
+		// if($.datepicker._get(dp_inst, 'minDateTime') !== null && $.datepicker._get(dp_inst, 'minDateTime') !== undefined && dp_date){
+		if($.datepicker._get(dp_inst, 'minDateTime') !== null && $.datepicker._get(dp_inst, 'minDateTime') !== undefined){
 			var minDateTime = $.datepicker._get(dp_inst, 'minDateTime'),
 				minDateTimeDate = new Date(minDateTime.getFullYear(), minDateTime.getMonth(), minDateTime.getDate(), 0, 0, 0, 0);
 
@@ -674,8 +676,9 @@ $.extend(Timepicker.prototype, {
 				this._defaults.millisecMin = this.millisecMinOriginal;
 			}
 		}
-
-		if($.datepicker._get(dp_inst, 'maxDateTime') !== null && $.datepicker._get(dp_inst, 'maxDateTime') !== undefined && dp_date){
+		// This use of variable 'dp_date' always evaluates to true.
+		// if($.datepicker._get(dp_inst, 'maxDateTime') !== null && $.datepicker._get(dp_inst, 'maxDateTime') !== undefined && dp_date){
+		if($.datepicker._get(dp_inst, 'maxDateTime') !== null && $.datepicker._get(dp_inst, 'maxDateTime') !== undefined){
 			var maxDateTime = $.datepicker._get(dp_inst, 'maxDateTime'),
 				maxDateTimeDate = new Date(maxDateTime.getFullYear(), maxDateTime.getMonth(), maxDateTime.getDate(), 0, 0, 0, 0);
 

@@ -185,7 +185,9 @@
         if(fs.existsSync(_imageDir)) {
             var _fileList = fs.readdirSync(_imageDir);
             for (var _i = 0; _i < _fileList.length; _i++) {
-                if (!_checkPrefix || (_checkPrefix && _fileList[_i].indexOf(prefix + '_') == 0)) {
+                // This use of variable '_checkPrefix' always evaluates to true.
+                // if (!_checkPrefix || (_checkPrefix && _fileList[_i].indexOf(prefix + '_') == 0)) {
+                if (!_checkPrefix || (_fileList[_i].indexOf(prefix + '_') == 0)) {
                     _filePathList.push(_imagePath + _fileList[_i]);
                 }
             }
@@ -215,7 +217,9 @@
         if(fs.existsSync(_imageDir)) {
             var _fileList = fs.readdirSync(_imageDir);
             for (var _i = 0; _i < _fileList.length; _i++) {
-                if (!_checkPrefix || (_checkPrefix && _fileList[_i].indexOf(prefix + '_') == 0)) {
+                // This use of variable '_checkPrefix' always evaluates to true.
+                // if (!_checkPrefix || (_checkPrefix && _fileList[_i].indexOf(prefix + '_') == 0)) {
+                if (!_checkPrefix || (_fileList[_i].indexOf(prefix + '_') == 0)) {
                     _filePathList.push(_imagePath + _fileList[_i]);
                 }
             }
