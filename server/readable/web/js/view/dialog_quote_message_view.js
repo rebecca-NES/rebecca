@@ -331,7 +331,7 @@ function DialogQuoteMessageView(message, column, roomPrivacyType=0) {
     _proto.getInnerMessageHtml = function() {
         var _self = this;
         var createInputElement = "<div>";
-        var _autoCompleteType = 'autocomplete'
+        var _autoCompleteType = 'autocomplete';
         if (_self._message.getType() == Message.TYPE_COMMUNITY) {
             _autoCompleteType = 'autocomplete-for-community" groupId="'+_self._message.getTo()+'"';
         } else if(_self._message.getType() == Message.TYPE_GROUP_CHAT) {
@@ -633,8 +633,10 @@ function DialogQuoteMessageView(message, column, roomPrivacyType=0) {
         var _ret = "";
         for(var i = 0; i< projectListCount; i++) {
             var _roomInfo = _communityList.get(i);
-            _avaterDate = _roomInfo.getLogoUrl();
-            projectname = _roomInfo.getRoomName();
+            // Variable _avaterDate is used like a local variable, but is missing a declaration.
+            var _avaterDate = _roomInfo.getLogoUrl();
+            // Variable projectname is used like a local variable, but is missing a declaration.
+            var projectname = _roomInfo.getRoomName();
 
             _ret += '<li class="cf"><a  data_value="' + _roomInfo.getRoomId() + '" title="'+Utils.convertEscapedHtml(projectname)+'"><span class="ico ico_project">';
 
