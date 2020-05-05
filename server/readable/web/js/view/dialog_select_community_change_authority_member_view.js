@@ -318,11 +318,12 @@ function DialogSelectCommunityChangeAuthorityMemberView(communityId) {
                     errOnDialog(Resource.getMessage('not_selected_authority_info'));
                     return;
                 }
-
+                // Variable ownerList is used like a local variable, but is missing a declaration.
+                // Variable member is used like a local variable, but is missing a declaration
                 if(inputMemberInfo.update.manageCommunity.length != 0 || inputMemberInfo.delete.manageCommunity.length != 0){
-                    ownerList = new ArrayList();
+                    var ownerList = new ArrayList();
                     for(var i=0; i< memberList.getCount(); i++){
-                        member = memberList.get(i);
+                        var member = memberList.get(i);
                         if(member.action == AuthorityDef.AUTHORITY_ACTIONS.COMMUNITY_MANAGE){
                             ownerList.add(member.jid);
                         }
