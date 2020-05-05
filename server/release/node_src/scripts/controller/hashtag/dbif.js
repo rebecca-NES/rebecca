@@ -199,8 +199,9 @@ module.exports = class HashtagDbStore {
                             if(res[0][i].created_at){
                                 res[0][i].created_at = formatDate(res[0][i].created_at);
                             }
-                            if(!isSetRankBottom ||
-                               (isSetRankBottom && res[0][i].rank <= rankBottom)){
+                            // This use of variable 'isSetRankBottom' always evaluates to true
+                            // !isSetRankBottom || (isSetRankBottom && res[0][i].rank <= rankBottom)
+                            if(res[0][i].rank <= rankBottom){
                                 data.push(res[0][i]);
                             }
                         }
