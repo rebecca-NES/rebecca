@@ -292,7 +292,8 @@ function SearchPersonResultView(partsType, searchInfo, callbacks) {
         var _parentHeight = _rootElm.closest('dd').outerHeight(true);
         var _startChatFormObjHeight = 0;
         var _searchViewElm = _rootElm.closest('dd').find('#ui-tab');
-        _searchViewHeight = _searchViewElm.outerHeight(true);
+        // Variable _searchViewHeight is used like a local variable, but is missing a declaration.
+        var _searchViewHeight = _searchViewElm.outerHeight(true);
         var _contentsHeight = _parentHeight - _searchViewHeight;
         _groupListArea.height(_contentsHeight);
     };
