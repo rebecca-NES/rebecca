@@ -174,7 +174,7 @@ $(function(){
     var col_org_w = col_w;
     var columnCTNW = col_l * (col_org_w + 10) + 30;
     if (col_w < 320) {
-      col_w = 320
+      col_w = 320;
     }
     $('.content-wrapper .col_card').not('.content-wrapper .col_card.closeaa').css('width', col_w +'px');
     var wrapper_w = (col_l - col_conv_l) * ((col_w  - col_conv_l) + 10) + col_conv_l * (600 + 10) + 30;
