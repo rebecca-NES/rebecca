@@ -99,6 +99,6 @@ function AttachedFileData(htmlElement, url) {
         _ret += '    <br class="clear-float">';
         _ret += '  </div>';
         return _ret;
-    }
+    };
 
 })();
