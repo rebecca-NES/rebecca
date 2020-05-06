@@ -60,7 +60,7 @@ function DialogPointRankingView(point) {
             _self._dialogInnerElement.find('.scroll_content').off();
             $('#rankingList').children().remove();
             _self.ps.update();
-            _self._dialogInnerElement.find('#dialog-error').text('')
+            _self._dialogInnerElement.find('#dialog-error').text('');
             switch ($(this).attr('id')) {
                 case 'period-week':
                     _self.showWeekRanking();
@@ -112,7 +112,7 @@ function DialogPointRankingView(point) {
                     <input type="radio" name="ranking-period" id="period-year">\
                     <span></span>' + Resource.getMessage('dialog_ranking_year') + '\
                   </label>\
-                </div>'
+                </div>';
         _ret += '</div>';
 
         _ret += '<div class="list_wrapper scroll_content">';
@@ -155,7 +155,7 @@ function DialogPointRankingView(point) {
             }
         }).catch(function(err){
             _self._dialogInnerElement.find('#dialog-error').text(Resource.getMessage('dialog_error_get_ranking'))
-        })
+        });
     };
 
     _proto.showMonthRanking = function() {
@@ -185,7 +185,7 @@ function DialogPointRankingView(point) {
             }
         }).catch(function(err){
             _self._dialogInnerElement.find('#dialog-error').text(Resource.getMessage('dialog_error_get_ranking'))
-        })
+        });
     };
 
     _proto.showYearRanking = function() {
@@ -215,7 +215,7 @@ function DialogPointRankingView(point) {
             }
         }).catch(function(err){
             _self._dialogInnerElement.find('#dialog-error').text(Resource.getMessage('dialog_error_get_ranking'))
-        })
+        });
     };
 
     function setRankingListFrame(_self, _rankingList) {
@@ -252,7 +252,7 @@ function DialogPointRankingView(point) {
             if (ViewUtils.getAvatarUrl(_person) == ViewUtils.DEFAULT_USER_AVATAR_SRC) {
               avatarHtml = ViewUtils.getDefaultAvatarHtml(_person);
             } else {
-              avatarHtml = ViewUtils.getAvatarDataHtmlFromPerson(_person)
+              avatarHtml = ViewUtils.getAvatarDataHtmlFromPerson(_person);
             }
 
             if (LoginUser.getInstance().getJid() == _jid) {
