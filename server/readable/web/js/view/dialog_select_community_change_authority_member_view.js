@@ -186,10 +186,10 @@ function DialogSelectCommunityChangeAuthorityMemberView(communityId) {
         var _me = LoginUser.getInstance().getLoginAccount();
         var _ret = '';
         _ret += '<li id="change_authority" class="change_authority authority-member-item" id="auth_li_' + _accountName + '">';
-        _ret += '  <span class="row-item"><img class="avatar" alt="' + Utils.convertEscapedTag(_nickName) + '" src="' + _avatorSrc +'"></span>'
+        _ret += '  <span class="row-item"><img class="avatar" alt="' + Utils.convertEscapedTag(_nickName) + '" src="' + _avatorSrc +'"></span>';
         _ret += '  <span class="row-item item text-abbreviation"></span>';
-        _ret += '  <div class="item-left-position">'
-        _ret += '    <span class="row-item">'
+        _ret += '  <div class="item-left-position">';
+        _ret += '    <span class="row-item">';
         _ret += '      <select class="form_control" name="groupchat_authority" id="auth_list_'　+ _accountName +　'">';
         _ret += '        <option selected value="' + AuthorityDef.AUTHORITY_ACTIONS.COMMUNITY_MANAGE + '">' + Resource.getMessage('policy_manage') + '</option>';
         _ret += '        <option value="' + AuthorityDef.AUTHORITY_ACTIONS.COMMUNITY_SEND + '">' + Resource.getMessage('policy_send') + '</option>';
@@ -334,7 +334,7 @@ function DialogSelectCommunityChangeAuthorityMemberView(communityId) {
                 }
               }).catch(function(err){
                   errOnDialog(Resource.getMessage('change_member_authority_err'));
-              })
+              });
         }
 
         function _onUpdateCommunityOwnerCallback(changedOwnerList){
