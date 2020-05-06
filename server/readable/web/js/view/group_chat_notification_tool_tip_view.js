@@ -151,7 +151,7 @@ function GroupChatNotificationToolTipView(parent, groupChatNotification) {
                 for(_j = 0; _j < _count; _j++) {
                     if(_loginUserJid == _removedMemberList.get(_j)) {
                         _isContainLoginUser = true;
-                        var roomId = groupChatNotification.getRoomInfo().getRoomId()
+                        var roomId = groupChatNotification.getRoomInfo().getRoomId();
                         var _toolTipItemViewIdxList = _self._getToolTipItemViewIdxsByRoomId(roomId);
                         var _count = _toolTipItemViewIdxList.getCount();
                         for(var _i = 0; _i < _count; _i++){
@@ -301,7 +301,7 @@ function GroupChatNotificationToolTipItemView(parent,groupChatColumnInfomation, 
     };
     _proto.getColumnInfo = function() {
         return this._columnInfo;
-    }
+    };
     _proto.removeHtmlElement = function() {
         var _self = this;
         var _selfElm = _self._htmlElement;
@@ -365,7 +365,7 @@ function GroupChatNotificationToolTipItemView(parent,groupChatColumnInfomation, 
     _proto._getHtml = function() {
         var _self = this;
         var _ret = '<li><a class="txt_btn"> ';
-        _ret += '<span class="ico ico_group">'
+        _ret += '<span class="ico ico_group">';
         var result = Utils.avatarCreate({type: 'group', name: _self._getRoomName()});
         _ret += '<div class="no_img" style="background-color:' + result.color + '">';
         _ret += '<div class="no_img_inner">' + result.name + '</div>';
