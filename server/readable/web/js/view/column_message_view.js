@@ -209,8 +209,9 @@ limitations under the License.
             var _notification = _createGoodJobNotificationForNotifyToMySelf();
 
             var _goodJobList = _message.getGoodJobList();
-            var _goodJobData = _goodJobList.getByJid(_userJid);
-            _goodJobData = new GoodJobData();
+            // The initial value of _goodJobData is unused, since it is always overwritten.
+            // var _goodJobData = _goodJobList.getByJid(_userJid);
+            var _goodJobData = new GoodJobData();
             _goodJobData.setJid(_userJid);
             _goodJobData.setDate(new Date(_notification.getDate()));
             _goodJobData.setNickName(_notification.getNickName());
