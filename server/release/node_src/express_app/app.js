@@ -344,7 +344,8 @@
             log.connectionLog(3, 'URL request is Invalid : ' + _pathName);
             response.writeHead(404);
             response.end();
-            _requestData = '';
+            // The value assigned to _requestData here is unused.
+            // _requestData = '';
            return;
         }
 
