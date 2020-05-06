@@ -195,6 +195,8 @@ function ColumnRecentView(columnInformation) {
         }
         var _quickFilter = CustomFilterSetting.createSettingFilterCondition(_quickSettings);
         var columnFilter = null;
+        // Variable _columnFilter is used like a local variable, but is missing a declaration.
+        var _columnFilter;
         if (_quickFilter != null || _columnKeywordFilter != null) {
             _columnFilter = new AndCondition();
             _columnFilter.addChildCondition(_columnTypeFilter);
