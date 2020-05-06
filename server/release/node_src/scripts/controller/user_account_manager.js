@@ -960,7 +960,9 @@
                 // ユーザアカウント情報があれば、重複と判断
                 else if(userAccountData != null){
                     _log.connectionLog(3,'UserAccountManager#execBatchRegistration#_checkDuplicationMailAdress#_onGetUserAccountDataCallBack This mail exists : ' + userAccountData.getMailAddress());
-                    var _regUserName = _personData.getUserName();
+                    // The initial value of _regUserName is unused, since it is always overwritten.
+                    // var _regUserName = _personData.getUserName();
+                    var _regUserName;
                     //レスポンスデータを更新
                     var _regUserName = _personData.getUserName();
                     _setResponceDataByAccount(_responceData, _regUserName, false, SynchronousBridgeNodeXmpp.ERROR_EXIST_MAILADDRESS);
