@@ -48,7 +48,7 @@
         }
         // STREAMの場合は標準出力
         if (_settingOutputType == 'STREAM') {
-            _self._connectionLogFile = '/dev/stdout'
+            _self._connectionLogFile = '/dev/stdout';
         }
 
         // ログ出力インスタンス作成
