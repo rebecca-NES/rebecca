@@ -374,8 +374,8 @@ function DialogProfileView(title) {
             _rootElement.find("#dialog-error").text( Resource.getMessage('config_profile_image_failed') );
             return;
           }
-
-          reader_prof = new FileReader();
+          // Variable reader_prof is used like a local variable, but is missing a declaration.
+          var reader_prof = new FileReader();
           reader_prof.onload = function (e) {
             options_prof.imgSrc = e.target.result;
             cropper_prof = new cropbox(options_prof);
