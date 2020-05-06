@@ -424,7 +424,7 @@ function CommunityDetailsView(){
         if(_headerElm != null){
             var _startChatFormElm = _startChatFormObj.getHtmlElement();
             if(_headerElm.is(':visible')){
-                _headerElmHeight = _headerElm.outerHeight(true)
+                _headerElmHeight = _headerElm.outerHeight(true);
             }
         }
         var _contentsHeight = _parentHeight - _headerElmHeight;
@@ -499,7 +499,7 @@ function CommunityDetailsView(){
             }
              CubeeController.getInstance().getCommunityMemberInfo(_communityId, callback);
         })
-    }
+    };
 
     _proto.setOwners = function(owners){
 
