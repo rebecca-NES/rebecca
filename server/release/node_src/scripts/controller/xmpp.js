@@ -176,8 +176,9 @@
             var _affiliationElem = _vCardElem.node('group');
             if(_affiliationElem != null){
                 for(let i=0;i<profile.group.length;i++){
-                    let _affiliation = profile.group[i].trim()
-                    _affiliationElem.node('item').text(_affiliation)
+                    // Avoid automated semicolon insertion (92% of all statements in the enclosing function have an explicit semicolon).
+                    let _affiliation = profile.group[i].trim();
+                    _affiliationElem.node('item').text(_affiliation);
                 }
             }
         }
