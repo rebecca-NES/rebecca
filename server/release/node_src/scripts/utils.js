@@ -187,7 +187,9 @@
      * 文字列をtrimする
      */
     function trim(src) {
-        return src.replace(/(^\s+)|(\s+$)/g, '');
+        // This expensive 3 Values use depends on 3 Values.
+        // return src.replace(/(^\s+)|(\s+$)/g, '');
+        return src.replace(/^\s+|(?<!\s)\s+$/g, '');
     }
 
     /**
