@@ -7733,6 +7733,8 @@
                 'member');
         var _memberArray = [];
         var _memberElemCount = _memberElemArray.length;
+        // Variable _i is used like a local variable, but is missing a declaration.
+        var _i;
         for(_i = 0; _i < _memberElemCount; _i++){
             var _memberElem = _memberElemArray[_i];
             var _item = {};

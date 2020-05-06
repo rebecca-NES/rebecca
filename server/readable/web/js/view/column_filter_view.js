@@ -574,7 +574,8 @@ function ColumnFilterView(columnInformation) {
         if (!_itemId) {
             return;
         }
-        _pos = _self.getMsgObjIndexPositionByItemId(_itemId);
+        // Variable _pos is used like a local variable, but is missing a declaration.
+        var _pos = _self.getMsgObjIndexPositionByItemId(_itemId);
         var _htmlElem = _self.getHtmlElement();
         if(_htmlElem == null) {
             return;
