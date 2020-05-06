@@ -14,7 +14,8 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 function DialogUnsubscribeCheckView(_roomId) {
-    _self = this;
+    // Variable _self is used like a local variable, but is missing a declaration.
+    var _self = this;
      this._dialogAreaElement = $('#modal_area');
      this._dialogInnerElement = null;
     _self._roomId = _roomId;
