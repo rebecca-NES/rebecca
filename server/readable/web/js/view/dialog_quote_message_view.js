@@ -456,7 +456,7 @@ function DialogQuoteMessageView(message, column, roomPrivacyType=0) {
                   <label for="quote_chat" class="radio">\
                   <input type="radio" name="destination_room" id="quote_chat" value='+Message.TYPE_CHAT+'>\
                   <span></span>' + Resource.getMessage('Chat') + '</label>\
-                </div>'
+                </div>';
         _ret += '<div class="select_menu">\
                   <form action="#" method="get" class="search_form">\
                     <input type="text" name="q" class="field" placeholder="'+Resource.getMessage('dialog_search_room_name')+'">\
@@ -520,7 +520,7 @@ function DialogQuoteMessageView(message, column, roomPrivacyType=0) {
             if (ViewUtils.getAvatarUrl(_person) == ViewUtils.DEFAULT_USER_AVATAR_SRC) {
               avatarHtml = ViewUtils.getDefaultAvatarHtml(_person);
             } else {
-              avatarHtml = ViewUtils.getAvatarDataHtmlFromPerson(_person)
+              avatarHtml = ViewUtils.getAvatarDataHtmlFromPerson(_person);
             }
 
             _ret += '<li jid="' + _jid + '">';
@@ -588,7 +588,7 @@ function DialogQuoteMessageView(message, column, roomPrivacyType=0) {
             if (ViewUtils.getAvatarUrl(_person) == ViewUtils.DEFAULT_USER_AVATAR_SRC) {
               avatarHtml = ViewUtils.getDefaultAvatarHtml(_person);
             } else {
-              avatarHtml = ViewUtils.getAvatarDataHtmlFromPerson(_person)
+              avatarHtml = ViewUtils.getAvatarDataHtmlFromPerson(_person);
             }
 
             _ret += '<li jid="' + _jid + '">';
