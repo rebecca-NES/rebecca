@@ -91,11 +91,11 @@ function CommunityNotificationToolTipItemView(parent, communityId, communityName
                 var _parent = _self._parent;
         _parent.onListItemClicked(_communityId);
 
-    }
+    };
     _proto._getHtml = function() {
         var _self = this;
         var _ret = '<li><a class="txt_btn">';
-        _ret += '<span class="ico ico_project">'
+        _ret += '<span class="ico ico_project">';
         if(_self.getCommunityImage() == ''){
             var result = Utils.avatarCreate({type: 'project', name: _self._getRoomName()});
             _ret += '<div class="no_img" style="background-color:' + result.color + '">';
@@ -407,7 +407,7 @@ function CommunityNotificationToolTipView(parent, communityNotification) {
         if(ColumnInformation.TYPE_COLUMN_COMMUNITY_FEED != _clickedColumnType) {
             return;
         }
-        var _communityInfo = columnInformation.getCommunityInfomation()
+        var _communityInfo = columnInformation.getCommunityInfomation();
         if(_communityInfo == null) {
             return;
         }
