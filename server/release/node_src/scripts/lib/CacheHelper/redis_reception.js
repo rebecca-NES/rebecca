@@ -41,7 +41,7 @@
                  lock_timeout : _lockTimeout                        // ロック時のタイムアウト秒数
                 ,timeout_retry_max_cnt: _timeout_retry_max_cnt      // Redis の既ロックをチェックするリトライ上限回数
                 ,timeout_retry_interval: _timeout_retry_interval    // Redis の既ロックをチェックするリトライ間隔（秒）
-        }
+        };
         // 個別アクション設定
         _self._recipe = {};
         _self._error = null;
