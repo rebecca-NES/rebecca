@@ -41,12 +41,12 @@ function ColumnTimelineView(columnInformation){
             return _columnTimelineView;
         }
         return null;
-    }
+    };
 
     ColumnTimelineView.setInstance = function(_columnObj) {
         _columnTimelineView = _columnObj;
         return;
-    }
+    };
 
     var _proto = ColumnTimelineView.prototype;
 
