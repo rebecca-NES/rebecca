@@ -155,7 +155,7 @@ function ColumnIconView() {
                 break;
             case ColumnInformation.TYPE_COLUMN_GROUP_CHAT:     
                 _cssType = 'ico_group';
-                var result = Utils.avatarCreate({type: 'group', name: columnInformation.getDisplayName()})
+                var result = Utils.avatarCreate({type: 'group', name: columnInformation.getDisplayName()});
                 _imageTag    = '    <div class="menu-column no_img" style="background-color:' + result.color + '" title="' + _columnName + '">';
                 _imageTag   += '      <div class="no_img_inner">' + result.name + '</div>';
                 _imageTag   += '    </div>';
@@ -279,7 +279,7 @@ function ColumnIconView() {
                                 }
                                 return
                             }
-                        })
+                        });
                 }
                 break;
             }
@@ -389,7 +389,7 @@ function ColumnIconView() {
             break;
         }
         return false;
-    }
+    };
     _proto.updateColumnIcon = function() {
         var _self = this;
         var _flgImage = false;
