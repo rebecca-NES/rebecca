@@ -325,6 +325,8 @@ function ColumnTaskView(columnInformation) {
         var _count = _target.length;
         for (var _i = 0; _i < _count; _i++) {
             var _isMuch = true;
+            // Variable key is used like a local variable, but is missing a declaration.
+            var key;
             for (key in _filterObj) {
                 if (_filterObj[key] == '') {
                     continue;
@@ -359,6 +361,8 @@ function ColumnTaskView(columnInformation) {
         var _columnFilterCondition = _columnInfo.getFilterCondition();
         var _filterCondition = new TaskFilterAndSortCondition();
         var _filterObj = _filterCondition.getFilterObject(_columnFilterCondition);
+        // Variable key is used like a local variable, but is missing a declaration.
+        var key;
         for (key in _filterObj) {
             if (_filterObj[key] == '') {
                 continue;
@@ -413,7 +417,8 @@ function ColumnTaskView(columnInformation) {
             if (!_itemId) {
                 return;
             }
-            _pos = _self.getMsgObjIndexPositionByItemId(_itemId);
+            // Variable _pos is used like a local variable, but is missing a declaration.
+            var _pos = _self.getMsgObjIndexPositionByItemId(_itemId);
             var _htmlElem = _self.getHtmlElement();
             if(_htmlElem == null) {
                 return;

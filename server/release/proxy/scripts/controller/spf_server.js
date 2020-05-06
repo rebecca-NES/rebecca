@@ -631,10 +631,14 @@
                     _reqUrl,
                     serverRequest.headers);
             // body のパラメータを追加
+            // Variable _fielodsKey is used like a local variable, but is missing a declaration.
+            var _fielodsKey;
             for(_fielodsKey in _multipartBody['fields']) {
                 _uni.field(_fielodsKey, _multipartBody['fields'][_fielodsKey][0]);
             }
             // body のファイルデータを追加
+            // Variable _filesKey is used like a local variable, but is missing a declaration.
+            var _filesKey;
             for(_filesKey in _multipartBody['files']) {
                 _fileData = _multipartBody['files'][_filesKey][0];
 
@@ -649,6 +653,8 @@
             _uni.timeout(_timeout);
             _uni.end(function (response) {
                 // tmp のアップロードデータを削除
+                // Variable _filesKey is used like a local variable, but is missing a declaration.
+                var _filesKey;
                 for(_filesKey in _multipartBody['files']) {
                     _fileData = _multipartBody['files'][_filesKey][0];
 

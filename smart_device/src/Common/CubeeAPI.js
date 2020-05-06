@@ -2477,7 +2477,8 @@ export default class CubeeAPI {
 
       try {
         Common.saveCubeeFileLog("operation", "download", download)
-        result = await RNFetchBlob
+        // Variable result is used like a local variable, but is missing a declaration.
+        var result = await RNFetchBlob
           .config({fileCache : true, session: "download",appendExt: Common.getExtensionName(download)})
           .fetch("POST", url, header, body)
       } catch(e) {

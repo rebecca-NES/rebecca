@@ -1076,7 +1076,8 @@
         for(var _i = 0; _i < affiliation.length; _i++) {
             _decodedaffiliation[_i] = decodeURIComponent(affiliation[_i].replace(/\+/g, '%20'));
         }
-        _decodedaffiliationString = _decodedaffiliation.join('\n');
+        // Variable _decodedaffiliationString is used like a local variable, but is missing a declaration.
+        var _decodedaffiliationString = _decodedaffiliation.join('\n');
         var _decodedURL = decodeURIComponent(originalURL.replace(/\+/g, '%20'));
         // 年のディレクトリを作る
         _expandedLogPath = path.join(_expandedLogPath, _yearStr);

@@ -424,6 +424,8 @@ function ColumnGroupChatView(groupChatColumnInformation) {
         var _loginUserJid = LoginUser.getInstance().getJid();
         var _isContainLoginUser = false;
         var _count = _removedMemberList.getCount();
+        // Variable _j is used like a local variable, but is missing a declaration.
+        var _j;
         for(_j = 0; _j < _count; _j++) {
             if(_loginUserJid == _removedMemberList.get(_j)) {
                 _isContainLoginUser = true;

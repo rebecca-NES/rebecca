@@ -437,8 +437,8 @@ function WizardView() {
                         _rootElement.find("#dialog-error").text( Resource.getMessage('wizard_profile_image_failed') );
                         return;
                 }
-
-                reader = new FileReader();
+                // Variable reader is used like a local variable, but is missing a declaration.
+                var reader = new FileReader();
                 reader.onload = function (e) {
                     options.imgSrc = e.target.result;
                     cropper = new cropbox(options);

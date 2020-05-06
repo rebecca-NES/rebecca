@@ -820,7 +820,8 @@ limitations under the License.
             var _updateNickNameElems = _updateParentElem.find('div.block-info div.sender-name');
             _updateAvaterElem.remove();
             _updateParentElem.prepend(ViewUtils.getAvatarDataHtml(jid));
-            _updatedAvaterElem = _updateParentElem.find('div.block-avatar[jid=\'' + jid + '\']');
+            // Variable _decodedaffiliationString is used like a local variable, but is missing a declaration.
+            var _updatedAvaterElem = _updateParentElem.find('div.block-avatar[jid=\'' + jid + '\']');
             _updateNickNameElems.text(Utils.convertEscapedHtml(_personName));
             TooltipView.getInstance().setAvatarToolTip(TooltipView.TYPE_USER_AVATAR, _updatedAvaterElem, true);
         }

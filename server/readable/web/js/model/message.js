@@ -258,6 +258,8 @@ function Message() {
         var _messageBody = this._message;
         var _count = _urlList.getCount();
         var _urls = '';
+        // Variable i is used like a local variable, but is missing a declaration.
+        var i;
         for ( i = 0; i < _count; i++) {
             _urls += _urlList.get(i);
         }

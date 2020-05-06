@@ -116,8 +116,11 @@
         _tenantXmppData.setTenantName(_t_tenant_name);
 
         var _tempXmppServerNames = [];
+        // Variable i is used like a local variable, but is missing a declaration.
+        var i;
         for (i = 0; i < datas.length; ++i) {
-            _t_xmpp_servername = Utils.getChildObject(datas[i], 'server_name');
+            // Variable _t_xmpp_servername is used like a local variable, but is missing a declaration.
+            var _t_xmpp_servername = Utils.getChildObject(datas[i], 'server_name');
             if (_t_xmpp_servername == null || typeof _t_xmpp_servername != 'string' || _t_xmpp_servername == '') {
                 return null;
             }

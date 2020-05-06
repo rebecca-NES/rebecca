@@ -249,8 +249,8 @@
         var MAXURLIDLEN = 6;
         // 62進法用文字
         var BASESTR = "0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ";
-
-        len = url.length;
+        // Variable len is used like a local variable, but is missing a declaration.
+        var len = url.length;
         // 長さ
         var arr = new Array(MAXURLIDLEN);
 
@@ -260,6 +260,9 @@
         }
 
         // URL-IDの生成。1桁目はURL中の1,7,15,,,番目の文字から、(...)6ケタ目はURL中の6,12,18,,,番目の文字から取る
+        // Variable i is used like a local variable, but is missing a declaration.
+        var i;
+        var j;
         for ( i = 0; i < len; i += MAXURLIDLEN) {
             for ( j = 0; j < MAXURLIDLEN; j++) {
                 if (i + j < len) {

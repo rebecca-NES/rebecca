@@ -292,7 +292,8 @@ $(function(){
   });
   $('.avatar_file_comm').change(function () {
     if (this.files.length > 0) {
-      reader_comm = new FileReader();
+      // Variable reader_comm is used like a local variable, but is missing a declaration.
+      var reader_comm = new FileReader();
       reader_comm.onload = function (e) {
         options_comm.imgSrc = e.target.result;
         cropper_comm = new cropbox(options_comm);
@@ -339,7 +340,8 @@ $(function(){
     $('emoji-picker').addClass('open');
     var icon_top = $(this).offset().top;
     var icon_left = $(this).offset().left;
-    picker_width = $('emoji-picker').children().width();
+    // Variable picker_width is used like a local variable, but is missing a declaration.
+    var picker_width = $('emoji-picker').children().width();
     var position_top = icon_top + 30;
     var position_left = icon_left;
     position_left = position_left - picker_width;

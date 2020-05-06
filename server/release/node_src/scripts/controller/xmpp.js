@@ -836,6 +836,8 @@
         // <filter>
         var _filterElem = _taskListElem.node('filter');
         // <key>
+        // Variable _key is used like a local variable, but is missing a declaration.
+        var _key;
         for (_key in filter) {
             _filterElem.node(_key).text(filter[_key]);
         }

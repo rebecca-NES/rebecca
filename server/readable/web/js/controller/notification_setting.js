@@ -153,6 +153,8 @@ function NotificationSettingManager() {
         if (notificationInfo && notificationInfo.length > 0) {
             for (var _i = 0; _i < notificationInfo.length; _i++) {
                 var _obj = {};
+                // Variable _key is used like a local variable, but is missing a declaration.
+                var _key;
                 for (_key in notificationInfo[_i]) {
                     var _value = notificationInfo[_i][_key];
                     if (!_value) {

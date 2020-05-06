@@ -1152,6 +1152,8 @@
                 // 削除対象ユーザを生成
                 var _deleteOpenfireAccountList = new Array();
                 var _failResultList = new Array();
+                // Variable _k is used like a local variable, but is missing a declaration.
+                var _k;
                 for(_k = 0; _k < _userTargetCreateAccountArray.length; _k++){
                     _deleteOpenfireAccountList.push(_userTargetCreateAccountArray[_k].getOpenfireAccount());
                     var _retItem = {};

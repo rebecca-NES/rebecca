@@ -110,7 +110,8 @@ function ContactListMemberView(partsType, callbacks) {
                     var _memberElems = _targetElem.children('.list-contact').children();
                     var _memberCount = _group.person.length + 1;    
                     var _groupTitle = groupName + '(' + _memberCount + ')';
-                    _headerElem = _targetElem.children('h3').children('a');
+                    // Variable _headerElem is used like a local variable, but is missing a declaration.
+                    var _headerElem = _targetElem.children('h3').children('a');
                     _headerElem.attr('title', groupName);
                     _headerElem.text(_groupTitle);
                     _callBack(_insertPos, person);

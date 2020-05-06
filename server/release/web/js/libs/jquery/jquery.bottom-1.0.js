@@ -25,13 +25,16 @@
 		return this.each(function() {
 			var obj = this;
 			$(obj).bind("scroll", function() {
+				// Variable scrollHeight is used like a local variable, but is missing a declaration.
+				var scrollHeight;
 				if (obj == window) {
 					scrollHeight = $(document).height();
 				}
 				else {
 					scrollHeight = $(obj)[0].scrollHeight;
 				}
-				scrollPosition = $(obj).height() + $(obj).scrollTop();
+				// Variable scrollPosition is used like a local variable, but is missing a declaration.
+				var scrollPosition = $(obj).height() + $(obj).scrollTop();
 				if ( (scrollHeight - scrollPosition) / scrollHeight <= options.proximity) {
 					$(obj).trigger("bottom");
 				}

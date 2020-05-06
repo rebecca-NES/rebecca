@@ -88,8 +88,8 @@ function ColumnFilterView(columnInformation) {
             }
             var _targetColumnElem = _htmlElem;
             var _columnContentElem = _self.getColumnContent();
-
-            _tailOfElm = _columnContentElem.children('div.column-search-message-none');
+            // Variable _tailOfElm is used like a local variable, but is missing a declaration.
+            var _tailOfElm = _columnContentElem.children('div.column-search-message-none');
             if (_tailOfElm.hasClass('column-search-message-none')) {
                 return false;
             }
@@ -106,8 +106,8 @@ function ColumnFilterView(columnInformation) {
         }
         var _targetColumnElem = _htmlElem;
         var _columnContentElem = _self.getColumnContent();
-
-        _tailOfElm = _columnContentElem.children('div.column-search-message-none');
+        // Variable _tailOfElm is used like a local variable, but is missing a declaration.
+        var _tailOfElm = _columnContentElem.children('div.column-search-message-none');
         if (0 < _tailOfElm.length) {
             _tailOfElm.remove();
         }
@@ -335,7 +335,8 @@ function ColumnFilterView(columnInformation) {
         if(msgObj == null) {
             return false;
         }
-        _content = _self.getColumnMessageHtml(msgObj);
+        // Variable _content is used like a local variable, but is missing a declaration.
+        var _content = _self.getColumnMessageHtml(msgObj);
         if (_content == "") {
             return false;
         }

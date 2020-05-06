@@ -59,6 +59,8 @@ function DialogEmotionPointPersonListView(messageItemId, emotionPointList, emoti
         var showList = _getShowList(_self._emotionPointList);
         var _labels = [];
         var _data = [];
+        // Variable key is used like a local variable, but is missing a declaration.
+        var key;
         for (key in _self._emotionIcons) {
             if (key == 0) {
                 continue;
@@ -164,11 +166,14 @@ function DialogEmotionPointPersonListView(messageItemId, emotionPointList, emoti
         var showList = {};
         showList = _getShowList(_self._emotionPointList);
         var keyList = [];
+        // Variable key is used like a local variable, but is missing a declaration.
+        var key;
         for (key in _self._emotionIcons) {
             keyList.add(key);
         }
         keyList.reverse();
-        _ret = "";
+        // Variable _ret is used like a local variable, but is missing a declaration.
+        var _ret = "";
         _ret += '  <canvas id="emotion_canvas" width="420"></canvas>'
         for (key in keyList) {
             var objectKey = keyList[key];

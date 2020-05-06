@@ -417,7 +417,8 @@ function DialogSelectCommunityAddMemberView(communityId) {
                         ownerList.add(owner.getJid());
                     }
                     for(var i=0; i< memberList.getCount(); i++){
-                        member = memberList.get(i);
+                        // Variable member is used like a local variable, but is missing a declaration.
+                        var member = memberList.get(i);
                         if(member.action == AuthorityDef.AUTHORITY_ACTIONS.COMMUNITY_MANAGE &&
                           updateAuthorityList[AuthorityDef.AUTHORITY_ACTIONS.COMMUNITY_MANAGE].includes(member.accountName)){
                             ownerList.add(member.jid);
