@@ -177,7 +177,7 @@ function TabManager() {
                 var _activeTabInfo = _myWorkPlaceTabView.getTabInfo();
                 _self.selectedInfo = _myWorkPlaceTabView;
                 var _defaultColumnInfoList  = _myWorkPlaceTabView.getDefaultColumnInfoList();
-                var _sideListViewImpl = _myWorkPlaceTabView.getSideListViewImpl()
+                var _sideListViewImpl = _myWorkPlaceTabView.getSideListViewImpl();
                 SideListView.getInstance().refreshContents(_sideListViewImpl, _activeTabInfo);
                 callback(_activeTabInfo, _defaultColumnInfoList);
                 _self.isCreateGroupchat("myworkplace");
