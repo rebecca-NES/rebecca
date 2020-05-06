@@ -80,7 +80,7 @@ function PublicGroupChatListView() {
             }
             _self._onGetGroupInfoListHistory(groupchatList);
         }
-        CubeeController.getInstance().getPublicGroupRoomInfoList(_self._currentLoadedItemId, _num, _sortCondition, onGetGroupInfoListHistoryCallback)
+        CubeeController.getInstance().getPublicGroupRoomInfoList(_self._currentLoadedItemId, _num, _sortCondition, onGetGroupInfoListHistoryCallback);
         return true;
     };
 
@@ -197,7 +197,7 @@ function PublicGroupChatListView() {
             default:
                 return 20
         }
-    }
+    };
 
     _proto._onGetGroupInfoListHistory = function(groupchatList) {
         var _self = this;
