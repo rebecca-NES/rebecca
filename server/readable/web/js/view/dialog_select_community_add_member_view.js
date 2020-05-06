@@ -398,7 +398,7 @@ function DialogSelectCommunityAddMemberView(communityId) {
             CubeeController.getInstance().addCommunityMember(_communityId, addMemberList, _onAddCommunityMemberCallback);
         }).catch(function(err){
             errOnDialog(Resource.getMessage('add_member_err_submit'));
-        })
+        });
 
         function _onAddCommunityMemberCallback(addedMemberList){
             if(addedMemberList.hasOwnProperty('content')){
