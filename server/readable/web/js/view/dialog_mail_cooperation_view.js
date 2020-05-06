@@ -249,7 +249,7 @@ function DialogMailCooperationView(title) {
         if (!formObj || typeof formObj != 'object') {
             return false;
         }
-        var _ret = false
+        var _ret = false;
         var _mailAddressElement = formObj.find('#mail_address');
         var _mailAccountElement = formObj.find('#mail_account');
         var _mailPasswordElement = formObj.find('#mail_password');
