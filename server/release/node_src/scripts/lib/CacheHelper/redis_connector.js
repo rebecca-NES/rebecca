@@ -33,7 +33,7 @@
                 ,tls      : false             // tls(ssl)は使用しない。使用する場合は、connectのイベント名が異なる
                 ,connect_timeout : _connectTimeOut      // 接続時のタイムアウト秒数
                 ,socket_keepalive : true                 // redisの接続を維持する
-        }
+        };
         _self._redisClient = null;
         _self._isAuthorized = false;
 
