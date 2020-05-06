@@ -101,7 +101,7 @@ function ColumnIconArea() {
         }
         var _originalIndex = this._movingIconIndex;
         // Variable _ret is used like a local variable, but is missing a declaration.
-        var _ret = ColumnManager.getInstance().sortColumn(_originalIndex, newIndex)
+        var _ret = ColumnManager.getInstance().sortColumn(_originalIndex, newIndex);
         if (_ret) {
             this._iconViewList.move(_originalIndex, newIndex);
         } else {
