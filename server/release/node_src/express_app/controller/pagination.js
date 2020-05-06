@@ -21,7 +21,7 @@
         var _link = '';
         var _settings = {};
         var _pageLinks = [];
-        opts = opts || {}
+        opts = opts || {};
         _settings['base'] = '%_%';
         _settings['format'] = '?page=%#%';
         _settings['total'] = parseInt(Math.ceil(allCount / perPage));
