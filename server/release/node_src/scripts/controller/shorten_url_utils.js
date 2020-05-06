@@ -255,13 +255,14 @@
         var arr = new Array(MAXURLIDLEN);
 
         // 配列arrの初期化
+        // Variable 'i' is used before its declaration.
+        var i;
         for ( i = 0; i < MAXURLIDLEN; i++) {
             arr[i] = seed * i;
         }
 
         // URL-IDの生成。1桁目はURL中の1,7,15,,,番目の文字から、(...)6ケタ目はURL中の6,12,18,,,番目の文字から取る
-        // Variable i is used like a local variable, but is missing a declaration.
-        var i;
+        // Variable j is used like a local variable, but is missing a declaration.
         var j;
         for ( i = 0; i < len; i += MAXURLIDLEN) {
             for ( j = 0; j < MAXURLIDLEN; j++) {
