@@ -353,7 +353,8 @@ export default class NewerScreen extends Component<{}> {
     }
 
     roomDescBackColor = Const.parent_backcolor
-    roomDescTextColor = Const.parent_forecolor
+    // The value assigned to roomDescTextColor here is unused.
+    // roomDescTextColor = Const.parent_forecolor
 
     var from = item.from
     var nickName = Common.urldecode(item.personInfo[from].nickName)
