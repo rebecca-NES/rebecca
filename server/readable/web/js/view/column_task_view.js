@@ -463,7 +463,7 @@ function ColumnTaskView(columnInformation) {
                     }
                 }
             }
-            _self._currentLoadedItemId = _taskMessage.getId()
+            _self._currentLoadedItemId = _taskMessage.getId();
        }
         _self._readAll(taskMessageList);
         if (_self._readAllUnfinishedTask == true || _self._allMessageReceived == true) {
