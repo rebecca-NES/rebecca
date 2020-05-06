@@ -120,22 +120,22 @@ function ColumnInformation() {
     };
     _proto.getRightToSendMessage = function() {
         return this._hasSendMessageRight;
-    }
+    };
     _proto.setRightToSendMessage = function(sendMessageRight) {
         if(typeof sendMessageRight != 'boolean') {
             return;
         }
         this._hasSendMessageRight = sendMessageRight;
-    }
+    };
     _proto.getRightToViewMessage = function() {
         return this._hasViewMessageRight;
-    }
+    };
     _proto.setRightToViewMessage = function(viewMessageRight) {
         if(typeof viewMessageRight != 'boolean') {
             return;
         }
         this._hasViewMessageRight = viewMessageRight;
-    }
+    };
 
 })();
 function FilterColumnInfomation() {
