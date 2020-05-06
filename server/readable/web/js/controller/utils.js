@@ -371,6 +371,8 @@ function Utils() {
 
     if (input.type === 'user') {
       var reName = input.name.replace(/( | |　)+/g, ' ').replace(/^ /, '').replace(/ $/, '');
+      // Variable chars is used like a local variable, but is missing a declaration.
+      var chars;
       if (!input.name) {
         avater.name = "";
       } else if (reName.match(/( | |　)/)) {
