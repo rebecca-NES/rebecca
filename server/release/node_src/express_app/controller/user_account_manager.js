@@ -445,7 +445,8 @@
         return SynchronousBridgeNodeXmpp.getInstance().execBatchUpdate(
             accessToken, [_personInfo], callback
         );
-    }
+        // Avoid automated semicolon insertion (92% of all statements in the enclosing function have an explicit semicolon).
+    };
 
     /**
      * 更新情報確認処理
@@ -454,7 +455,8 @@
      */
     _proto.checkUpdatePersonInfo = function(formData) {
         return checkPersonInfo(formData);
-    }
+        // Avoid automated semicolon insertion (92% of all statements in the enclosing function have an explicit semicolon).
+    };
 
     /**
      * フォームにおける所属を、空文字（全角空白含む）のトリムを施し、重複を排除した配列として整形し、返却する。
@@ -588,7 +590,8 @@
 
             //バリデーションチェックを行い、ユーザ登録から除外するユーザハッシュマップを取得
             var _notApplicableIndexToErrorReasonsMap = _getNotApplicableIndexMap(csvDataArray, roleList);
-            var _notApplicableIndexMapCount = 0
+            // Avoid automated semicolon insertion (92% of all statements in the enclosing function have an explicit semicolon).
+            var _notApplicableIndexMapCount = 0;
             //上記の登録除外ユーザを_resultListにマージする
             for(var _indexStr in _notApplicableIndexToErrorReasonsMap){
                 var _index = +_indexStr;    // 数値化
@@ -647,7 +650,8 @@
                         }
                     }
                     onExecBatchCreateCallBack(_resultList);
-                })
+                    // Avoid automated semicolon insertion (92% of all statements in the enclosing function have an explicit semicolon).
+                });
             }
         }
         //CSVデータから登録対象ユーザのハッシュマップを作成
@@ -1016,7 +1020,8 @@
                     }
                   }
                   onExecBatchUpdateCallBack(_resultList);
-                })
+                    // Avoid automated semicolon insertion (92% of all statements in the enclosing function have an explicit semicolon).
+                });
             };
         };
 
