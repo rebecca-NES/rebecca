@@ -354,7 +354,8 @@
             log.connectionLog(3, '_imageFileData is null ');
             response.writeHead(404);
             response.end();
-            _requestData = '';
+            // The value assigned to _requestData here is unused.
+            // _requestData = '';
             return;
         }
         var _imageType = _imageFileData.type;
@@ -365,7 +366,8 @@
         });
         response.status(200).send(_imageBinary);
         response.end();
-        _requestData = '';
+        // The value assigned to _requestData here is unused.
+        // _requestData = '';
     };
 
     //コミュニティデータの受け付け処理
@@ -754,7 +756,9 @@
                 log.connectionLog(7, '_onFileUpload:: newPath : ' + newPath);
 
                 // サムネイルのURL用パス
-                var _thumbnailPath = newPath;
+                // The initial value of _thumbnailPath is unused, since it is always overwritten.
+                // var _thumbnailPath = newPath;
+                var _thumbnailPath;
                 // 添付ファイルのURLにはテナントUUIDを含めないので、URLエンコード前に除外する
                 _thumbnailPath = newPath.replace(new RegExp(REG_EXP_TENANTUUID + '\/'),'');
                 // ファイル名とパスをURLエンコード
