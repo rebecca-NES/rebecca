@@ -128,7 +128,7 @@ function DialogMurmurColumnNameSetView(columnInfo) {
                                     _self._dialogAreaElement.find("#dialog-error").text(Resource.getMessage('dialog_update_column_name_error'));
                                 }
                                 return;
-                            })
+                            });
         return true;
     };
     _proto._isChangeData = function(formObj) {
