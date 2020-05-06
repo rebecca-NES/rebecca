@@ -1765,10 +1765,13 @@
                         // 返却先で callback されるのを防止するため、true で返却する
                     return true;
                 }
-                    // JSON形式であるかをチェック
+                // JSON形式であるかをチェック
+                //  
                 var _jsonCheck = '';
                 try {
-                    _jsonCheck = JSON.parse(requestData.extras);
+                    // The value assigned to _jsonCheck here is unused.
+                    // _jsonCheck = JSON.parse(requestData.extras);
+                    JSON.parse(requestData.extras);                    
                 } catch (e){
                         // json 形式でないため失敗
                     _log.connectionLog(4, 'extras is not json');
@@ -3944,7 +3947,9 @@
         var _fromJid = _sessionData.getJid();
         var _type = requestData.type;
 
-        var _ret = true;
+        // The initial value of _ret is unused, since it is always overwritten.
+        // var _ret = true;
+        var _ret;
         var _maxURL = 0;
         var _iURL = 0;
         var _urlObj = null;
