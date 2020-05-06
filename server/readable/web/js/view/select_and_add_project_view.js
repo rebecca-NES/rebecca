@@ -112,13 +112,13 @@ function SelectAndAddProjectView(){
             $('div[name="navbar"]').addClass('dashboard_header_navbar');
             $('#watch_view').addClass('dashboard_content-wrapper');
 
-            var pointBackground = "linear-gradient(161deg, rgb(193, 48, 48) 0%, rgb(225, 196, 63) 100%) 50% 50% / 100% 100% no-repeat"
+            var pointBackground = "linear-gradient(161deg, rgb(193, 48, 48) 0%, rgb(225, 196, 63) 100%) 50% 50% / 100% 100% no-repeat";
             $('#sidebar-gj-tp table').css({"background":pointBackground});
 
             _self._headerElement.html('<img src="images/cubee_ico_02.png" alt="">');
 
             $('.project_btn').attr('data_value','myworkplace');
-            $('.project_btn').html(Resource.getMessage('MyWorkplace') + '<i class="fa fa-caret-down"></i>')
+            $('.project_btn').html(Resource.getMessage('MyWorkplace') + '<i class="fa fa-caret-down"></i>');
 
             $('#prj_ico').hide();
             $('#side-bar-recent-ico').hide();
@@ -137,7 +137,7 @@ function SelectAndAddProjectView(){
 
             $('.content-wrapper').css('background-color' , projectcolor);
 
-            var pointBackground = "linear-gradient(161deg, "+hexToRGB(projectcolor)+" 0%, "+hexToRGB(projectcolor,0.5)+" 100%) no-repeat 50% 50% / 100% 100%"
+            var pointBackground = "linear-gradient(161deg, "+hexToRGB(projectcolor)+" 0%, "+hexToRGB(projectcolor,0.5)+" 100%) no-repeat 50% 50% / 100% 100%";
             $('#sidebar-gj-tp table').css({"background":pointBackground});
 
             var _avaterDate = _communityInfo.getLogoUrl();
