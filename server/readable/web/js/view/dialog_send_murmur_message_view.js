@@ -47,7 +47,7 @@ function DialogSendMurmurMessageView(message, column) {
         });
         $('#murmur_send_modal > div.btn_wrapper > button.modal_btn').on('click', function(){
             _self._sendMessageExecute();
-        })
+        });
 
         autosize(_self._dialogInnerElement.find('.message-input-area'));
 
@@ -140,8 +140,8 @@ function DialogSendMurmurMessageView(message, column) {
                 })
                 _self._dialogInnerElement.find('.note-assign-list').show();
             }
-        })
-    }
+        });
+    };
 
     _proto.showDialog = function() {
         var _self = this;
@@ -161,7 +161,7 @@ function DialogSendMurmurMessageView(message, column) {
     _proto.getInnerHtml = function() {
         var _self = this;
         var createInputElement = "<div>";
-        var _autoCompleteType = 'autocomplete'
+        var _autoCompleteType = 'autocomplete';
         createInputElement += '<textarea class="ui-corner-all autoresize-textarea message-input-area '
                             + _autoCompleteType + '" placeholder="" style="min-height: 8em; max-height: 300px;margin-top:3px;border-radius: 3px;"></textarea>';
         createInputElement += ColumnFileUploadPartsView.getHtml(1);
@@ -195,7 +195,7 @@ function DialogSendMurmurMessageView(message, column) {
         _ret += '               <i class="fa fa-pencil-square-o"></i>';
         _ret += '               <span></span>';
         _ret += '           </a>';
-        _ret += '           <a class="ico_btn" id="attach-note-cancel-btn">'
+        _ret += '           <a class="ico_btn" id="attach-note-cancel-btn">';
         _ret += '             <i class="fa fa-close" title="' + Resource.getMessage('dialog_label_cancel') + '"></i></a>';
         _ret += '      </div>';
 
