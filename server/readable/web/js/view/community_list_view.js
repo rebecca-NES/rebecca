@@ -156,7 +156,7 @@ function CommunityListView(){
         _insertHtml += '</div>';
         var _insertElm = $(_insertHtml);
 
-        var _insertElmIndex = 0
+        var _insertElmIndex = 0;
         if (isCreated) {
             _communityArea.prepend(_insertElm);
         } else {
