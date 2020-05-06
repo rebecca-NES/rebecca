@@ -2203,7 +2203,7 @@ function QuestionnaireMessage() {
                 break;
             case 'msgto':
                 if (_self.getRoomType() == Message.TYPE_PUBLIC+'') {
-                    _ret = (_self.getRoomId() == '')
+                    _ret = (_self.getRoomId() == '');
                 } else if (_self.getRoomType() == Message.TYPE_GROUP_CHAT+'' ||
                     _self.getRoomType() == Message.TYPE_COMMUNITY) {
                     _ret = (_self.getRoomId() == value);
