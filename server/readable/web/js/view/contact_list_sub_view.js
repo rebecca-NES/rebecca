@@ -363,7 +363,7 @@ function ContactListSubView(partsType, parent, bFavoriteButton) {
                 _self._parentObj.removeSelectedUserListAll();
             }
         }
-    }
+    };
 
 
 })();
