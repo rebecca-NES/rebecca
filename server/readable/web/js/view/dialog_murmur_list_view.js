@@ -57,7 +57,7 @@ function DialogMurmurListView() {
             _self._dialogInnerElement.find('.scroll_content').off();
             $('#rankingList').children().remove();
             _self.ps.update();
-            _self._dialogInnerElement.find('#dialog-error').text('')
+            _self._dialogInnerElement.find('#dialog-error').text('');
             switch ($(this).attr('id')) {
                 case 'period-week':
                     _self.showWeekRanking();
