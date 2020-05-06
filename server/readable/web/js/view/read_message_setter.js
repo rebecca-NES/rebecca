@@ -51,7 +51,7 @@ function ReadMessageSetter() {
 
             ColumnManager.getInstance().onNotification(_notification);
         } else {
-            throw 'faild to send ExistingRead Message:'
+            throw 'faild to send ExistingRead Message:';
         }
 
         function _callback(responseItemId){
