@@ -104,7 +104,7 @@ function ColumnCommunityTaskView(columnInformation, tabType) {
         CubeeController.getInstance().getCommunityInfo(_communityId, _onGetCommunityInfo);
         function _onGetCommunityInfo(communityInfo){
             if(communityInfo == null){
-                return
+                return;
             }
             _self._info.setCommunityInfomation(communityInfo);
             var _communityName = communityInfo.getRoomName();
@@ -127,7 +127,7 @@ function ColumnCommunityTaskView(columnInformation, tabType) {
             $('.overlay').animate({ 'opacity':0.3}, 200 );
 
         };
-    }
+    };
     _proto.isMuchFilterCondition = function(taskMessage) {
         var _self = this;
         var _columnInfo = _self._info;
@@ -158,7 +158,7 @@ function ColumnCommunityTaskView(columnInformation, tabType) {
             _unfinishedTaskCount = unfinishedTaskCount;
         }
         var _info = _self._info;
-        var _baseDispalyName = _self._createDisplayName()
+        var _baseDispalyName = _self._createDisplayName();
         if(this._tabType == TabItemView.TYPE_COMMUNITY){
             this._displayName = Resource.getMessage('ContextSearchCommunityTask');
             _baseDispalyName = this._displayName;
