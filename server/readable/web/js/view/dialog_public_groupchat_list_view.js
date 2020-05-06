@@ -138,7 +138,7 @@ function DialogPublicGroupchatListView(tabInfo) {
                 if(memberList._array.indexOf(myJid) >= 0){
                     continue;
                 }
-                var avatarInfo = Utils.avatarCreate({type: 'group', name: columnNameList[i].getRoomName()})
+                var avatarInfo = Utils.avatarCreate({type: 'group', name: columnNameList[i].getRoomName()});
                 var columnNameElement = '\
                     <li title="'
                                  + Utils.convertEscapedHtml(columnNameList[i].getRoomName())
@@ -187,7 +187,7 @@ function DialogPublicGroupchatListView(tabInfo) {
             _self.isGotRoomArrayList = true;
             _self._createColumnNameElement(gcList, -1, true);
             _self._dialogInnerElement.find('.scroll_content').scrollTop(0);
-        }
+        };
 
         if(_self.isGotRoomArrayList){
             makeListHtml(_self.roomArrayList);
