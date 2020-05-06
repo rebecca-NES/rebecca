@@ -418,7 +418,7 @@
     var _licenseManager = new LicenseManager();
     LicenseManager.getInstance = function() {
         return _licenseManager;
-    }
+    };
 
     exports.getInstance = LicenseManager.getInstance;
     exports.ERR_NO_KEYS = LicenseManager.CONSTS.ERR_NO_KEYS;
