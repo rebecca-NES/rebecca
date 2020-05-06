@@ -1036,7 +1036,7 @@ function MessageManager() {
                 }
             }
         } else if(notificationType == Notification_model.TYPE_DELETE_NOTE) {
-            var threadRootId = notification.getThreadRootId()
+            var threadRootId = notification.getThreadRootId();
             for (var i=0; i < _self._messageDataList._length; i++) {
                 if(_self._messageDataList.get(i).getThreadRootId() == threadRootId){
                     _self._messageDataList.get(i).setNoteTitle('');
