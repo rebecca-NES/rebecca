@@ -207,7 +207,7 @@ function Utils() {
             return '';
         }
         return str.replace(/(^\s+)|(\s+$)/g, "");
-    }
+    };
     Utils.convertArrayListToString = function(arraylist, delimitor) {
         var _str = '';
         if(arraylist == null || typeof arraylist != 'object') {
@@ -410,5 +410,5 @@ function Utils() {
       avater.color = groupColor[colorN % 8]
     }
     return avater;
-  }
+  };
 })();
