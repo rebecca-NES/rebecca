@@ -372,7 +372,7 @@ function DialogSelectChatRoomAddMemberView(roomId) {
             }else{
                 errOnDialog(Resource.getMessage('add_member_err_submit'));
             }
-        })
+        });
 
         function addGroupChatRoomMemberPromise(){
             return new Promise((resolve, reject) => {
