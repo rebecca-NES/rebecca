@@ -108,7 +108,7 @@
     var DOWNLOAD_CSV_USER_LIST_SJIS = 'ユーザ一覧CSVファイルをダウンロード(カンマ区切り、Shift-JIS)';
 
     var SUCCESS_CREATE_USER = 'ユーザの登録に成功しました';
-    var SUCCESS_PROCESS = '処理に成功しました'
+    var SUCCESS_PROCESS = '処理に成功しました';
     var SUCCESS_RESET_PASSWORD = 'パスワードの再設定に成功しました';
     var SUCCESS_UPDATE_ACCOUNT_TYPE = 'アカウントタイプの更新に成功しました';
 
@@ -355,7 +355,7 @@
         var _tName = null;
 
         function _getUserCountCallback(result, reason, extras, count, items) {
-            var _locals = _getExecBatchCreateLocals(req, _tName, null)
+            var _locals = _getExecBatchCreateLocals(req, _tName, null);
 
             //ライセンスチェック
             // Variable _allCount is used like a local variable, but is missing a declaration.
@@ -1009,7 +1009,7 @@
                     res.locals = _locals;
                     res.render('main');
                     return;
-                })
+                });
             }else {
                 _render(_getFailBatchOutputMessage());
             }
@@ -1305,7 +1305,7 @@
             _locals.txtNickname = _nickname;
             callback(_locals);
           })
-        })
+        });
     };
     //ユーザ一括登録画面変数をセット
     function _getExecBatchCreateLocals(req, tname, createdResults) {
