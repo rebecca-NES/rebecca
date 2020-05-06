@@ -42,14 +42,14 @@ function LayoutManager() {
     var menubar = $('#menubar');
     var menuIcons = $('#menuIcons');
     var contextSearchIcon = $('#searchIcon_for_mobile');
-    var mainOuterContainer = $('#mainOuterContainer')
+    var mainOuterContainer = $('#mainOuterContainer');
 
     LayoutManager.initScreenLayout = function (){
         if (MNG.INIT_COMPLETE) return;
         MNG.INIT_COMPLETE = true;
     };
-    LayoutManager.displayList = function (){}
-    LayoutManager.displayColumn = function (){}
+    LayoutManager.displayList = function (){};
+    LayoutManager.displayColumn = function (){};
     LayoutManager.resetScreenLayout = function (){};
 
     LayoutManager.switchToList = function(){};
