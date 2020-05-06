@@ -495,7 +495,7 @@ function SideMenuUserListView(partsType, viewType, parent) {
         if (ViewUtils.getAvatarUrl(_person) == ViewUtils.DEFAULT_USER_AVATAR_SRC) {
           avatarHtml = ViewUtils.getDefaultAvatarHtml(_person);
         } else {
-          avatarHtml = ViewUtils.getAvatarDataHtmlFromPerson(_person)
+          avatarHtml = ViewUtils.getAvatarDataHtmlFromPerson(_person);
         }
 
         var _insertAvatarHtml = '';
