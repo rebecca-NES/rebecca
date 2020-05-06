@@ -610,7 +610,7 @@ function NotificationIconManager() {
             }
         }
         if(_columnInfo != null) {
-            _removeColumnNotificationIconByColmunInfo(_columnInfo)
+            _removeColumnNotificationIconByColmunInfo(_columnInfo);
         }
         _removeToMeNotification();
         return;
