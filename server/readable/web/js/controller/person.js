@@ -363,8 +363,8 @@ function PersonManager() {
         }
         SideMenuRecentView.getInstance().getColumnInfo().setSearchCondition(_searchCondition);
         SideMenuMurmurView.getInstance().getColumnInfo().setSearchCondition(_searchCondition);
-        const displayVal = $('#side-bar-murmur').css('display')
-        $('#side-bar-murmur').css('display','none')
+        const displayVal = $('#side-bar-murmur').css('display');
+        $('#side-bar-murmur').css('display','none');
         SideMenuMurmurView.getInstance().clearColumn();
         SideMenuMurmurView.getInstance().showMurmurHistory();
         if(displayVal != 'none'){
