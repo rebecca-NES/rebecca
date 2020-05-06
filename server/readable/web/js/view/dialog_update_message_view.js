@@ -46,7 +46,7 @@ function DialogUpdateMessageView(message, column) {
       });
       _self._dialogInnerElement.find('.modal_btn').on('click', function(){
           _self._updateMessageExecute();
-      })
+      });
 
       autosize(_self._dialogInnerElement.find('.message-input-area'));
 
@@ -57,7 +57,7 @@ function DialogUpdateMessageView(message, column) {
       _self._fileUpload = new ColumnFileUploadPartsView(_fileUploadElement, _self);
       var _progressBarElement = _self._dialogInnerElement.find('div.frm-message').find('.submit-message-progress');
       _self._progressBar = new ProgressBarView(_progressBarElement, false);
-    }
+    };
 
     _proto.showDialog = function() {
         var _self = this;
@@ -101,7 +101,7 @@ function DialogUpdateMessageView(message, column) {
     _proto.getInnerHtml = function() {
         var _self = this;
         var createInputElement = "<div>";
-        var _autoCompleteType = 'autocomplete'
+        var _autoCompleteType = 'autocomplete';
         if (_self._message.getType() == Message.TYPE_COMMUNITY) {
             _autoCompleteType = 'autocomplete-for-community" groupId="'+_self._message.getTo()+'"';
         } else if(_self._message.getType() == Message.TYPE_GROUP_CHAT) {
@@ -239,7 +239,7 @@ function DialogUpdateMessageView(message, column) {
                     _self._message.getMessage().indexOf(splitOriginalMessage[splitOriginalMessage.length-1])-1,
                     _self._message.getMessage().indexOf(splitOriginalMessage[splitOriginalMessage.length-1])
                 ) == ' '){
-                    split = ' '
+                    split = ' ';
                 }
                 if(split == '\n'){
                     _text = _text + '\n' + splitOriginalMessage[splitOriginalMessage.length-1];

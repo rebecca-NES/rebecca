@@ -116,7 +116,7 @@ function TabColumnStateStore() {
             }
         }
         return true;
-    }
+    };
 
     _proto._getItem = function(key) {
         var _ret = null;
@@ -631,7 +631,7 @@ function TabColumnStateStore() {
             callback(_ret);
             return;
         }
-        _ret = ViewUtils.getMurmurColumnInfo(_jid)
+        _ret = ViewUtils.getMurmurColumnInfo(_jid);
         CubeeServerConnector.getInstance().getMurmurColumnName(_jid)
                         .then((res)=>{
                             if(typeof res.content == 'object' &&

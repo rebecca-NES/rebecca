@@ -36,7 +36,7 @@ function DialogSettingFilterMyTaskView(title, columnInfo, ownerObj, parentColumn
         var _self = this;
 
         var _ret = "";
-        _ret += '<div id="taskfilter_modal" class="card modal_card">'
+        _ret += '<div id="taskfilter_modal" class="card modal_card">';
         _ret += '<div class="card_title"><p>' + Resource.getMessage('task_filter') + '</p></div>';
         _ret += '<div class="list_wrapper">';
         _ret += '<ul class="modal_list select_list cf">';

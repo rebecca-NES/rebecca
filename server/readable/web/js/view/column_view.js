@@ -154,7 +154,7 @@ function ColumnView(columnInfo) {
             _ret += ColumnSubmitButtonView.getHtml(columnType); 
         }
         return _ret;
-    }
+    };
 
     function checkColumnTypeOnFormArea(columnType) {
         switch(columnType) {
@@ -205,7 +205,7 @@ function ColumnView(columnInfo) {
         if (_columnType != ColumnInformation.TYPE_COLUMN_TIMELINE || _self._ViewMessageRight != false) {
             _ret += '<div class="column-option popup_menu col_menu"'+ (!_closable ? ' style="right: 5px;"' : '') +'>';
             _ret += '<a class="col_btn col_menu_btn popup_btn ico_btn"><i class="fa fa-ellipsis-v"></i></a>';
-            _ret += '</div>'
+            _ret += '</div>';
         }
         if (_closable) {
             _ret += '<a class="col_btn col_close_btn ico_btn" data-toggle="tooltip" data-placement="bottom" data-original-title="' + Resource.getMessage('column_btn_close') + '"><i class="fa fa-close"></i></a>';
@@ -248,7 +248,7 @@ function ColumnView(columnInfo) {
         _ret += '<div class="box-border-for-abbreviation olient-vertical column-content scroll_content"></div> <!-- .flex1 -->';
         _ret += '</div>';
         _ret += '</div>';
-        return(_ret)
+        return(_ret);
     };
     _proto.createHtml = function(FormAreaHtml) {
         var _self = this;
@@ -496,13 +496,13 @@ function ColumnView(columnInfo) {
                 dialogPJ.showDialog();
                 break;
         }
-    }
+    };
     _proto._setOptionMenu = function(optionButton) {
         var _self = this;
         var _optionMenuHtml = WithReadDoneColumnOptionMenu.getHtml(_self._info);
         var _optionMenuElem = optionButton.append(_optionMenuHtml);
         _self._columnOptionMenu = new WithReadDoneColumnOptionMenu(_optionMenuElem, _self._info, _self);
-    }
+    };
     _proto._setColumnTitleToolTip = function() {
         var _self = this;
         var _columnInfo = _self._info;
@@ -873,7 +873,7 @@ function ColumnView(columnInfo) {
             return false;
         }
         _self._showMessageData(msg);
-    }
+    };
     _proto._showMessageData = function(msg) {
         if (_validation({'object' : msg}) == false) {
             return false;
@@ -1255,7 +1255,7 @@ function ColumnView(columnInfo) {
 
             _insertElement.detach();
             _targetElm.prepend(_insertElement);
-            _self._getMsgObjIndexList().move(_replyInsertIndex, 0)
+            _self._getMsgObjIndexList().move(_replyInsertIndex, 0);
             _messageElm = _insertElement;
         } else {
             _content = _self.createDivMessageBorder(_content);
@@ -1428,7 +1428,7 @@ function ColumnView(columnInfo) {
                     var _threadTargetMsgObj = _threadTargetMsgObjIndexList.get(_j).getMsgObj();
                     var _htmlElem = _threadTargetMsgObj.getHtmlElement();
                     _htmlElem.remove();
-                    var _delPosItemId = _threadTargetMsgObj.getMessage().getItemId()
+                    var _delPosItemId = _threadTargetMsgObj.getMessage().getItemId();
                     var _pos = _self.getMsgObjIndexPositionByItemId(_delPosItemId);
                     _self.removeFromHash(_delPosItemId);
                     var _indexList = _self._getMsgObjIndexList();
@@ -1496,7 +1496,7 @@ function ColumnView(columnInfo) {
     };
 
     _proto.afterCreateMessageHtml = (_msgElement) => {
-    }
+    };
 
     _proto.deleteMessageBase = function(itemId, deleteFlag, adminDeleted) {
         var _deleteFlag = deleteFlag ? deleteFlag : 1;
@@ -1822,7 +1822,7 @@ function ColumnView(columnInfo) {
                 }
             }
         }
-    }
+    };
     _proto.onNoteAssignChangedReceived = function(updateMessages, notification) {
         var _self = this;
         var _htmlElement = _self.getHtmlElement();
@@ -1857,7 +1857,7 @@ function ColumnView(columnInfo) {
                 _htmlElement.find('[itemid='+updateMessages[i]+'] .message-body .message-body-note').remove();
             }
         }
-    }
+    };
     _proto.onMessageUpdateReceived = function(notification) {
         var _self = this;
         var _itemId = notification.getMessage().getItemId();
@@ -1900,7 +1900,7 @@ function ColumnView(columnInfo) {
                     var url = _element.attr('data-url');
                     CubeeController.getInstance().downloadThumbnailImage(url, _itemId, _element);
                 }
-            })
+            });
         }
         ViewUtils.showOpenGraphProtocolImage(targetElement);
 
@@ -1931,7 +1931,7 @@ function ColumnView(columnInfo) {
         let hashtagElement = $(targetElement).find('div[itemid='+_itemId+'] a.hashtag');
         _self.getMsgObjByItemId(_itemId)._setHashtagEvent(hashtagElement);
         _self.afterCreateMessageHtml(targetElement);
-    }
+    };
     _proto.updateColumnTitle = function(color) {
         var _self = this;
         var _columnInfo = _self._info;
@@ -2184,7 +2184,7 @@ function ColumnView(columnInfo) {
         } else {
           return _self.getHtmlElement().find('div.column-content');
         }
-    }
+    };
 
     _proto.refreshScrollbar = function() {
       var _self = this;
@@ -2208,7 +2208,7 @@ function ColumnView(columnInfo) {
           _self._showReadMore(true);
         })
       }
-    }
+    };
 
     _proto.onUpdateQuestionnaireMessageReceive = function(message) {
         var _self = this;
@@ -2272,5 +2272,5 @@ function ColumnView(columnInfo) {
                 }
                 break;
         }
-    }
+    };
 })();

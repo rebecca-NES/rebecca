@@ -145,7 +145,7 @@ function ColumnChatView(columnInformation) {
         var _text = _self._textarea.getText();
         var retflag = _self._uploadFileAndSendMessage(_text, _sendChatMessage, _textTitleArea);
         _self._textarea.clearTextFromFlag(retflag);
-    }
+    };
     _proto.createMessageObjectOnly = function(message) {
         var _self = this;
         if (!message || typeof message != 'object') {

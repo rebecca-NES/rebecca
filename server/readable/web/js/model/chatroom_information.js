@@ -71,13 +71,13 @@ function ChatRoomInformation() {
             return this._memberListWithData[memberJid].action;
         }
         return null;
-    }
+    };
     _proto.getMembersAccountName = function(memberJid) {
         if ('accountName' in this._memberListWithData[memberJid]) {
             return this._memberListWithData[memberJid].accountName;
         }
         return null;
-    }
+    };
     _proto.removeMemberList = function(memberJid) {
         if(memberJid == null || typeof memberJid != 'string') {
             return;

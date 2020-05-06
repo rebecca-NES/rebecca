@@ -342,7 +342,7 @@ limitations under the License.
                 _message,
                 true,
                 _self.getMessage().getItemId(),
-                _isReadMore)
+                _isReadMore);
         }
         if (_thumbnailHtml) {
             _targetInnerHtml += _thumbnailHtml;

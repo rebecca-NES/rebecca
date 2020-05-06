@@ -579,7 +579,7 @@ function GroupChatInfoUpdateNotification() {
     };
     _proto.getPreviousPrivacyType = function() {
         return this._previousPrivacyType;
-    }
+    };
     _proto.setPreviousPrivacyType = function(previousPrivacyType) {
         if(previousPrivacyType == null || typeof previousPrivacyType != 'number') {
             return;
@@ -1050,7 +1050,7 @@ function AuthorityInfoUpdateNotification() {
     var _proto = AuthorityInfoUpdateNotification.prototype;
     _proto.getSubType = function() {
         return this._subType;
-    }
+    };
     _proto.setSubType = function(subtype) {
         if(subtype == null || typeof subtype != 'string') {
             return;
@@ -1091,7 +1091,7 @@ function MurmurSetColumnNameNotification() {
 
     _proto.getJid = function() {
         return this._jid;
-    }
+    };
     _proto.setJid = function(jid) {
         if(jid == null || typeof jid != 'string') {
             return;
@@ -1240,7 +1240,7 @@ function EmotionPointNotification() {
     };
     _proto.getEmotionPoint = function() {
         return this._emotion_point;
-    }
+    };
     _proto.setEmotionPoint = function(emotion_point) {
         if(emotion_point == null || typeof emotion_point != 'number') {
             return;
@@ -1250,7 +1250,7 @@ function EmotionPointNotification() {
         //    return;
         // }
         this._emotion_point = emotion_point;
-    }
+    };
     _proto.getMessage = function() {
         return this._message;
     };

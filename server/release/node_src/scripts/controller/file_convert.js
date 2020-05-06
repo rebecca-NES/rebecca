@@ -64,7 +64,7 @@
             _callFunction(_absFilePath, onCallback);
         });
         return true;
-    }
+    };
 
     /**
      * サムネイル画像生成
@@ -258,7 +258,7 @@
             _callFunction(originalFilePath, onCallback);
         });
         return true;
-    }
+    };
 
     /**
      * サムネイル画像取得

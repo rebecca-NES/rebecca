@@ -158,7 +158,7 @@ function TabCommunityItemView() {
         }
         var _communityInfo = notification.getUpdatedCommunityInfo();
         var _updateRoomId = _communityInfo.getRoomId();
-        var _communityId = self._tabInfo.extras.communityId
+        var _communityId = self._tabInfo.extras.communityId;
         if(_updateRoomId != _communityId){
             return;
         }

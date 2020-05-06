@@ -52,7 +52,7 @@ function ColumnPublicMessageView(parent, msg) {
         _ret += ' itemId="' + _itemId + '"';
         _ret += '>';
         _ret += this._getPublicMessageBodyHtml();
-        _ret += '</div> <!-- .timeline-message -->'
+        _ret += '</div> <!-- .timeline-message -->';
         return _ret;
     };
     _proto._getPublicReplyMessageHtml = function() {
@@ -69,7 +69,7 @@ function ColumnPublicMessageView(parent, msg) {
         _ret += '>';
         _ret += this._getPublicMessageBodyHtml();
         _ret += '</div>';
-        _ret += '</div> <!-- .thread-message -->'
+        _ret += '</div> <!-- .thread-message -->';
         return _ret;
     };
     _proto._getPublicMessageBodyHtml = function() {

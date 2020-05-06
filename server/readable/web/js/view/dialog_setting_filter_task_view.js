@@ -266,7 +266,7 @@ function DialogSettingFilterTaskView(title, columnInfo, ownerObj, parentColumn) 
       _ret += '<a class="modal_exit modal_exit_btn ico_btn ui-dialog-titlebar-close ui-corner-all" role="button"><i class="fa fa-times"></i></a>';
 
       return _ret;
-    }
+    };
 
     _proto._createEventHandler = function() {
         var _self = this;
@@ -275,7 +275,7 @@ function DialogSettingFilterTaskView(title, columnInfo, ownerObj, parentColumn) 
         _rootElement.on('click', '#task_filter_btn', function() {
             _self.submit(_self._dialogAreaElement);
         });
-    }
+    };
 
     _proto.submit = function(dialogObj) {
         var _self = this;

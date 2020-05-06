@@ -53,7 +53,7 @@ function FavoriteStore() {
                 list.add(_favoriteGroup);
             }
         }
-    }
+    };
 
     _proto.getGroupMember = function(favoriteGroupId){
         return this._favoriteGroupList[favoriteGroupId].memberList;

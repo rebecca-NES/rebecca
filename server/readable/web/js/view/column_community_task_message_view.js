@@ -178,8 +178,8 @@ function ColumnCommunityTaskMessageView(parent, msg) {
                         childTask : _childTask
                     };
 
-                                        TooltipView.getInstance().setActionToolTip(_actionToolTipType, _childTaskElem, $('<div class="popup_menu msg_menu inner_task"><a class="msg_btn msg_menu_btn popup_btn ico_btn"><i class="fa fa-ellipsis-v"></i></a></div>'), false);
-                    TooltipView.getInstance().setActionToolTipEvent(_subData, _childTaskElem.find('.inner_task'))
+                    TooltipView.getInstance().setActionToolTip(_actionToolTipType, _childTaskElem, $('<div class="popup_menu msg_menu inner_task"><a class="msg_btn msg_menu_btn popup_btn ico_btn"><i class="fa fa-ellipsis-v"></i></a></div>'), false);
+                    TooltipView.getInstance().setActionToolTipEvent(_subData, _childTaskElem.find('.inner_task'));
                 }
             }
         };

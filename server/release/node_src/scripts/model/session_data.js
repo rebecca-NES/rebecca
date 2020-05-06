@@ -229,6 +229,6 @@
             return null;
         }
         return this._tenantUuid + ' ' + this._loginAccount ;
-    }
+    };
     exports.create = SessionData.create;
 })();

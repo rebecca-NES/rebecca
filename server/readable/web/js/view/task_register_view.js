@@ -70,7 +70,7 @@ function TaskRegister(parentObject, message, mode){
         _self._taskDueDate = (_self._messageData.getDueDate ? _self._messageData.getDueDate() : _self._messageData.getDueDate);
         _self._taskDueDateStr = (_self._taskDueDate ? Utils.getDate(_self._taskDueDate.toString(), FORMAT) : '');
         if(_self._mode == TaskRegister.mode_add){
-            _self._taskStatus = TaskMessage.STATUS_UNKNOWN
+            _self._taskStatus = TaskMessage.STATUS_UNKNOWN;
             _self._taskPriority = TaskMessage.PRIORITY_LOW;
         }else{
             _self._taskStatus = _self._messageData.getStatus();
@@ -118,8 +118,8 @@ function TaskRegister(parentObject, message, mode){
         var _ret = '';
         var titleLabel = 'unknown node!';
         switch(this._mode){
-            case TaskRegister.mode_add : titleLabel = Resource.getMessage('task_title_registerTask'); break
-            case TaskRegister.mode_edit: titleLabel = Resource.getMessage('task_title_editTask'); break
+            case TaskRegister.mode_add : titleLabel = Resource.getMessage('task_title_registerTask'); break;
+            case TaskRegister.mode_edit: titleLabel = Resource.getMessage('task_title_editTask'); break;
         }
         _ret += '<div id="taskregist_modal" class="card modal_card">';
         _ret += '  <div class="card_title">';
@@ -467,7 +467,7 @@ function TaskRegister(parentObject, message, mode){
 
     _proto.getRegistedMessageData = function(){
         return this._registedMessageData;
-    }
+    };
 
     _proto.registTask = function(callback){
         var _self = this;
@@ -580,7 +580,7 @@ function TaskRegister(parentObject, message, mode){
 
         return false;
 
-    }
+    };
 
     _proto.getInputContent = function(taskMessage, callback){
         var _self = this;

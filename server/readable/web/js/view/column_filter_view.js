@@ -73,7 +73,7 @@ function ColumnFilterView(columnInformation) {
             _self._getNotAvailableMessageHtmlIfMessageNothing(_self._getMsgObjIndexList().getCount());
             $(window).trigger('resize');
             _self.refreshScrollbar();
-            _self._disableBottomEvent = false
+            _self._disableBottomEvent = false;
         }
         _self._disableBottomEvent = true
         CubeeController.getInstance().searchMessage(_self._currentLoadedItemId, _getCount, _columnInfo.getSearchCondition(), onGetHistoryMessageCallback);
@@ -93,7 +93,7 @@ function ColumnFilterView(columnInformation) {
             if (_tailOfElm.hasClass('column-search-message-none')) {
                 return false;
             }
-            var _content = '<div class="column-search-message-none">' + Resource.getMessage('search_result_message_none') + '</div>'
+            var _content = '<div class="column-search-message-none">' + Resource.getMessage('search_result_message_none') + '</div>';
 
             _columnContentElem.prepend(_content);
         }
@@ -266,7 +266,7 @@ function ColumnFilterView(columnInformation) {
     _proto.showHistoryMessage = function(message) {
         var _self = this;
         _super.showHistoryMessage.call(_self, message);
-    }
+    };
     _proto.onUpdateMessageReceive = function(message) {
         var _self = this;
         _self.onAddMessageReceive(message);
@@ -354,7 +354,7 @@ function ColumnFilterView(columnInformation) {
         _self._setToolTipToMessageElem(_tooltipTargetElm, msg, msgObj);
         msgObj.onAddMessageReferCount();
         return true;
-    }
+    };
 
     _proto.showMessage = function(msg) {
         var _self = this;
@@ -369,7 +369,7 @@ function ColumnFilterView(columnInformation) {
         if (_type == Message.TYPE_TASK) {
             var isCommunityTask = function(){
                 return msg.getCommunityId() && msg.getCommunityId().length > 0;
-            }
+            };
             if((msg.getOwnerJid() != LoginUser.getInstance().getJid()) && !isCommunityTask()){
                 return false;
             }
@@ -547,7 +547,7 @@ function ColumnFilterView(columnInformation) {
                 _ret = ColumnCommunityFeedView.cssClassCommunityFeed;
                 break;
             case Message.TYPE_MURMUR:
-                _ret = ColumnMurmurView.cssClassMurmur
+                _ret = ColumnMurmurView.cssClassMurmur;
                 break;
             default:
                 break;

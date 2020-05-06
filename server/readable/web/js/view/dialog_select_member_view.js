@@ -188,7 +188,7 @@ function DialogSelectMemberView(title, groupId) {
         var _accountName = person.getLoginAccount();
         var _ret = '';
         _ret = '<li>';
-        _ret += '  <span class="item text-abbreviation"></span>'
+        _ret += '  <span class="item text-abbreviation"></span>';
         _ret += '  <span class="cancel"><img src="images/add_close.png"></span>';
         _ret += '</li>';
         _ret = $(_ret);

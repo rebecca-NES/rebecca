@@ -217,7 +217,7 @@ function ColumnTaskMessageView(parent, msg) {
           _self._statusAreaTimerBlinkIDList.removeByKey(ownerJid);
         };
         _timerId = ViewUtils.validBlinkTaskStatusElement(_rootElement,ColumnTaskMessageView.DEMAND_TASK_BLINK_DELAY,_baseHtml,_demandTaskHtml,_self._isMultiOwner,ownerJid);
-        var _timerIdObj = {timerId : _timerId}
+        var _timerIdObj = {timerId : _timerId};
         var _ret = _self._statusAreaTimerBlinkIDList.setByKey(ownerJid,_timerIdObj);
         if(!_ret){
             var _ret = _self._statusAreaTimerBlinkIDList.add(ownerJid,_timerIdObj);
@@ -240,7 +240,7 @@ function ColumnTaskMessageView(parent, msg) {
           ViewUtils.invalidBlinkTaskStatusElement(_timerId,_rootElement,_baseHtml,_self._isMultiOwner,ownerJid);
           _self._statusAreaTimerBlinkIDList.removeByKey(ownerJid);
         };
-    }
+    };
 
     _proto._isParent = function() {
         var _ret = false;
@@ -499,7 +499,7 @@ function ColumnTaskMessageView(parent, msg) {
         _ret += '<div class="message-footer">';
         _ret += '<div class="olient-horizontal box-border width-100 task-footer-contents cf">';
         var _siblingTaskDataList = msg.getSiblingTaskDataList();
-        var _siblingTaskCount = _siblingTaskDataList.getCount()
+        var _siblingTaskCount = _siblingTaskDataList.getCount();
         if (ViewUtils.isIE89()) _ret += '<table class="width-100"><tr><td class="width-100">';
         _ret += '<div class="task-assign box-border-only-ms-webkit flex1">';
 
@@ -735,11 +735,11 @@ function ColumnTaskMessageView(parent, msg) {
             _ret += '<div class="child-task-status-view task-status-view ' + _childTaskStatusClassName + '">' + _childTaskStatusStr + '</div>';
         }
         if(ViewUtils.isIE89()) {
-            _ret += '</td></tr></table>'
+            _ret += '</td></tr></table>';
         }
         _ret += '</div>';
 
-        var _bChanged = _childTaskChangeItemCheck(childTask, parentTask)
+        var _bChanged = _childTaskChangeItemCheck(childTask, parentTask);
         _ret += _childTaskChangeItem(childTask, parentTask, _bChanged);
         _ret += '</div>';
         return _ret;
@@ -845,7 +845,7 @@ function ColumnTaskMessageView(parent, msg) {
         _ret += '<div class="edit-attached-files">';
         _ret += '</div>';
         _ret += '<div class="edit-task-client-owner box-border olient-horizontal width-100">';
-        _ret += '<div class="edit-task-label">' + Resource.getMessage('task_owner_edit') + '<span class="edit-task-label-margin">&nbsp;</span>：</div>'
+        _ret += '<div class="edit-task-label">' + Resource.getMessage('task_owner_edit') + '<span class="edit-task-label-margin">&nbsp;</span>：</div>';
         _ret += '<div class="edit-task-owner">';
         _ret += '<select id="task-owner" class="ui-corner-all">';
         _ret += '</select>';

@@ -111,8 +111,8 @@ function DialogChatRoomCreateRoomInfoView(title, memberList, callback) {
         _ret += '<p id="dialog-error" class="ui-state-error-text dialog_error_footer"></p>';
         _ret += ' <button id="more_button" type="button" class="modal_btn success_btn ui-button ui-widget ui-state-default ui-corner-all ui-button-text-only ui-state-hover" role="button" aria-disabled="false"><span class="ui-button-text">' + Resource.getMessage('button_create') +'</span></button>';
         _ret += '</div>';
-        _ret += '<a class="modal_exit modal_exit_btn ico_btn ui-dialog-titlebar-close ui-corner-all" role="button"><i class="fa fa-times"></i></a>'
-        _ret += '</div>'
+        _ret += '<a class="modal_exit modal_exit_btn ico_btn ui-dialog-titlebar-close ui-corner-all" role="button"><i class="fa fa-times"></i></a>';
+        _ret += '</div>';
         return $(_ret);
     };
 

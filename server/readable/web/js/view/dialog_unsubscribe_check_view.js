@@ -94,7 +94,7 @@ function DialogUnsubscribeCheckView(_roomId) {
       .catch(function(err) {
           errOnDialog(Resource.getMessage('leave_member_err'));
           _self.submitFalse = true;
-      })
+      });
 
       function errOnDialog(errMessage){
           var _rootElement = _self._dialogInnerElement;

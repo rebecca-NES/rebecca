@@ -128,7 +128,7 @@ function ColumnRecentView(columnInformation) {
                     _extras = {};
                 }
             }
-        })
+        });
     }
     _proto.getHistoryMessage = function() {
         var _self = this;
@@ -156,9 +156,9 @@ function ColumnRecentView(columnInformation) {
             $(window).trigger('resize');
             _self.refreshScrollbar();
             _self.getHtmlElement().find('.column-recent-frm-message').find(':input').attr('disabled', false);
-            _self._disableBottomEvent = false
+            _self._disableBottomEvent = false;
         }
-        _self._disableBottomEvent = true
+        _self._disableBottomEvent = true;
         CubeeController.getInstance().searchMessage(_self._currentLoadedItemId, _getCount, _columnInfo.getSearchCondition(), onGetHistoryMessageCallback);
     };
     function createQuickFilterObject(_htmlElem, searchKeyword) {

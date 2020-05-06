@@ -31,7 +31,7 @@ function DialogAddColumnView(mailCooperationSettingServerList) {
         _super._init.call(_self);
 
         _self._tabDetailHtmlIdList.add(DialogAddColumnView.NEW_TAB_DETAIL_HTML_ID);
-        delete _self._buttons[DialogOkCancelView.LABEL_CANCEL]
+        delete _self._buttons[DialogOkCancelView.LABEL_CANCEL];
 
         _self._dialogAreaElement = $('#modal_area');
         _self._dialogAreaElement.html(_self.getColumnAddMenuHtml());

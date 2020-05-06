@@ -1002,7 +1002,7 @@
                                 order : '1'
                             }
                         }
-                    }
+                    };
                     _isRequestedUserData = _synchronousBridgeNodeXmpp.searchPerson(_accessToken, _requestData, _onSearchPersonCallback);
                 }
             } else{
@@ -1010,7 +1010,7 @@
             }
             if(_isRequestedUserData == false) {
                 // ログにエラー（情報が取れなかった）として出力
-                var _ERROR_REASON_XMPP_SERVER = 6
+                var _ERROR_REASON_XMPP_SERVER = 6;
                 _onSearchPersonCallback(false, _ERROR_REASON_XMPP_SERVER, {}, 0, {});
             }
         }

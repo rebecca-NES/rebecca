@@ -101,7 +101,7 @@ function DialogPasswordView(title) {
         if (!passwordFormObj || typeof passwordFormObj != 'object') {
             return false;
         }
-        var _ret = false
+        var _ret = false;
         var _oldPasswordElement = passwordFormObj.find('#current_password');
         var _newPasswordElement = passwordFormObj.find('#new_password');
         var _newPasswordConfirmElement = passwordFormObj.find('#new_password_confirm');

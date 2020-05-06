@@ -53,7 +53,7 @@ function ApiCubee() {
     ApiCubee.API_CREATE_RIGHTS = 'CreateRight';
     ApiCubee.API_ASSIGN_POLISY_TO_USER = 'AssignPolicyToUsers';
     ApiCubee.API_GET_USER_POLICIES_BY_RESOURCE = 'GetUserPoliciesByResource';
-    ApiCubee.API_UNASSIGN_POLICY_FROM_USER = 'UnassignPolicyFromUser'
+    ApiCubee.API_UNASSIGN_POLICY_FROM_USER = 'UnassignPolicyFromUser';
 
     ApiCubee.API_AUTHORIY_CHANGED = 'AuthorityDataChanged';
 
@@ -1046,7 +1046,7 @@ function ApiCubee() {
 
     function convertFilterConditionDataToURIEncode(filterCondition) {
         if(filterCondition == null || typeof filterCondition != 'object') {
-            return null
+            return null;
         }
         var _type = filterCondition.type;
         switch(_type) {
@@ -1490,7 +1490,7 @@ function ApiCubee() {
             }
         };
         return [JSON.stringify(_request), _id];
-    }
+    };
 
     ApiCubee.createPolicy = function(accessToken, userName, policy_id, policy_tid, translations){
         var _id = ApiCubee.API_CREATE_POLICY + Utils.getRandomNumber(0, Math.pow(2, 31) - 1);
@@ -1507,7 +1507,7 @@ function ApiCubee() {
             }
         };
         return [JSON.stringify(_request), _id];
-    }
+    };
 
     ApiCubee.createRight = function(accessToken, policy_id, action, resource_id){
         var _id = ApiCubee.API_CREATE_RIGHTS + Utils.getRandomNumber(0, Math.pow(2, 31) - 1);
@@ -1524,7 +1524,7 @@ function ApiCubee() {
             }
         };
         return [JSON.stringify(_request), _id];
-    }
+    };
 
     ApiCubee.assignPolicyToUser = function(accessToken, policy_id, users){
         var _id = ApiCubee.API_ASSIGN_POLISY_TO_USER + Utils.getRandomNumber(0, Math.pow(2, 31) - 1);
@@ -1539,7 +1539,7 @@ function ApiCubee() {
             }
         };
         return [JSON.stringify(_request), _id];
-    }
+    };
 
     ApiCubee.getUserPoliciesByResource = function(accessToken, resource_id){
         var _id = ApiCubee.API_GET_USER_POLICIES_BY_RESOURCE + Utils.getRandomNumber(0, Math.pow(2, 31) - 1);
@@ -1553,7 +1553,7 @@ function ApiCubee() {
             }
         };
         return [JSON.stringify(_request), _id];
-    }
+    };
 
     ApiCubee.unassignPolicyFromUser = function(accessToken, users, policy_id){
         var _id = ApiCubee.API_UNASSIGN_POLICY_FROM_USER + Utils.getRandomNumber(0, Math.pow(2, 31) - 1);
@@ -1568,11 +1568,11 @@ function ApiCubee() {
             }
         };
         return [JSON.stringify(_request), _id];
-    }
+    };
 
     ApiCubee.updateThreadTitle = function(accessToken, message, threadTitle){
         var _id = ApiCubee.API_UPDATE_THREAD_TITLE + Utils.getRandomNumber(0, Math.pow(2, 31) - 1);
-        var _content = {}
+        var _content = {};
         switch (message.getType()) {
             case Message.TYPE_PUBLIC:
                 _content['type'] = 'Public';
@@ -1609,11 +1609,11 @@ function ApiCubee() {
         };
         return[JSON.stringify(_request), _id];
 
-    }
+    };
 
     ApiCubee.getThreadTitleList = function(accessToken, _columnInfo){
         var _id = ApiCubee.API_GET_THREAD_TITLE_LIST + Utils.getRandomNumber(0, Math.pow(2, 31) - 1);
-        var _content = {}
+        var _content = {};
         switch (_columnInfo.getColumnType()) {
             case ColumnInformation.TYPE_COLUMN_TIMELINE:
                 _content['type'] = 'Public';
@@ -1651,11 +1651,11 @@ function ApiCubee() {
         };
         return[JSON.stringify(_request), _id];
 
-    }
+    };
 
     ApiCubee.updateMessage = function(accessToken, editMessage, message){
         var _id = ApiCubee.API_GET_THREAD_TITLE_LIST + Utils.getRandomNumber(0, Math.pow(2, 31) - 1);
-        var _content = {}
+        var _content = {};
         switch (message.getType()) {
             case Message.TYPE_PUBLIC:
                 _content['type'] = 'Public';
@@ -1689,11 +1689,11 @@ function ApiCubee() {
         };
         return[JSON.stringify(_request), _id];
 
-    }
+    };
 
    ApiCubee.sendQuoteMessage = function(accessToken, quoteMessage){
        var _id = ApiCubee.API_SEND_MESSAGE + Utils.getRandomNumber(0, Math.pow(2, 31) - 1);
-       var _content = {}
+       var _content = {};
        switch (quoteMessage.type) {
            case Message.TYPE_PUBLIC:
                _content['type'] = 'Public';
@@ -1729,7 +1729,7 @@ function ApiCubee() {
        };
        return[JSON.stringify(_request), _id];
 
-   }
+   };
    ApiCubee.createSendEmotionPointRequest = function(accessToken, itemId, emotionValue) {
        var _api = ApiCubee.API_MESSAGE_OPTION;
        var _id = _api + Utils.getRandomNumber(0, Math.pow(2, 31) - 1);

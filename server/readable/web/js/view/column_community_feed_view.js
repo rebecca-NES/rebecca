@@ -372,7 +372,7 @@ function ColumnCommunityFeedView(communityFeedColumnInformation, tabType) {
             $(window).trigger('resize');
         }
         CubeeController.getInstance().getCommunityInfo(communityId, callback);
-    }
+    };
     _proto.onAddMessageReceive = function(questionnaireMessage) {
         var _self = this;
         if(questionnaireMessage == null || questionnaireMessage.getType() != Message.TYPE_QUESTIONNAIRE) {

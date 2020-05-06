@@ -48,7 +48,7 @@ function DialogPersonListView(title, personList) {
         _self._dialogAreaElement = null;
         _self._dialogInnerElement = null;
         _self._personList = null;
-    }
+    };
     _proto._onCloseDialog = function() {
         ColumnManager.getInstance().closePersonListDialog();
     };

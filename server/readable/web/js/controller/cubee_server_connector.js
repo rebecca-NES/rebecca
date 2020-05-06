@@ -2336,7 +2336,7 @@ function CubeeServerConnector() {
         }
         var _id = _api[1];
         var _callback = function(receiveObject) {
-            var _relObj = _getItemsFromReceiveObject(receiveObject)
+            var _relObj = _getItemsFromReceiveObject(receiveObject);
             if(!_relObj[0]){ 
                 if(onAddContactListMemberCallback != null) {
                     onAddContactListMemberCallback(false, receiveObject.errorCode);
@@ -2372,7 +2372,7 @@ function CubeeServerConnector() {
                 var _item = {
                     jid: _fMemberItems[_j].jid,
                     contactListGroup: _fMemberItems[_j].contactListGroup
-                }
+                };
                 _fMemberList.add(_item);
             }
             if(onAddContactListMemberCallback != null) {
@@ -3651,7 +3651,7 @@ function CubeeServerConnector() {
                 ApiCubee.CONTENT_TYPE_MURMUR];
             if (_content.type && array.includes(_content.type) &&
                 _subType == MessageUpdateNotification.ACTION_TYPE_UPDATE) {
-                    _onMessageChanged(_self, _content)
+                    _onMessageChanged(_self, _content);
                     return;
                 }
         }
@@ -5942,7 +5942,7 @@ function CubeeServerConnector() {
 
     function _getPersonDataFromResponseItem(item) {
         var _person = new Person();
-        _person.setId(Utils.getSafeNumberData(item.id))
+        _person.setId(Utils.getSafeNumberData(item.id));
         _person.setJid(Utils.getSafeStringData(item.jid));
         var _nickName = Utils.getSafeStringData(item.nickName);
         if (_nickName == '') {

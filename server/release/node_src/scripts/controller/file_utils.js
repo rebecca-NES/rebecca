@@ -284,7 +284,7 @@
             }
             return _ret;
         }
-    }
+    };
 
     /**
      * URLからファイルパス部分を取得
@@ -339,7 +339,7 @@
         }
         // バックスラッシュでスプリット
         var _dirs = url.split(path.sep);
-        var _rPath = path.join(__dirname, DATA_DIR)
+        var _rPath = path.join(__dirname, DATA_DIR);
 
         // location_root を "/" ではじまり、"/" で終わるよう 構成する
         if (location_root[0] != path.sep){
@@ -391,7 +391,7 @@
             .replace(/'/g, '%27')
             .replace(/\(/g, '%28')
             .replace(/\)/g, '%29');
-    }
+    };
 
     var _fileUtils = new FileUtils();
 

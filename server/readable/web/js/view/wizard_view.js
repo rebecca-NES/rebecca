@@ -179,7 +179,7 @@ function WizardView() {
     function createChatList(_resultPersonList) {
 
         var _personListCount = _resultPersonList.getCount();
-        var _loginUserJid = LoginUser.getInstance().getJid()
+        var _loginUserJid = LoginUser.getInstance().getJid();
         var _ret = "";
         for (var _i = 0; _i < _personListCount; _i++) {
             var _person = _resultPersonList.get(_i);
@@ -408,7 +408,7 @@ function WizardView() {
             thumbBox: '.thumbBox',
             spinner: '.spinner',
             imgSrc: ''
-        }
+        };
         var cropper;
 
         $('.img_edit_area, .cropped').hide();
@@ -442,7 +442,7 @@ function WizardView() {
                 reader.onload = function (e) {
                     options.imgSrc = e.target.result;
                     cropper = new cropbox(options);
-                }
+                };
                 reader.readAsDataURL(this.files[0]);
                 $(this).parents('.cropped_wrapper').find('.cropped').hide();
                 $(this).parents('.cropped_wrapper').find('.img_edit_area').fadeIn();

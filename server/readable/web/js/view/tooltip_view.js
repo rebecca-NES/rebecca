@@ -68,7 +68,7 @@ function TooltipView() {
             _selector = '#tooltipReplyMessageActionBar';
             break;
           case TooltipView.TYPE_PUBLIC_REPLY_CAN_DELETE:
-            _selector = '#tooltipReplyMessageActionCanDeleteBar'
+            _selector = '#tooltipReplyMessageActionCanDeleteBar';
             break;
           case TooltipView.TYPE_TASK:
             _selector = '#tooltipTaskMessageAction';
@@ -499,7 +499,7 @@ function TooltipView() {
                         this.total.thanks_all_count = count;
                     }
                 }
-            })
+            });
             updateGoodJobCount(_jid, sidebarGjTp);
             updateGoodJobAllCount(_jid, sidebarGjTp);
             updateThanksPointsCount(_jid, sidebarGjTp);
@@ -728,7 +728,7 @@ function TooltipView() {
 
             return false;
         }
-        var _toolTipContent = '<div class="black mTip mTip-top-right">'
+        var _toolTipContent = '<div class="black mTip mTip-top-right">';
         _toolTipContent += _getGoodJobTooltipHtml(goodJobList);
         _toolTipContent += '</div>';
 
@@ -1074,9 +1074,9 @@ function TooltipView() {
         var _htmlString = '<div class="tooltip-sibling-list-item box-border olient-horizontal" jid="' + _siblingOwnerJid + '">';
         var _statusString = _getSiblingTaskTooltipStatusHtml(_status, _statusClassName);
         if (ViewUtils.isIE89()) _htmlString += _statusString;
-        _htmlString += '<div class="tooltip-sibling-owner box-border-for-abbreviation flex1">'
+        _htmlString += '<div class="tooltip-sibling-owner box-border-for-abbreviation flex1">';
         if (_avatarSrc == HAS_NO_AVATAR) {
-            _htmlString += '<span class="tooltip_avatar ico ico_user">'
+            _htmlString += '<span class="tooltip_avatar ico ico_user">';
             _htmlString += ViewUtils.getDefaultAvatarHtml(_person);
             _htmlString += '</span>';
         } else {
@@ -1384,7 +1384,7 @@ function TooltipView() {
                     } else {
                         TabManager.getInstance().activeMyWorkplaceTab(function(){
                             _columnManager.addColumnInfo(Message.TYPE_PUBLIC, true, false, _column);
-                        })
+                        });
                     }
                     break;
                 case Message.TYPE_CHAT:
@@ -1405,7 +1405,7 @@ function TooltipView() {
                         }else{
                             TabManager.getInstance().activeMyWorkplaceTab(function(){
                                 _columnManager.addGroupChatColumn(_message.getTo(), true, false, _column);
-                            })
+                            });
                         }
                     }
                     break;
@@ -1439,7 +1439,7 @@ function TooltipView() {
                 default:
                     break;
             }
-        })
+        });
 
         $(document).on('click', 'li a.action-assign-note', function() {
             var _message = getMessageFromToolTipIcon(this);
@@ -1542,7 +1542,7 @@ function TooltipView() {
                 _editField += '<div class="ui-widget-content wrap-frm-message-reply frm-message">';
                 _editField += '<div class="frm-message">';
                 _editField += '<a class="ico_btn" id="reply_close_button" data-original-title="'+ closeStr +'" data-toggle="tooltip">';
-                _editField += '<i class="fa fa-close"></i></a>'
+                _editField += '<i class="fa fa-close"></i></a>';
 
                 var _autoCompleteInfo = _getAutoCompleteAttribute($(this));
                 if(_messageType == Message.TYPE_GROUP_CHAT ||
@@ -1556,9 +1556,9 @@ function TooltipView() {
                 _editField += ColumnFileUploadPartsView.getFormHtml();
                 _editField += ViewUtils.getCharCounterHtml('char-counter-reply');
                 _editField += '<button id="reply_button" data-toggle="tooltip" data-placement="bottom" data-original-title="' + Resource.getMessage('reply_button') + '">' + Resource.getMessage('reply_button') + '</button>';
-                _editField += '<div style="position:relative; display: inline-block;">'
-                _editField += '<a class="list_add ico_btn emojibtn" data-container="body" data-toggle="tooltip" data-placement="bottom" title="" data-target="addgroup_modal" data-original-title="'+Resource.getMessage('stamp_name')+'" style="top: 0px;right: 0px;"><i class="fa fa-smile-o"></i></a>'
-                _editField += '</div>'
+                _editField += '<div style="position:relative; display: inline-block;">';
+                _editField += '<a class="list_add ico_btn emojibtn" data-container="body" data-toggle="tooltip" data-placement="bottom" title="" data-target="addgroup_modal" data-original-title="'+Resource.getMessage('stamp_name')+'" style="top: 0px;right: 0px;"><i class="fa fa-smile-o"></i></a>';
+                _editField += '</div>';
                 _editField += '</div>';
                 _editField += '</div>';
                 _elm.append(_editField);
@@ -2027,7 +2027,7 @@ function TooltipView() {
             return {
                 autoCompleteType: _autoCompleteType,
                 roomIdAttribute: _roomIdAttribute
-            }
+            };
         }
 
         function _getParentElem(toolTipElem) {

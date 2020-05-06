@@ -234,7 +234,7 @@
                                   }
                 );
         }
-        _log.connectionLog(7, 'ShortenURLUtils#encodeURIconsideringPunyCode: ' + url + ' encoded_to ' + _res)
+        _log.connectionLog(7, 'ShortenURLUtils#encodeURIconsideringPunyCode: ' + url + ' encoded_to ' + _res);
         return _res;
     };
 

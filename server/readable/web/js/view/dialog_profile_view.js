@@ -170,7 +170,7 @@ function DialogProfileView(title) {
                       <label for="notification_off" class="radio">\
                       <input type="radio" name="push_notification_setting" id="notification_off" value='+Message.TYPE_GROUP_CHAT+' checked>\
                       <span></span>' + Resource.getMessage('push_notification_off') + '</label>\
-                    </div>'
+                    </div>';
             _ret += '    </div>';
         }
 
@@ -202,7 +202,7 @@ function DialogProfileView(title) {
                       <label for="bg_8" class="radio">\
                       <input type="radio" name="background_setting" id="bg_8" value="dashboard_wrapper8">\
                       <span></span>8</label>\
-                    </div>'
+                    </div>';
             _ret += '    </div>';
         }
         _ret += '  </div>';
@@ -213,7 +213,7 @@ function DialogProfileView(title) {
         _ret += '  <a class="modal_exit modal_exit_btn ico_btn ui-dialog-titlebar-close ui-corner-all" role="button"><i class="fa fa-times"></i></a>';
         _ret += '</div>';
 
-        _ret = $(_ret)
+        _ret = $(_ret);
         _ret.find('select#profile_status').val(loginUserStatus).prop("selected", true);
         _ret.find('div#background_image input[value="'+LoginUser.getInstance().getExtras().backgroundImage+'"]').prop("checked", true);
 

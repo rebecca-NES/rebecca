@@ -154,7 +154,7 @@ function ContextSearchView() {
     };
     _proto.search = function(searchCondition, insertAfterBaseColumn, isSearchAll) {
         return search(searchCondition, insertAfterBaseColumn, isSearchAll);
-    }
+    };
     function search(searchCondition, insertAfterBaseColumn, isSearchAll) {
         let _self = this;
         var _ret = false;
@@ -378,7 +378,7 @@ function ContextSearchOptionView(htmlElement, onCloseCallBack) {
         _errorElement.text('');
         _errorElement.addClass('margin-clear');
         var _selectedColumnTypeList = _self._getColumnTypeList();
-        var _ret = (_selectedColumnTypeList.getCount() > 0)
+        var _ret = (_selectedColumnTypeList.getCount() > 0);
         if (!_ret) {
             _self._showError();
             return null;

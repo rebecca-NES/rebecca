@@ -247,7 +247,7 @@ function DialogSettingCustomFilterView(title, columnInfo, ownerObj, parentColumn
 
         _self._dialogInnerElement.find('.modal_btn').on('click', function(){
             _self._searchExecute();
-        })
+        });
     };
 
     _proto.getInnerHtml = function() {

@@ -47,7 +47,7 @@ function ColumnOptionMenu(htmlElement, columnInfo, ownerObj) {
         var _type = columnInfo.getColumnType();
         if (_type == ColumnInformation.TYPE_COLUMN_CHAT || _type == ColumnInformation.TYPE_COLUMN_TIMELINE) {
             _ret += '  <li><a class="txt_btn" value="' + ColumnOptionMenu.ELEMENT_MENU_THREAD_TITLE_LIST + '">' + Resource.getMessage('column_option_thread_title_list') + '</a></li>';
-            _ret += CodiMdViewUtils.getNoteListHtmlElementForColumn()
+            _ret += CodiMdViewUtils.getNoteListHtmlElementForColumn();
         }
         _ret += ColumnOptionMenu.getNotificationSettingHtml(columnInfo);
         _ret += '</ul>';
@@ -92,7 +92,7 @@ function ColumnOptionMenu(htmlElement, columnInfo, ownerObj) {
             _element_menu_notification_val_name = Resource.getMessage('column_option_notification_off');
         }
         return '<li value="' + ColumnOptionMenu.ELEMENT_MENU_NOTIFICATION_VAL_NAME + '"><a class="txt_btn" data-modal="' + ColumnOptionMenu.ELEMENT_MENU_NOTIFICATION_VAL_NAME  + '">' + _element_menu_notification_val_name + '</a></li>';
-    }
+    };
     var _proto = ColumnOptionMenu.prototype;
 
     _proto._createEventHandler = function () {
@@ -248,7 +248,7 @@ function GroupChatColumnOptionMenu(htmlElement, columnInfo, ownerObj) {
         _ret += '  <li><a class="txt_btn" value="' + ColumnOptionMenu.ELEMENT_MENU_FILTER_VAL_NAME + '">' + Resource.getMessage('column_option_filter') + '</a></li>';
         _ret += '  <li><a class="txt_btn" value="' + ColumnOptionMenu.ELEMENT_MENU_CUSTOM_FILTER_VAL_NAME + '">' + Resource.getMessage('column_option_custom_filter') + '</a></li>';
         _ret += '  <li><a class="txt_btn" value="' + ColumnOptionMenu.ELEMENT_MENU_THREAD_TITLE_LIST + '">' + Resource.getMessage('column_option_thread_title_list') + '</a></li>';
-        _ret += CodiMdViewUtils.getNoteListHtmlElementForColumn()
+        _ret += CodiMdViewUtils.getNoteListHtmlElementForColumn();
         if (_action == AuthorityDef.AUTHORITY_ACTIONS.GC_MANAGE) {
             _ret += '  <li><a class="txt_btn" value="' + GroupChatColumnOptionMenu.ELEMENT_MENU_UPDATE_ROOM_INFO_VAL_NAME + '">' + Resource.getMessage('column_option_group_chat_update_room_info') + '</a></li>';
             _ret += '  <li><a class="txt_btn" value="' + GroupChatColumnOptionMenu.ELEMENT_MENU_ADD_MEMBER_VAL_NAME + '">' + Resource.getMessage('column_option_group_chat_add_member') + '</a></li>';
@@ -365,7 +365,7 @@ function CommunityFeedColumnOptionMenu(htmlElement, columnInfo, ownerObj, tabTyp
         _ret += '  <li><a class="txt_btn" value="' + ColumnOptionMenu.ELEMENT_MENU_FILTER_VAL_NAME + '">' + Resource.getMessage('column_option_filter') + '</a></li>';
         _ret += '  <li><a class="txt_btn" value="' + ColumnOptionMenu.ELEMENT_MENU_CUSTOM_FILTER_VAL_NAME + '">' + Resource.getMessage('column_option_custom_filter') + '</a></li>';
         _ret += '  <li><a class="txt_btn" value="' + ColumnOptionMenu.ELEMENT_MENU_THREAD_TITLE_LIST + '">' + Resource.getMessage('column_option_thread_title_list') + '</a></li>';
-        _ret += CodiMdViewUtils.getNoteListHtmlElementForColumn()
+        _ret += CodiMdViewUtils.getNoteListHtmlElementForColumn();
         if(tabType != TabItemView.TYPE_MY_WORK_PLACE) {
             _ret += '  <li><a class="txt_btn" value="' + CommunityFeedColumnOptionMenu.ELEMENT_MENU_ADD_COLUMN_TO_MYWORKPLACE_VAL_NAME + '">' + Resource.getMessage('column_option_add_myworkplace') + '</a></li>';
         }
@@ -481,7 +481,7 @@ function ToMeColumnOptionMenu(htmlElement, columnInfo, ownerObj) {
         var _type = columnInfo.getColumnType();
         if (_type == ColumnInformation.TYPE_COLUMN_CHAT || _type == ColumnInformation.TYPE_COLUMN_TIMELINE) {
             _ret += '  <li><a class="txt_btn" value="' + ColumnOptionMenu.ELEMENT_MENU_THREAD_TITLE_LIST + '">' + Resource.getMessage('column_option_thread_title_list') + '</a></li>';
-            _ret += CodiMdViewUtils.getNoteListHtmlElementForColumn()
+            _ret += CodiMdViewUtils.getNoteListHtmlElementForColumn();
         }
         _ret += ColumnOptionMenu.getNotificationSettingHtml(columnInfo);
         _ret += '  <li><a class="txt_btn" value="' + ColumnOptionMenu.ELEMENT_MENU_READ_IN_BULK + '">' + Resource.getMessage('read_in_bulk_control') + '</a></li>';
@@ -507,7 +507,7 @@ function WithReadDoneColumnOptionMenu(htmlElement, columnInfo, ownerObj) {
         var _type = columnInfo.getColumnType();
         if (_type == ColumnInformation.TYPE_COLUMN_CHAT || _type == ColumnInformation.TYPE_COLUMN_TIMELINE) {
             _ret += '  <li><a class="txt_btn" value="' + ColumnOptionMenu.ELEMENT_MENU_THREAD_TITLE_LIST + '">' + Resource.getMessage('column_option_thread_title_list') + '</a></li>';
-            _ret += CodiMdViewUtils.getNoteListHtmlElementForColumn()
+            _ret += CodiMdViewUtils.getNoteListHtmlElementForColumn();
         }
         _ret += ColumnOptionMenu.getNotificationSettingHtml(columnInfo);
         _ret += '  <li><a class="txt_btn" value="' + ColumnOptionMenu.ELEMENT_MENU_READ_IN_BULK + '">' + Resource.getMessage('read_in_bulk_control') + '</a></li>';
@@ -1009,7 +1009,7 @@ function ColumnTextAreaView(htmlElement, parent, placeholder) {
                             (cuttent)=>{
                                 $(list).css('display','none');
                                 $(cuttent.currentTarget).remove();
-                            })
+                            });
                     let catlist = $(cuttentBtn.currentTarget).parent().find("li.thread-title-category-select-opt");
                     let mess = frm_message_eml
                         .find(title_form_selector).val();
@@ -1077,7 +1077,7 @@ function ColumnTextAreaView(htmlElement, parent, placeholder) {
                          });
             let foundCatarogInMess = false;
             {
-                const reg = new RegExp('\\\[(' + cate + ')\\\]')
+                const reg = new RegExp('\\\[(' + cate + ')\\\]');
                 if(catarog_last_index > 0){
                     foundCatarogInMess = mess.substring(0,catarog_last_index).match(reg);
                 }
@@ -1095,7 +1095,7 @@ function ColumnTextAreaView(htmlElement, parent, placeholder) {
                 },300);
             }else
             {
-                const reg = new RegExp('\\\[(' + cate + ')\\\]',"g")
+                const reg = new RegExp('\\\[(' + cate + ')\\\]',"g");
                 let lastMess = mess.substring(catarog_last_index);
                 mess = mess.substring(0,catarog_last_index).replace(reg,"");
                 mess += lastMess;
@@ -1282,7 +1282,7 @@ function ColumnFileUploadPartsView(htmlElement, parent) {
         _ret += _inputFileTagHtml();
         _ret += '<div class="file-selected">';
         if(!ViewUtils.isIE89()) {
-            _ret += '<a class="ico_btn" data-toggle="tooltip" title="" data-original-title="' + Resource.getMessage('file_up_title') + '" data-placement="right"><i class="fa fa-paperclip"></i></a>'
+            _ret += '<a class="ico_btn" data-toggle="tooltip" title="" data-original-title="' + Resource.getMessage('file_up_title') + '" data-placement="right"><i class="fa fa-paperclip"></i></a>';
             _ret += '<p class="file-name">&nbsp;</p>';
             _ret += ProgressBarView.getHtml('submit-message-progress');
             _ret += '<br class="clear-float" />';

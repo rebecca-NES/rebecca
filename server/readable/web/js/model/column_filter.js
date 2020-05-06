@@ -1014,7 +1014,7 @@ function ParticularCondition() {
         if(_childItemIdList == null) {
             return _ret;
         }
-        var _count = _childItemIdList.getCount()
+        var _count = _childItemIdList.getCount();
         for(var _i = 0; _i < _count; _i++) {
             var _childTaskItemId = _childItemIdList.get(_i);
             var _childTaskMessage = CubeeController.getInstance().getMessage(_childTaskItemId);
@@ -1047,7 +1047,7 @@ function ParticularCondition() {
             }
         }
         return _ret;
-    }
+    };
 
     _proto._isMatchCommunityTaskDemandedCondition = function(message) {
         var _ret = false;
@@ -1062,7 +1062,7 @@ function ParticularCondition() {
         if(_childItemIdList == null) {
             return _ret;
         }
-        var _count = _childItemIdList.getCount()
+        var _count = _childItemIdList.getCount();
         for(var _i = 0; _i < _count; _i++) {
             var _childTaskItemId = _childItemIdList.get(_i);
             var _childTaskMessage = CubeeController.getInstance().getMessage(_childTaskItemId);
@@ -1076,7 +1076,7 @@ function ParticularCondition() {
         }
 
         return _ret;
-    }
+    };
     _proto._isMatchMessageHavingUrlExceptAttachedFileCondition = function(message) {
         var _self = this;
         var _ret = false;
@@ -1103,7 +1103,7 @@ function ParticularCondition() {
         }
         var _readFlag = message.getReadFlag();
         return (_readFlag == Message.READ_STATUS_UNREAD);
-    }
+    };
 
     _proto._isColmunChangeableTaskRequestingCondition = function(message) {
         var _self = this;
@@ -1201,7 +1201,7 @@ function ParticularCondition() {
         var _childItemIdList = CubeeController.getInstance().getChildrenTaskItemIds(_itemId);
         if(_childItemIdList == null) {
             return _ret;
-        }
+        };
         var _count = _childItemIdList.getCount()
         for(var _i = 0; _i < _count; _i++) {
             var _childTaskItemId = _childItemIdList.get(_i);

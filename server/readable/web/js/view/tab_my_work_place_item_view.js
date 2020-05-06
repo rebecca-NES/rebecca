@@ -31,7 +31,7 @@ function TabMyWorkPlaceItemView() {
         var _host = location.hostname;
         var _columnListId = 'columnList' + '_' + _host + '_' + _jid;
         _self._tabInfo.columnListId = _columnListId;
-        var _columnRecentInfo = new RecentColumnInfomation()
+        var _columnRecentInfo = new RecentColumnInfomation();
         var _filter = ColumnFilterManager.getColumnFilter(ColumnInformation.TYPE_COLUMN_RECENT, null);
         if(_filter == null) { return false; }
         var _searchCondition = new ColumnSearchCondition(_filter, new ColumnSortCondition());

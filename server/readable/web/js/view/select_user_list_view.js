@@ -79,7 +79,7 @@ function SelectUserListView() {
             _maxPerson = _self.allPersons.length;
         }
         for(i=_minPerson; i<_maxPerson; i++){
-            member = _self.allPersons[i]
+            member = _self.allPersons[i];
             _self.countPmember++;
             let _nickName = Utils.getSafeStringData(member._profile._nickName);
             _nickName = Utils.convertEscapedHtml(_nickName);                 
@@ -108,7 +108,7 @@ function SelectUserListView() {
             _memberHtml += '<span class="name">' + _nickName + '</span>';
             _memberHtml += '<span class="group">' + Utils.convertEscapedTag(_account) + '</span>' + selectHtml;
             _memberHtml += '</label></li>';
-            _self.frame.find(_self.selector_list).append(_memberHtml)
+            _self.frame.find(_self.selector_list).append(_memberHtml);
         };
         _self.applySelectedInfoToView();
         _self.applyExcludedList();

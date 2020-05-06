@@ -295,7 +295,7 @@ function LoginView() {
                         }
                     }
                     if (!isRecentColumn) {
-                        var _columnRecentInfo = new RecentColumnInfomation()
+                        var _columnRecentInfo = new RecentColumnInfomation();
                         var _filter = ColumnFilterManager.getColumnFilter(ColumnInformation.TYPE_COLUMN_RECENT, null);
                         if(_filter == null) { return false; }
                         var _searchCondition = new ColumnSearchCondition(_filter, new ColumnSortCondition());

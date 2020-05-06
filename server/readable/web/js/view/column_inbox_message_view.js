@@ -283,7 +283,7 @@ function ColumnInboxMessageView(parent, msg) {
         var _baseStatus = _msg.getStatus();
         var _rootElement = _self._htmlElement;
         var _isParent = false;
-        var _isMultiOwner = false
+        var _isMultiOwner = false;
         var _baseHtml = ColumnTaskMessageView.getStatusAreaBaseDisplayHtml(_baseStatus, _isParent, _isMultiOwner);
         var _demandTaskHtml = ColumnTaskMessageView.getStatusAreaDemandTaskDisplayHtml(_isMultiOwner);
         var _timerId = _self._timerId;
@@ -300,7 +300,7 @@ function ColumnInboxMessageView(parent, msg) {
         var _baseStatus = _msg.getStatus();
         var _rootElement = _self._htmlElement;
         var _isParent = false;
-        var _isMultiOwner = false
+        var _isMultiOwner = false;
         var _baseHtml = ColumnTaskMessageView.getStatusAreaBaseDisplayHtml(_baseStatus, _isParent, _isMultiOwner);
         var _demandTaskHtml = ColumnTaskMessageView.getStatusAreaDemandTaskDisplayHtml(_isMultiOwner);
         var _timerId = _self._timerId;

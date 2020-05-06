@@ -331,7 +331,7 @@ function ViewUtils() {
         var HAS_NO_AVATAR = 'images/user_noimage.png';
         var _ret = '';
         _ret += '<div class="block-avatar" jid="' + jid + '">';
-        _ret += '<span class="ico ico_user">'
+        _ret += '<span class="ico ico_user">';
 
         if (avatarSrc == HAS_NO_AVATAR) {
             var p = new Person();
@@ -440,14 +440,14 @@ function ViewUtils() {
         _avatarTipHtml += '      <div class="list_ttl_ico"></div>';
         _avatarTipHtml += '      <tr style="text-align:center">';
         _avatarTipHtml += '        <div class="sidebar_list_inner">';
-        _avatarTipHtml += '        <div class="tooltip-border-line"></div>'
+        _avatarTipHtml += '        <div class="tooltip-border-line"></div>';
         _avatarTipHtml += '          <div class="list_ttl">';
         _avatarTipHtml += '            <td width="96px">';
-        _avatarTipHtml += '              <a class="followeelist txt_btn" data-toggle="tooltip" data-html="true" data-placement="bottom" data-modal="followeelist-modal" title="フォローリスト">'
+        _avatarTipHtml += '              <a class="followeelist txt_btn" data-toggle="tooltip" data-html="true" data-placement="bottom" data-modal="followeelist-modal" title="フォローリスト">';
         _avatarTipHtml += '                <span class="followee-count">0</span>フォロー</a>';
         _avatarTipHtml += '            </td>';
         _avatarTipHtml += '            <td>';
-        _avatarTipHtml += '              <a class="followerlist txt_btn" data-toggle="tooltip" data-html="true" data-placement="bottom" data-modal="followerlist-modal" title="フォロワーリスト">'
+        _avatarTipHtml += '              <a class="followerlist txt_btn" data-toggle="tooltip" data-html="true" data-placement="bottom" data-modal="followerlist-modal" title="フォロワーリスト">';
         _avatarTipHtml += '                <span class="follower-count">0</span>フォロワー</a>';
         _avatarTipHtml += '            </td>';
         _avatarTipHtml += '          </div>';
@@ -1378,7 +1378,7 @@ function ViewUtils() {
                             }
                         });
                     }
-                }
+                };
             };
         };
         $(document).off('focusin', 'input.autocomplete-for-community[type="text"]');
@@ -2487,7 +2487,7 @@ function ViewUtils() {
         return{
             autoCompleteType: _autoCompleteType,
             roomIdAttribute: _roomIdAttribute
-        }
+        };
     }
 
     ViewUtils.createPersonByProfile = function(jid, profile){
@@ -2610,7 +2610,7 @@ function ViewUtils() {
                         index: originTitle.indexOf(p1),
                         data: '<span class="thread-title-category-tip ' + addClass + '" style="color:'
                              +color+';background-color:' + bgColor + ';">'+p1+'</span>'
-                    })
+                    });
                     return "";
                 }
             });
@@ -2922,7 +2922,7 @@ function ViewUtils() {
                                     title="'+_element.attr('value')+'">'+_element.attr('value')+'</p>';
                             }
                             ogpHtml += '</div>';
-                            _element.append(ogpHtml)
+                            _element.append(ogpHtml);
                             _element.fadeToggle(200);
                         }
                     }

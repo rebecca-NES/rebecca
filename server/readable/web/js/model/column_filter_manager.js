@@ -184,7 +184,7 @@ function MyfeedColumnFilter() {
             _retCondition.addChildCondition(_msgFromItemCondition);
         }
 
-        return _retCondition
+        return _retCondition;
     };
 })();
 

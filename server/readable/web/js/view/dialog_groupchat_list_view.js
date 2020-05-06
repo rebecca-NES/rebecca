@@ -170,7 +170,7 @@ function DialogGroupchatListView(tabInfo) {
             _self.isGotRoomArrayList = true;
             _self._createColumnNameElement(gcList, -1, true);
             _self._dialogInnerElement.find('.scroll_content').scrollTop(0);
-        }
+        };
 
         if(_self.isGotRoomArrayList){
             makeListHtml(_self.roomArrayList);

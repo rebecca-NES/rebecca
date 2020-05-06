@@ -96,7 +96,7 @@
     _proto.end = function(callback) {
         callback(null, null);
         _log.connectionLog(7, 'end');
-    }
+    };
 
     // var _abstractPgClient = new AbstractPgClient();
 

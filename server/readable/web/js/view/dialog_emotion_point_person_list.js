@@ -174,7 +174,7 @@ function DialogEmotionPointPersonListView(messageItemId, emotionPointList, emoti
         keyList.reverse();
         // Variable _ret is used like a local variable, but is missing a declaration.
         var _ret = "";
-        _ret += '  <canvas id="emotion_canvas" width="420"></canvas>'
+        _ret += '  <canvas id="emotion_canvas" width="420"></canvas>';
         for (key in keyList) {
             var objectKey = keyList[key];
             if (showList[objectKey]) {

@@ -104,7 +104,7 @@ function ColumnShowConversationView(columnInformation) {
                     __msglist.push(msgList.get(_i));
                 }
                 return _self.makeIndentThreadData(__msglist);
-            }
+            };
 
             let msgMappingList, waitMsgMappingList = "";
             try {
@@ -272,13 +272,13 @@ function ColumnShowConversationView(columnInformation) {
         shiftn = shiftn > upperIndentLimit ? upperIndentLimit : shiftn;
         var messjq = $(_content);
         if(_msgType == Message.TYPE_CHAT){
-            $(messjq).attr("style","padding-left:" + shiftn + "px")
-            $(messjq).attr("msgto",msg.getTo())
-            $(messjq).attr("msgfrom",msg.getFrom())
+            $(messjq).attr("style","padding-left:" + shiftn + "px");
+            $(messjq).attr("msgto",msg.getTo());
+            $(messjq).attr("msgfrom",msg.getFrom());
         }else{
-            $('div.thread-padding',messjq).attr("style","width:" + shiftn + "px")
+            $('div.thread-padding',messjq).attr("style","width:" + shiftn + "px");
         }
-        $(messjq).attr("msgtype",_msgType)
+        $(messjq).attr("msgtype",_msgType);
         _content = $(messjq);
 
         var _msgElem;
@@ -332,7 +332,7 @@ function ColumnShowConversationView(columnInformation) {
             _insertElem.detach();
             _columnContentElem.prepend(_insertElem);
             var _replyInsertIndex = _self.getMsgObjIndexPositionByItemId(_self._parentItemId);
-            _self._getMsgObjIndexList().move(_replyInsertIndex, 0)
+            _self._getMsgObjIndexList().move(_replyInsertIndex, 0);
         } else {
             _content = _self.createDivMessageBorder(_content);
             _self._setMessageObject(_msgObj, _content, -1);
