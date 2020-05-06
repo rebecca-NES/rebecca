@@ -178,7 +178,7 @@ function ChatNotificationIconView(message) {
         NotificationIconManager.getInstance()
                                .removeAttentionHeaderColumnIcon(
                                    'li[jid="'+ jid +'"][columntype="3"].sortable-item .ico');
-    }
+    };
     _proto.onAddColumn = function(columnInfo) {
         var _self = this;
         var _selfElm = _self._htmlElement;
