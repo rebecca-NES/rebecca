@@ -33,7 +33,7 @@ function RegisterView(htmlElement, viewTitle, parent) {
     };
 
     _proto._addEventHandler = function(){
-    }
+    };
 
     _proto._removeEventHandler = function(){
     };
