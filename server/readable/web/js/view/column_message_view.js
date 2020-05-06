@@ -656,9 +656,10 @@ limitations under the License.
     };
 
     function _getMessageBodyAssignNoteHtml(msg) {
-        var _ret = '';
+        // var _ret = '';
         var _noteTitle = Utils.convertEscapedHtml(decodeURIComponent(msg.getNoteTitle()));
-        return _ret = '\
+        // The assignment to _ret is useless, since it is a local variable and will go out of scope.
+        var _ret = '\
             <div class="message-body-note">\
                 <a href="' + msg.getNoteUrl() + ' " target="_brank" title="' + _noteTitle + '">\
                     <i class="fa fa-pencil-square-o"></i>\
@@ -666,6 +667,7 @@ limitations under the License.
                 </a>\
             </div>\
         ';
+        return _ret;
     }
 
     _proto._editStart = function(mode, callback) {
