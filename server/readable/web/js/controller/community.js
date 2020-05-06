@@ -362,7 +362,7 @@ function CommunityManager() {
                     delete _self._getRoomInfoRequestList[roomId];
                 }
             }
-        }
+        };
 
         var _ret = CubeeServerConnector.getInstance().getCommunityInfo(roomId, _callback);
         if (!_ret) {
