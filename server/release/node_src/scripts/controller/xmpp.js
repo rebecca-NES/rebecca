@@ -382,8 +382,8 @@
                 xmppServerHostName);
             break;
         case RequestData.SEND_MESSAGE_TYPE_MURMUR:
-            _contentElem = _getMurmurDataContentXmppElem(sendData, fromJid,
-                xmppServerHostName);
+                // Superfluous argument passed to function _getItemsFromCreateOrUpdateUserResultItemsElm.
+            _contentElem = _getMurmurDataContentXmppElem(sendData, fromJid);
             break;
         default:
             break;
