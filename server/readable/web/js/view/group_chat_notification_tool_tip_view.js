@@ -178,7 +178,9 @@ function GroupChatNotificationToolTipView(parent, groupChatNotification) {
                 for (var _i = 0; _i < _items.length; _i++) {
                     switch(_items[_i]) {
                         case GroupChatInfoUpdateNotification.SUB_TYPE_CHANGE_ROOM_NAME:
-                            _toolTipItemView = new GroupChatUpdateRoomNameNotificationToolTipItemView(_self,_columnInfomation, groupChatNotification.getPreviousRoomName());
+                            // Superfluous argument passed to function GroupChatUpdateRoomNameNotificationToolTipItemView.
+                            // _toolTipItemView = new GroupChatUpdateRoomNameNotificationToolTipItemView(_self,_columnInfomation, groupChatNotification.getPreviousRoomName());
+                            _toolTipItemView = new GroupChatUpdateRoomNameNotificationToolTipItemView(_self,_columnInfomation);
                             break;
                         default:
                             break;

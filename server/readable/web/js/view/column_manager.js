@@ -2203,10 +2203,11 @@ function ColumnManager() {
                 _callback();
                 return;
             }
-        } else {
-            // This expression assigns variable _columnLeft to itself. not edited
-            _columnLeft = _columnLeft;
-        }
+        } 
+        // else {
+        //   This expression assigns variable _columnLeft to itself. not edited
+        //    _columnLeft = _columnLeft;
+        // }
         if(_columnLeft < 0){
             _columnLeft = 0;        
         }

@@ -1330,7 +1330,9 @@ function SortCondition(jsonString) {
         if (jsonString == null || typeof jsonString != 'string') {
             return;
         }
-        this._jsonString = jsonString = jsonString;
+        // This expression assigns variable jsonString to itself.
+        // this._jsonString = jsonString = jsonString;
+        this._jsonString = jsonString;
     };
     _proto.getJSONObject = function() {
         var _self = this;

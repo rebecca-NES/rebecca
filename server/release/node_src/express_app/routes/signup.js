@@ -34,7 +34,9 @@
             });
         }
         //signup画面表示
-        var _locals = _getLocals(req, _tenantInfo, '');
+        // Superfluous argument passed to function _getLocals.
+        // var _locals = _getLocals(req, _tenantInfo, '');
+        var _locals = _getLocals(req, _tenantInfo);
         res.render('signup', {
             locals: _locals
         });
