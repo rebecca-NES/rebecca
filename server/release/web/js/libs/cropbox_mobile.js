@@ -198,8 +198,9 @@ var cropbox = function(options){
         var mousewheel = (/Firefox/i.test(navigator.userAgent))? 'DOMMouseScroll' : 'mousewheel';
         attachEvent(el, mousewheel, zoomImage);
 		
-		//2本指だったらAndroidではgesturestartは使えない
-		attachEvent(el, 'touchstart', imgTouchstart,false);
+		// 2本指だったらAndroidではgesturestartは使えない
+		// attachEvent(el, 'touchstart', imgTouchstart,false);
+		attachEvent(el, 'touchstart', imgTouchstart);
 		attachEvent(el, 'touchmove', imgTouchmove);
 		attachEvent(el, 'touchend', imgTouchend);
 		
