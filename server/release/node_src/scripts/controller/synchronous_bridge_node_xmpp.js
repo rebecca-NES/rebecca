@@ -1181,8 +1181,7 @@
                 }
             }
         }
-        // Avoid automated semicolon insertion (97% of all statements in the enclosing function have an explicit semicolon).
-        _responceData.group =_groupItems;
+        _responceData.group =_groupItems
 
         // アバタータイプ・アバターデータ
         var _avatarType = '';
@@ -1786,8 +1785,7 @@
                 requestData.extras = encodeURIComponent(requestData.extras);
             }
             if(!Validation.affiliationCheck(requestData.group, false)){
-                // Avoid automated semicolon insertion (98% of all statements in the enclosing function have an explicit semicolon).
-                return false;
+                return false
             }
             _xmppSetLoginPersonData = XmppUtils.checkCreateXmppData(_xsConn, function() {
                 return Xmpp.createUpdateVcardInformationXmpp(requestData);
@@ -11931,8 +11929,7 @@
             updated_at : (_itemElem.attr("updated_at") ? _itemElem.attr("updated_at").value() : "")
         };
         // count
-        // Avoid automated semicolon insertion (90% of all statements in the enclosing function have an explicit semicolon).
-        var _notifyType = Const.API_NOTIFY.API_NOTIFY_UPDATE_NOTE_INFO;
+        var _notifyType = Const.API_NOTIFY.API_NOTIFY_UPDATE_NOTE_INFO
         _notifyPushMessge(sessionDataAry, _notifyType, _pushContent);
     }
 
@@ -13522,6 +13519,5 @@
     exports.directTestPath = {
         _onThreadTitleMessage : _onThreadTitleMessage,
         _getItemDataFromMessageItemElem : _getItemDataFromMessageItemElem
-        // Avoid automated semicolon insertion (99% of all statements in the enclosing function have an explicit semicolon).
-    };
+    }
 })();
