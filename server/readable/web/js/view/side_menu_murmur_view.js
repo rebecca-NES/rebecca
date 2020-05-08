@@ -181,7 +181,8 @@ function SideMenuMurmurView(){
         });
         $('#side-bar-murmur button.open-list-dialog').off('click.button-open-list-dialog');
         $('#side-bar-murmur button.open-list-dialog').on( 'click.button-open-list-dialog',()=>{
-            let _DialogMurmurListView = new DialogMurmurListView("","");
+            // Superfluous arguments passed to function DialogMurmurListView.
+            let _DialogMurmurListView = new DialogMurmurListView();
             _DialogMurmurListView.showDialog();
         });
         $(document).off('click.side-bar-murmur');
