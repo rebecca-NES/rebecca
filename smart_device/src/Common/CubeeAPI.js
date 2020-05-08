@@ -321,7 +321,8 @@ export default class CubeeAPI {
     catch (e) {
       Common.saveCubeeAPILog("error", request, e)
       throw(e)
-      return
+      // This statement is unreachable.
+      // return
     }
 
     if (_deviceId) {
