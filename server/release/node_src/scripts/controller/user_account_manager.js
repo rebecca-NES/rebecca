@@ -307,8 +307,7 @@
                 _sql = _sql + ' and (';
                 for(var _i = 0; _i < except.length; _i++) {
                     if(_i != 0 ) {
-                        // Avoid automated semicolon insertion (92% of all statements in the enclosing function have an explicit semicolon).
-                        _sql = _sql + ' and ';
+                        _sql = _sql + ' and '
                     }
                     _sql = _sql + 'openfire_account<>\''+ except[_i] +'\'';
                 }
@@ -375,8 +374,7 @@
             return false;
         }
         var _self = this;
-        // Avoid automated semicolon insertion (92% of all statements in the enclosing function have an explicit semicolon).
-        var _tenantAdminUserAccount = sessionData.getLoginAccout();
+        var _tenantAdminUserAccount = sessionData.getLoginAccout()
         var _xmppServerName = null;
         _getXmppServerName(sessionData.getTenantUuid(), _tenantAdminUserAccount, _onGetXmppServerNameFromCache);
 
@@ -413,8 +411,7 @@
                 _sql = _sql + ' and (';
                 for(var _i = 0; _i < except.length; _i++) {
                     if(_i != 0 ) {
-                        // Avoid automated semicolon insertion (92% of all statements in the enclosing function have an explicit semicolon).
-                        _sql = _sql + ' and ';
+                        _sql = _sql + ' and '
                     }
                     _sql = _sql + 'openfire_account<>\''+ except[_i] +'\'';
                 }
@@ -545,8 +542,7 @@
         var _self = this;
         var _result = false;
         var _reason = SynchronousBridgeNodeXmpp.DISCCONECT_REASON_UNKNOWN;
-        // Avoid automated semicolon insertion (92% of all statements in the enclosing function have an explicit semicolon).
-        var _tenantAdminUserAccount = sessionData.getLoginAccout();
+        var _tenantAdminUserAccount = sessionData.getLoginAccout()
         // トランザクション
         var _tran = null;
 
@@ -1100,8 +1096,7 @@
                     continue;
                 }
                 var _openfireAccount = resultCreateUserList[_i].openfireAccount;
-                // Avoid automated semicolon insertion (92% of all statements in the enclosing function have an explicit semicolon).
-                var _tenantAdminUserAccount = sessionData.getLoginAccout();
+                var _tenantAdminUserAccount = sessionData.getLoginAccout()
                 var _xmppServerName = xmppServerName;
                 var _mail = _personData.getMail();
                 var _tenantUuid = sessionData.getTenantUuid();
@@ -1923,8 +1918,7 @@
             _openfireAccount = _createOpenfireAccount(loginAccount);
             _self.getUserAccountDataByOFAccountAndXmppServerName(_openfireAccount, xmppServerName, _onGetUserAccountDataCallBack);
         }
-        // Avoid automated semicolon insertion (92% of all statements in the enclosing function have an explicit semicolon).
-    };
+    }
 
     var _userAccountManager = new UserAccountManager();
 
