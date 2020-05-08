@@ -4895,7 +4895,8 @@ function CubeeServerConnector() {
         _communityInfo.setRoomId(Utils.getSafeStringData(communityMemberItem.roomId));
         _communityInfo.setMemberCount(Utils.getSafeNumberData(communityMemberItem.memberCount));
 
-        var _ownerList = _communityInfo.getOwnerList();
+        // The initial value of _ownerList is unused, since it is always overwritten.
+        // var _ownerList = _communityInfo.getOwnerList();
         var _memberItems = communityMemberItem.memberItems;
         if(_memberItems == null) {
             return null;
