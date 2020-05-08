@@ -212,7 +212,8 @@ function LoginView() {
                 return cmi.addRecentColumn();
             default: return false;
         }
-        return true;
+        // This statement is unreachable.
+        // return true;
     };
 
 
