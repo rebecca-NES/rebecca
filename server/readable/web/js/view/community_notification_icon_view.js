@@ -16,7 +16,9 @@ limitations under the License.
 function CommunityNotificationIconView(communityNotification, communityInfo) {
     this._communityInfo = communityInfo; 
     this._toolTipView = null; 
-    NotificationIconView.call(this, communityNotification, communityInfo);
+    // Superfluous argument passed to function NotificationIconView.
+    // NotificationIconView.call(this, communityNotification, communityInfo);
+    NotificationIconView.call(this, communityNotification);
 };(function() {
     CommunityNotificationIconView.prototype = $.extend({}, NotificationIconView.prototype);
     var _super = NotificationIconView.prototype;
@@ -37,7 +39,9 @@ function CommunityNotificationIconView(communityNotification, communityInfo) {
         }
         var _self = this;
         _super._init.call(_self, communityNotification);
-        _self._toolTipView = new CommunityNotificationToolTipView(_self, communityNotification, this._communityInfo);
+        // Superfluous argument passed to function CommunityNotificationToolTipView.
+        // _self._toolTipView = new CommunityNotificationToolTipView(_self, communityNotification, this._communityInfo);
+        _self._toolTipView = new CommunityNotificationToolTipView(_self, communityNotification);
     };
 
     _proto._addNotificationCount = function(count) {
