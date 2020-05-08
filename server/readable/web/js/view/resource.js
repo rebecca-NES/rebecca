@@ -1390,7 +1390,7 @@ limitations under the License.
         }
     });
 // Superfluous argument passed to anonymous function.
-}());
+});
 var Resource = {
     setCulture : function(culture) {
       return Globalize.culture(culture);
