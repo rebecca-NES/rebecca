@@ -135,7 +135,8 @@
         */
         function _onRedisAuth(err, res) {
             log.connectionLog(7, 'RedisConnector#_onRedisAuth');
-            _onRedisAuth(_self, err, res);
+            // 関数名があやまっている。引数ミスではなく、関数名間違い
+            onRedisAuth(_self, err, res);
         }
 
         // 認証する
