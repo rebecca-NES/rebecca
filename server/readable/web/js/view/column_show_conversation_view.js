@@ -242,7 +242,8 @@ function ColumnShowConversationView(columnInformation) {
                 insertMessageId = getLastChild;
             } else {
                 return insertMessageId;
-                break;
+                // This statement is unreachable.
+                // break;
             }
         }
     }
