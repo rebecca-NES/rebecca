@@ -150,7 +150,8 @@ function LoginView() {
             $('#loginErrMsg').text(Resource.getMessage('skipLoginErrMsg'));
             return false;
         }
-        return true;
+        // This statement is unreachable.
+        // return true;
     };
     _proto._checkTenantname = function() {
         var _objLoginTenant = $('#txtLogintenant');
