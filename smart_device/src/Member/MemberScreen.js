@@ -94,13 +94,13 @@ export default class MemberScreen extends Component<{}> {
       if (this.props.membertype === 0) {
         var info = await CubeeAPI.fetchGroupChatInfo(this.props.roomid)
 
-        await this.setState({
-          membertype: this.props.membertype,
-          roomid: this.props.roomid,
-          method: this.props.method,
+        await this.setState(prevState => ({
+          membertype: prevState.membertype,
+          roomid: prevState.roomid,
+          method: prevState.method,
           memberlist: [],
           regmember: info.items[0].memberItems,
-        })
+        }))
       } else if (this.props.membertype === 1) {
         var info = await CubeeAPI.fetchCommunityMember(this.props.roomid)
         var user = []
