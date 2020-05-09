@@ -4,7 +4,8 @@ import argparse
 import datetime
 import json
 import collections
-import subprocess
+# Import of 'subprocess' is not used.
+# import subprocess
 import sys
 
 from db_manager import DBManager
