@@ -13152,8 +13152,8 @@
                 _result = true;
                 _reason = DISCCONECT_REASON_NO;
                 var _itemsElm = _getItemsElemFromCreateOrUpdateUserXmppResponce(xmlRootElem);
-                // Superfluous argument passed to function _getItemsFromCreateOrUpdateUserResultItemsElm.
-                _items = _getItemsFromCreateOrUpdateUserResultItemsElm(_itemsElm);
+                _items = _getItemsFromCreateOrUpdateUserResultItemsElm(
+                        _itemsElm, updateUserList);
             }
             // コールバックを呼び出し元に返す
             onUpdateUserCallBack(_result, _reason, _items);
