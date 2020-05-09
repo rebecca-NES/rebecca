@@ -112,38 +112,38 @@ export default class MemberScreen extends Component<{}> {
           user.push(info.items[0].memberItems.generalMemberItems[item].jid)
         }
 
-        await this.setState({
-          membertype: this.props.membertype,
-          roomid: this.props.roomid,
-          method: this.props.method,
+        await this.setState(prevState => ({　
+          membertype: prevState.membertype,
+          roomid: prevState.roomid,
+          method: prevState.method,
           memberlist: [],
           regmember: user,
-        })
+        }))
       } else {
-        await this.setState({
-          membertype: this.props.membertype,
-          roomid: this.props.roomid,
-          method: this.props.method,
+        await this.setState(prevState => ({
+          membertype: prevState.membertype,
+          roomid: prevState.roomid,
+          method: prevState.method,
           memberlist: [],
           regmember: [],
-        })
+        }))
       }
     } else if (this.props.method === "Del") {  // 削除
-      await this.setState({
-        membertype: this.props.membertype,
-        roomid: this.props.roomid,
-        method: this.props.method,
+      await this.setState(prevState => ({
+        membertype: prevState.membertype,
+        roomid: prevState.roomid,
+        method: prevState.method,
         memberlist: [],
         regmember: [],
-      })
+      }))
     } else {  // 選択
-      await this.setState({
-        membertype: this.props.membertype,
-        roomid: this.props.roomid,
-        method: this.props.method,
-        memberlist: this.props.memberlist,
+      await this.setState(prevState => ({
+        membertype: prevState.membertype,
+        roomid: prevState.roomid,
+        method: prevState.method,
+        memberlist: prevState.memberlist,
         regmember: [],
-      })
+      }))
     }
 
     this._fetchMemberList()
