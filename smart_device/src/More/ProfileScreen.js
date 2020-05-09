@@ -264,10 +264,10 @@ export default class ProfileScreen extends Component<{}> {
 
     try {
       if (this.state.imageData) {
-        await this.setState({
+        await this.setState(prevState => ({
           avatarType: "image/jpeg",
-          avatarData: this.state.imageData,
-        })
+          avatarData: prevState.imageData,
+        }))
       }
 
       await CubeeAPI.updateUserInfo(this.state.nickname, this.state.email, this.state.avatarType, this.state.avatarData)

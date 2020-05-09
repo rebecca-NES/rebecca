@@ -115,13 +115,13 @@ export default class LoginDisplay extends Component<{}> {
     })
     // textサイズはwidthとheightの値が小さい方に合わせる
     if(this.state.vw >= this.state.vh) {
-      this.setState({
-        textSize: this.state.vh
-      })
+      this.setState(prevState => ({
+        textSize: prevState.vh
+      }))
     }else{
-      this.setState({
-        textSize: this.state.vw
-      })
+      this.setState(prevState => ({
+        textSize: prevState.vw
+      }))
     }
   }
 
