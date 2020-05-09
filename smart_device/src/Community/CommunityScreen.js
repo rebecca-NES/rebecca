@@ -14,33 +14,32 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 
-
 'use strict'
 
 import React, { Component } from 'react'
 import {
-  Platform,
-  StyleSheet,
-  View,
-  Text,
-  Alert,
-  ScrollView,
-  ListView,
-  Image,
-  RefreshControl,
-  ActivityIndicator,
-  KeyboardAvoidingView,
-  TouchableOpacity,
+    Platform,
+    StyleSheet,
+    View,
+    Text,
+    Alert,
+    ScrollView,
+    ListView,
+    Image,
+    RefreshControl,
+    ActivityIndicator,
+    KeyboardAvoidingView,
+    TouchableOpacity,
 } from 'react-native'
 import {
-  Header,
-  Button,
-  SearchBar,
-  FormLabel,
-  FormInput,
-  Avatar,
-  Badge,
-  Divider,
+    Header,
+    Button,
+    SearchBar,
+    FormLabel,
+    FormInput,
+    Avatar,
+    Badge,
+    Divider,
 } from 'react-native-elements'
 import {
     Actions,
@@ -50,11 +49,11 @@ import Icon from 'react-native-vector-icons/FontAwesome'
 import ImagePicker from　'react-native-image-picker'
 import Toast from 'react-native-simple-toast'
 import {
-  Menu,
-  MenuOptions,
-  MenuOption,
-  MenuTrigger,
-  MenuProvider,
+    Menu,
+    MenuOptions,
+    MenuOption,
+    MenuTrigger,
+    MenuProvider,
 } from 'react-native-popup-menu'
 
 import Common from '../Common/Common'
@@ -70,89 +69,86 @@ const KAIWA_MODE = 2
 const _ScreenName = "プロジェクト画面"
 
 export default class CommunityScreen extends Component<{}> {
-
-  /**
+    /**
     * コンストラクタ
     * @return 無し
     * @author CRAFT
     * @since 1.0
     */
-  constructor() {
+    constructor() {
+        super()
+        this.isSearchFocused = false
+        this.isTouchable = true
+        this._fetch_lastid = 0
+        this._fetch_items = []
+        this._filter_items = []
+        this._display_items = []
+        this._attaches = []
+        this._fetching = false    // 読み込み処理中かどうか
+        this._pop_return = true  //
+        this._mode = NORMAL_MODE
+        // 値を設定
+        this.inputArea = []
 
-    super()
-    this.isSearchFocused = false
-    this.isTouchable = true
-    this._fetch_lastid = 0
-    this._fetch_items = []
-    this._filter_items = []
-    this._display_items = []
-    this._attaches = []
-    this._fetching = false    // 読み込み処理中かどうか
-    this._pop_return = true  //
-    this._mode = NORMAL_MODE
-    // 値を設定
-    this.inputArea = []
+        this._datasource = new ListView.DataSource({rowHasChanged: (row1, row2) => row1 !== row2})
 
-    this._datasource = new ListView.DataSource({rowHasChanged: (row1, row2) => row1 !== row2})
-
-    this.state = {
-      refreshing: false,
-      filter_text: '',
-      itemId: '',        // 表示するItemID
-      single: false,      // 単一メッセージ表示
-      members: [],      // 投稿時の人選択リスト
-      attach_filename: '',    // 添付ファイル名
-      attach_source: '',      // 添付ファイル実態
-      input_message:'',       // 入力文字列
-      loaded: false,
-      items: this._datasource,
-      inputHeight:40,
+        this.state = {
+            refreshing: false,
+            filter_text: '',
+            itemId: '',        // 表示するItemID
+            single: false,      // 単一メッセージ表示
+            members: [],      // 投稿時の人選択リスト
+            attach_filename: '',    // 添付ファイル名
+            attach_source: '',      // 添付ファイル実態
+            input_message:'',       // 入力文字列
+            loaded: false,
+            items: this._datasource,
+            inputHeight:40
+            }
+        this._onPressImage = this._onPressImage.bind(this)
+        
+        /**
+        * コンポーネントマウント直前処理
+        * @return 無し
+        * @author CRAFT
+        * @since 1.0
+        */
+        async componentDidMount() {
+            Common.saveOperationLog(_ScreenName, "画面表示", "")
+    
+            this._fetch_lastid = 0
+            this._fetch_items = []
+            this._attaches = []
+            this._pop_return = true
+            
+            // Component state update uses 4 Values.
+            if (this.props.method === "Reply") {
+                await this.setState(prevState => ({
+                    roomid: prevState.roomid,
+                    roomname: prevState.roomname,
+                    single: true,
+                    itemId: prevState.itemid,
+                    loaded: false,
+                    projectColor: prevState.projectColor
+                    }))}
+            } else if (this.props.method === "Kaiwa") {
+                await this.setState(prevState => ({
+                    roomid: prevState.roomid,
+                    roomname: prevState.roomname,
+                    single: false,
+                    itemId: pervState.itemid,
+                    loaded: false
+                    }))
+            } else {
+                await this.setState(prevState => ({
+                    roomid: prevState.roomid,
+                    roomname: this.props.roomname,
+                    projectColor: this.props.projectColor,
+                    loaded: false
+                }))
+            }
+        this._fetch_list()
     }
-    this._onPressImage = this._onPressImage.bind(this);
-  }
-
-  /**
-    * コンポーネントマウント直前処理
-    * @return 無し
-    * @author CRAFT
-    * @since 1.0
-    */
-  async componentDidMount() {
-    Common.saveOperationLog(_ScreenName, "画面表示", "")
-
-    this._fetch_lastid = 0
-    this._fetch_items = []
-    this._attaches = []
-    this._pop_return = true
-
-    if (this.props.method === "Reply") {
-      await this.setState({
-        roomid: this.props.roomid,
-        roomname: this.props.roomname,
-        single: true,
-        itemId: this.props.itemid,
-        loaded: false,
-        projectColor: this.props.projectColor,
-      })
-    } else if (this.props.method === "Kaiwa") {
-      await this.setState({
-        roomid: this.props.roomid,
-        roomname: this.props.roomname,
-        single: false,
-        itemId: this.props.itemid,
-        loaded: false,
-      })
-    } else {
-      await this.setState({
-        roomid: this.props.roomid,
-        roomname: this.props.roomname,
-        projectColor: this.props.projectColor,
-        loaded: false,
-      })
-    }
-
-    this._fetch_list()
-  }
 
   /**
     * コンポーネントマウント直前処理
