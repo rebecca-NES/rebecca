@@ -126,17 +126,17 @@ export default class CompanyScreen extends Component<{}> {
     this._attaches = []
 
     if (this.props.method === "Reply") {
-      await this.setState({
+      await this.setState(prevState => ({
         single: true,
-        itemId: this.props.itemid,
+        itemId: prevState.itemid,
         loaded: false,
-      })
+      }))
     } else if (this.props.method === "Kaiwa") {
-      await this.setState({
+      await this.setState(prevState => ({
         single: false,
-        itemId: this.props.itemid,
+        itemId: prevState.itemid,
         loaded: false,
-      })
+      }))
     }
 
     this._fetch_list()
@@ -764,12 +764,12 @@ export default class CompanyScreen extends Component<{}> {
       this._display_items = this._sortList()
     }
 
-    this.setState({
-      items: this.state.items.cloneWithRows(this._display_items),
+    this.setState(prevState => ({
+      items: prevState.items.cloneWithRows(this._display_items),
       loaded: true,
       input_message: message,
       refreshing: false,
-    })
+    }))
     if (this.state.single && this.inputArea && this.inputArea.input) {
       this.inputArea.input.focus()
     } else if (!this.state.itemId && this.inputArea && this.inputArea.input) {
