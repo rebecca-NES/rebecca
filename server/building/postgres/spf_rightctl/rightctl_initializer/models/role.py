@@ -1,6 +1,7 @@
 # -*- coding: utf-8 -*-
 
 # from sqlalchemy import Column, Integer, String, Sequence, TIMESTAMP
+from sqlalchemy import Column, String, TIMESTAMP
 
 from db_manager import Base
 
