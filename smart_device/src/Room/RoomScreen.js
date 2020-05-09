@@ -84,25 +84,25 @@ export default class RoomScreen extends Component<{}> {
       if (this.props.roomtype === 0) {
         var groupchatInfo = await CubeeAPI.fetchGroupChatInfo(this.props.roomid)
 
-        this.setState({
-          roomid: this.props.roomid,
-          roomtype: this.props.roomtype,
+        this.setState(prevState => ({ 
+          roomid: prevState.roomid,
+          roomtype: prevState.roomtype,
           roomname: Common.urldecode(groupchatInfo.items[0].roomName),
           roomdesc: "",
           roomlogo: "",
           roomuser: [],
-        })
+        }))
       } else {
         var communityInfo = await CubeeAPI.fetchCommunityInfo(this.props.roomid)
 
-        this.setState({
-          roomid: this.props.roomid,
-          roomtype: this.props.roomtype,
+        this.setState(prevState => ({
+          roomid: prevState.roomid,
+          roomtype: prevState.roomtype,
           roomname: Common.urldecode(communityInfo.items[0].roomName),
           roomdesc: Common.urldecode(communityInfo.items[0].description),
           roomlogo: communityInfo.items[0].logoUrl,
           roomuser: [],
-        })
+        }))
       }
     } else {
       this.setState({
