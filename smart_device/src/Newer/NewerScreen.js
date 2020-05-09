@@ -215,11 +215,11 @@ export default class NewerScreen extends Component<{}> {
       }
     }
 
-    this.setState({
-      items: this.state.items.cloneWithRows(displaylist),
+    this.setState(prevState => ({
+      items: prevState.items.cloneWithRows(displaylist),
       loaded: true,
       refreshing: false,
-    })
+    }))
   }
 
   /**
