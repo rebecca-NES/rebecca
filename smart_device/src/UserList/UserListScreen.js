@@ -80,10 +80,10 @@ export default class UserListScreen extends Component<{}> {
   async componentDidMount() {
     Common.saveOperationLog(_ScreenName, "画面表示", "")
 
-    await this.setState({
-      usertype: this.props.usertype,
-      roomid: this.props.roomid,
-    })
+    await this.setState(prevState => ({ 
+      usertype: prevState.usertype,
+      roomid: prevState.roomid,
+    }))
 
     this._fetchUserList()
   }
@@ -115,10 +115,10 @@ export default class UserListScreen extends Component<{}> {
         return 0
     })
 
-    this.setState({
-      items: this.state.items.cloneWithRows(fetchlist.items),
+    this.setState(prevState => ({
+      items: prevState.items.cloneWithRows(fetchlist.items),
       loaded: true,
-    })
+    }))
   }
 
   /**
