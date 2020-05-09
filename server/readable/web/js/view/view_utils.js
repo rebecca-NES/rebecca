@@ -515,7 +515,8 @@ function ViewUtils() {
                 } else {   
                     var info = _findShortenUrlInfo(shortenUrls, _urlString);
                     if (info != null) {
-                        _urlString = info.getShortenPath();
+                        // The value assigned to _urlString here is unused.
+                        // _urlString = info.getShortenPath();
                         var _urlStringSrcStr = Utils.convertEscapedHtml(info.getDisplayedURL());
                         var _urlOriginal = Utils.convertEscapedHtml(info.getOriginalURL());
                         var _urlOriginalTag = Utils.convertEscapedTag(info.getOriginalURL());
@@ -1632,7 +1633,9 @@ function ViewUtils() {
     };
 
     ViewUtils.getGroupChatColumnInfo = function(roomInfo) {
-        var _columnInfomation = new GroupChatColumnInformation();
+        // The initial value of _columnInfomation is unused, since it is always overwritten.
+        // var _columnInfomation = new GroupChatColumnInformation();
+        var _columnInfomation;
         if (roomInfo == null || typeof roomInfo != 'object') {
             return null;
         }
