@@ -270,8 +270,8 @@ export default class SettingScreen extends Component<{}> {
     */
   _onPressLogging() {
 
-    this.setState({
-      isLogging: !this.state.isLogging
-    })
+    this.setState(prevState => ({
+      isLogging: !prevState.isLogging
+    }))
   }
 }
