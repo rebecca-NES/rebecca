@@ -151,8 +151,11 @@ function _checkFacard(request, type, content, params) {
     LOG.connectionLog(7, "do func AuthorityChecker._checkFacard(... request,type : " + request + ', '+ type);
     if (_.has(CheckFacard, request)) {
         if (_.has(CheckFacard[request], type)) {
+            // Invocation of method with 2 Values name may dispatch to unexpected target and cause an exception.
             LOG.connectionLog(7, "AuthorityChecker._checkFacard(... type:"+type);
-            CheckFacard[request][type](content, params);
+            if (typeof CheckFacard[request][type] === 'function') {
+                CheckFacard[request][type](content, params);
+            }
         } else if (_.has(CheckFacard[request], 'all')) {
             LOG.connectionLog(7, "AuthorityChecker._checkFacard(... all");
             CheckFacard[request]['all'](content, params);
