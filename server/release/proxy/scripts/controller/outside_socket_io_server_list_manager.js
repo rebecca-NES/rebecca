@@ -31,7 +31,9 @@
             return;
         }
 
-        var _file = _file = File.getInstance();
+        // The value assigned to _file here is unused.
+        // var _file = _file = File.getInstance();
+        var _file;
         var _filePath = _conf.getConfData(CONF_KEY_SERVER_LIST_FILE_PATH) + LIST_FILE_SUFFIX;
         if (!_filePath) {
             // デフォルトファイル
