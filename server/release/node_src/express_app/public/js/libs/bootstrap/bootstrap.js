@@ -1620,7 +1620,7 @@
 
         this.activeTarget = target
 
-        $(this.selector)
+        $(find(this.selector))
           .parent('.active')
           .removeClass('active')
 
