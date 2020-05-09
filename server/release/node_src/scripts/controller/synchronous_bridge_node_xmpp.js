@@ -1,6 +1,6 @@
 (function() {
-    const crypto = require('crypto')
-    var libxml = require("libxmljs")
+    const crypto = require('crypto');
+    var libxml = require("libxmljs");
     var Url = require('url');
     var Xmpp = require('./xmpp').Xmpp;
     var ServerLog = require('./server_log');
@@ -1181,7 +1181,7 @@
                 }
             }
         }
-        _responceData.group =_groupItems
+        _responceData.group =_groupItems; 
 
         // アバタータイプ・アバターデータ
         var _avatarType = '';
@@ -1785,7 +1785,7 @@
                 requestData.extras = encodeURIComponent(requestData.extras);
             }
             if(!Validation.affiliationCheck(requestData.group, false)){
-                return false
+                return false;
             }
             _xmppSetLoginPersonData = XmppUtils.checkCreateXmppData(_xsConn, function() {
                 return Xmpp.createUpdateVcardInformationXmpp(requestData);
@@ -11929,7 +11929,7 @@
             updated_at : (_itemElem.attr("updated_at") ? _itemElem.attr("updated_at").value() : "")
         };
         // count
-        var _notifyType = Const.API_NOTIFY.API_NOTIFY_UPDATE_NOTE_INFO
+        var _notifyType = Const.API_NOTIFY.API_NOTIFY_UPDATE_NOTE_INFO;
         _notifyPushMessge(sessionDataAry, _notifyType, _pushContent);
     }
 
@@ -13519,5 +13519,5 @@
     exports.directTestPath = {
         _onThreadTitleMessage : _onThreadTitleMessage,
         _getItemDataFromMessageItemElem : _getItemDataFromMessageItemElem
-    }
+    };
 })();
