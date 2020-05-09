@@ -1202,7 +1202,7 @@ function ParticularCondition() {
         if(_childItemIdList == null) {
             return _ret;
         };
-        var _count = _childItemIdList.getCount()
+        var _count = _childItemIdList.getCount();
         for(var _i = 0; _i < _count; _i++) {
             var _childTaskItemId = _childItemIdList.get(_i);
             var _childTaskMessage = CubeeController.getInstance().getMessage(_childTaskItemId);
