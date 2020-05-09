@@ -130,7 +130,7 @@ export default class CommunityScreen extends Component<{}> {
                     itemId: prevState.itemid,
                     loaded: false,
                     projectColor: prevState.projectColor
-                    }))}
+                    }))
             } else if (this.props.method === "Kaiwa") {
                 await this.setState(prevState => ({
                     roomid: prevState.roomid,
@@ -145,106 +145,94 @@ export default class CommunityScreen extends Component<{}> {
                     roomname: this.props.roomname,
                     projectColor: this.props.projectColor,
                     loaded: false
-                }))
+                    }))
             }
-        this._fetch_list()
-    }
-
-  /**
-    * コンポーネントマウント直前処理
-    * @return 無し
-    * @author CRAFT
-    * @since 1.0
-    */
-  componentDidUpdate(prevProps, prevState) {
-    if ( this.state.loaded !== true ) {
-      this._fetch_list()
-    }
-  }
-
-  /**
-    * コンポーネント更新処理
-    * @return 無し
-    * @author CRAFT
-    * @since 1.0
-    */
-  async componentWillReceiveProps(nextProps) {
-
-    if (nextProps.method === "Member") {
-      if ( nextProps.members.length > 0 ) {
-        var msg = this.state.input_message
-        for ( var inx in nextProps.members ) {
-          if (msg) msg += " "
-          msg += nextProps.members[inx]
+            this._fetch_list()
         }
-
-        this.setState({input_message: msg})
-      }
-    }
-  }
-
-  /**
-    * 画面作成処理
-    * @return 無し
-    * @author CRAFT
-    * @since 1.0
-    */
-  render() {
-
-    var headerTitle = Common.urldecode(this.state.roomname)
-    var sendMessage = true
-    // テーマカラーの設定
-    var tabColor = Const.community_backcolor
-    // プロジェクトカラーが設定されている場合はそちらに設定する
-    if (this.state.projectColor) {
-      tabColor = this.state.projectColor;
-    }
-
-
-
-    sendMessage = !this.isSearchFocused
-    this._mode = NORMAL_MODE
-    if (this.state.single) {
-      headerTitle = "返信(" + headerTitle + ")"
-      this._mode = REPLY_MODE
-    } else if (this.state.itemId) {
-      headerTitle = "会話(" + headerTitle + ")"
-      sendMessage = false
-      tabColor = Const.community_conversation_color
-      this._mode = KAIWA_MODE
-    }
-    this.isTouchable = true
-
-    return (
-    <MenuProvider style={{flex: 1}}>
-      <View style={{flex: 1, backgroundColor: Const.basic_backcolor}} >
-        <View style={{flex: 1, justifyContent: 'flex-start'}}>
-
-          <Header
-            leftComponent={
-              <Text
-                style={{color: Const.chat_forecolor, padding:10, marginBottom:8, marginLeft:4}}
-                onPress={() => this._onPressCloseButton()}
-              >
-                戻る
-              </Text>
+        /**
+        * コンポーネントマウント直前処理
+        * @return 無し
+        * @author CRAFT
+        * @since 1.0
+        */
+        componentDidUpdate(prevProps, prevState) {
+            if ( this.state.loaded !== true ) {
+                this._fetch_list()
             }
-            centerComponent={{ text: headerTitle, style: {textAlign:'center', color: Const.chat_forecolor,width:'65%', fontSize:16, fontWeight:'bold', marginBottom:15} }}
-            rightComponent={<Text style={{opacity:0, padding:10, marginRight:4}}>戻る</Text>}
-            outerContainerStyles={{
-              backgroundColor: tabColor, padding:0,
-              zIndex: 1, borderBottomWidth:0,
-            }}
-          />
-
-          <ScrollView
-            style={{flex: 1, marginTop: Const.headerbar_height}}
-            refreshControl={
-              <RefreshControl
-                refreshing={this.state.refreshing}
-                onRefresh={this._onRefresh.bind(this)}
-              />
+        }
+        
+        /**
+        * コンポーネント更新処理
+        * @return 無し
+        * @author CRAFT
+        * @since 1.0
+        */
+        async componentWillReceiveProps(nextProps) {
+            if (nextProps.method === "Member") {
+                if ( nextProps.members.length > 0 ) {
+                    var msg = this.state.input_message
+                    for ( var inx in nextProps.members ) {
+                        if (msg) msg += " "
+                        msg += nextProps.members[inx]
+                    }
+                    this.setState({input_message: msg})
+                }
             }
+        }
+        
+        /**
+        * 画面作成処理
+        * @return 無し
+        * @author CRAFT
+        * @since 1.0
+        */
+        render() {
+            var headerTitle = Common.urldecode(this.state.roomname)
+            var sendMessage = true
+            // テーマカラーの設定
+            var tabColor = Const.community_backcolor
+            // プロジェクトカラーが設定されている場合はそちらに設定する
+            if (this.state.projectColor) {
+                tabColor = this.state.projectColor;
+            }
+            
+            sendMessage = !this.isSearchFocused
+            this._mode = NORMAL_MODE
+            if (this.state.single) {
+                headerTitle = "返信(" + headerTitle + ")"
+                this._mode = REPLY_MODE
+            } else if (this.state.itemId) {
+                headerTitle = "会話(" + headerTitle + ")"
+                sendMessage = false
+                tabColor = Const.community_conversation_color
+                this._mode = KAIWA_MODE
+            }
+            this.isTouchable = true
+            return (
+                <MenuProvider style={{flex: 1}}>
+                    <View style={{flex: 1, backgroundColor: Const.basic_backcolor}} >
+                        <View style={{flex: 1, justifyContent: 'flex-start'}}>
+                            <Header
+                                leftComponent={
+                                    <Text
+                                        style={{color: Const.chat_forecolor, padding:10, marginBottom:8, marginLeft:4}}
+                                        onPress={() => this._onPressCloseButton()}
+                                    >
+                                        戻る
+                                    </Text>
+                                }
+                                centerComponent={{ text: headerTitle, style: {textAlign:'center', color: Const.chat_forecolor,width:'65%', fontSize:16, fontWeight:'bold', marginBottom:15} }}
+                                rightComponent={<Text style={{opacity:0, padding:10, marginRight:4}}>戻る</Text>}
+                                outerContainerStyles={{backgroundColor: tabColor, padding:0, zIndex: 1, borderBottomWidth:0}}
+                            />
+                            <ScrollView
+                                style={{flex: 1, marginTop: Const.headerbar_height}}
+                                refreshControl={
+                                    <RefreshControl
+                                        refreshing={this.state.refreshing}
+                                        onRefresh={this._onRefresh.bind(this)}
+                                    />
+                                }
             scrollEventThrottle={Const.scroll_event_throttle}
             onScroll={this._onScroll.bind(this)}
             >
