@@ -1,6 +1,7 @@
 # -*- coding: utf-8 -*-
 
 # from sqlalchemy import Column, BigInteger, Boolean, String, Sequence, TIMESTAMP, UniqueConstraint
+from sqlalchemy import Column, BigInteger, Boolean, String, TIMESTAMP, UniqueConstraint
 
 from db_manager import Base
 
