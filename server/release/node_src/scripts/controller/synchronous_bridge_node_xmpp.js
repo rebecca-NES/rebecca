@@ -1,6 +1,6 @@
 (function() {
-    const crypto = require('crypto');
-    var libxml = require("libxmljs");
+    const crypto = require('crypto')
+    var libxml = require("libxmljs")
     var Url = require('url');
     var Xmpp = require('./xmpp').Xmpp;
     var ServerLog = require('./server_log');
