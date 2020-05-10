@@ -1,5 +1,6 @@
 (function() {
-    const crypto = require('crypto');
+    // Unused variable crypto.
+    // const crypto = require('crypto');
     var libxml = require("libxmljs");
     var Url = require('url');
     var Xmpp = require('./xmpp').Xmpp;
@@ -14,24 +15,29 @@
     var Utils = require('../utils');
     var PersonData = require('../model/person_data');
     var CubeeWebApi = require('./cubee_web_api');
-    var RegisteredContactData = require('../model/registered_contact_data');
+    // Unused variable RegisteredContactData.
+    // var RegisteredContactData = require('../model/registered_contact_data');
     var ImageFileUtils = require('./image_file_utils');
     var UserAccountUtils = require('./user_account_utils');
-    var UserAccountManager = require('./user_account_manager');
+    // Unused variable UserAccountManager.
+    // var UserAccountManager = require('./user_account_manager');
     var ReadCacheBeforeDBChef = require('../lib/CacheHelper/read_cache_before_db_chef');
     var XmppServerData = require('../lib/CacheHelper/xmpp_server_data');
     var AccessRelationData = require('../lib/CacheHelper/access_relation_data');
     var AuthorityChecker = require('./authority/authority_checker');
      // 短縮URL追加
     var ShortenURLUtils = require('./shorten_url_utils');
-    var ShortenURLManager = require('./shorten_url_manager');
-    var ShortenURLInfo = require('../model/shorten_url_info');
+    // Unused variable ShortenURLManager.
+    // var ShortenURLManager = require('./shorten_url_manager');
+    // Unused variable ShortenURLInfo.
+    // var ShortenURLInfo = require('../model/shorten_url_info');
 
     var XmppUtils = require('./xmpp_utils');
 
     var FileUtils = require('./file_utils');
     var FileConvert = require('./file_convert');
-    var PathFileConvert = require('./file_convert');
+    // Unused variable PathFileConvert.
+    // var PathFileConvert = require('./file_convert');
     const Validation = require('./validation');
     const Formatting = require('./formatting');
 
@@ -65,7 +71,8 @@
     var ERROR_REASON_PARSE_RESPONSE_XMPP = 5;
     var ERROR_REASON_XMPP_SERVER = 6;
     var ERROR_REASON_INNER = 7;
-    var ERROR_REASON_NO_LOGINED = 9;
+    // Unused variable ERROR_REASON_NO_LOGINED.
+    // var ERROR_REASON_NO_LOGINED = 9;
     var ERROR_REASON_ERROR_PARAM = 10;
     var ERROR_CREATE_AVATAR_IMAGE = 11;
     var ERROR_EXIST_USER = 12;
