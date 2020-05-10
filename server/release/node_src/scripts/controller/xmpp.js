@@ -9,8 +9,7 @@
     var ServerLog = require('./server_log');
     var _log = ServerLog.getInstance();
 
-    function Xmpp() {
-    }
+    function Xmpp() {};
 
     Xmpp.getHeaderXmpp = function() {
         return libxml.Document().toString();
@@ -382,8 +381,8 @@
                 xmppServerHostName);
             break;
         case RequestData.SEND_MESSAGE_TYPE_MURMUR:
-            _contentElem = _getMurmurDataContentXmppElem(sendData, fromJid,
-                xmppServerHostName);
+                // Superfluous argument passed to function _getMurmurDataContentXmppElem.
+                _contentElem = _getMurmurDataContentXmppElem(sendData, fromJid);
             break;
         default:
             break;
@@ -673,9 +672,10 @@
 
     function getSendMeailMessageItemElemFromSendMailMessageItemObject(item,
             messageFrom) {
+        /* This guard always evaluates to false.
         if (item == null) {
             return null;
-        }
+        }*/
         var _doc = libxml.Document();
         // <content>
         var _itemElem = _doc.node('item');
@@ -783,12 +783,14 @@
         }
 
         // <thread_title>
-        if (threadTitle == undefined || threadTitle == null) {
+        // This guard always evaluates to false. (threadTitle == null)
+        if (threadTitle == undefined) {
             threadTitle = '';
         }
         _messgeElem.node('thread_title').text(threadTitle);
         // <quotationItemId>
-        if (quotationItemId != undefined && quotationItemId != null) {
+        // This guard always evaluates to true. (quotationItemId != null)
+        if (quotationItemId != undefined) {
             _messgeElem.node('quotation_item_id').text(_getSafeStringData(quotationItemId));
         }
         // <attached_items>
@@ -1493,9 +1495,10 @@
     // AND条件フィルターを作成
     function _getFilterAndConditionXmppElem(parentElem, condition) {
         _log.connectionLog(7, 'do func Xmpp._getFilterAndConditionXmppElem(...');
+        /* This guard always evaluates to false.
         if (condition == null) {
             return;
-        }
+        } */
         if (condition.type == null || condition.type != CONDITION_TYPE_AND) {
             return;
         }
@@ -1521,9 +1524,10 @@
     // OR条件フィルターを作成
     function _getFilterOrConditionXmppElem(parentElem, condition) {
         _log.connectionLog(7, 'do func Xmpp._getFilterOrConditionXmppElem(...');
+        /* This guard always evaluates to false.
         if (condition == null) {
             return;
-        }
+        } */
         if (condition.type == null || condition.type != CONDITION_TYPE_OR) {
             return;
         }
@@ -1543,16 +1547,18 @@
         var _orElem = parentElem.node('or');
         for ( var _i = 0; _i < _count; _i++) {
             var _childCondition = _value[_i];
-            var _childConditionXmppElem = _getFilterConditionXmppElem(_orElem,
-                    _childCondition);
+            // the function _getFilterConditionXmppElem does not return anything, yet the return value is used.
+            // var _childConditionXmppElem = _getFilterConditionXmppElem(_orElem, _childCondition);
+            _getFilterConditionXmppElem(_orElem, _childCondition);
         }
     }
     // NOT条件フィルターを作成
     function _getFilterNotConditionXmppElem(parentElem, condition) {
         _log.connectionLog(7, 'do func Xmpp._getFilterNotConditionXmppElem(...');
+        /* This guard always evaluates to false.
         if (condition == null) {
             return;
-        }
+        } */
         if (condition.type == null || condition.type != CONDITION_TYPE_NOT) {
             return;
         }
@@ -1575,9 +1581,10 @@
     // ITEM条件フィルターを作成
     function _getFilterItemConditionXmppElem(parentElem, condition) {
         _log.connectionLog(7, 'do func Xmpp._getFilterItemConditionXmppElem(...');
+        /* This guard always evaluates to false.
         if (condition == null) {
             return;
-        }
+        } */
         if (condition.type == null || condition.type != CONDITION_TYPE_ITEM) {
             return;
         }
@@ -1621,10 +1628,11 @@
     // より大きい条件フィルターを作成
     function _getFilterGreaterThanConditionXmppElem(parentElem, condition) {
         _log.connectionLog(7, 'do func Xmpp._getFilterGreaterThanConditionXmppElem(...');
+        /* This guard always evaluates to false.
         if (condition == null) {
             _log.connectionLog(3, '_getFilterGreaterThanConditionXmppElem condition is not allow null');
             return;
-        }
+        } */
         if (condition.type == null
                 || condition.type != CONDITION_TYPE_GREATER_THAN) {
             _log.connectionLog(3, '_getFilterGreaterThanConditionXmppElem condition.type is invalid');
@@ -1676,9 +1684,10 @@
     // より小さい条件フィルターを作成
     function _getFilterLessThanConditionXmppElem(parentElem, condition) {
         _log.connectionLog(7, 'do func Xmpp._getFilterLessThanConditionXmppElem(...');
+        /* This guard always evaluates to false.
         if (condition == null) {
             return;
-        }
+        } */
         if (condition.type == null
                 || condition.type != CONDITION_TYPE_LESS_THAN) {
             return;
@@ -1723,9 +1732,10 @@
     // KEYWORD条件フィルターを作成
     function _getFilterKeywordConditionXmppElem(parentElem, condition) {
         _log.connectionLog(7, 'do func Xmpp._getFilterKeywordConditionXmppElem(...');
+        /* This guard always evaluates to false.
         if (condition == null) {
             return;
-        }
+        } */
         if (condition.type == null || condition.type != CONDITION_TYPE_KEYWORD) {
             return;
         }
@@ -1763,9 +1773,10 @@
     // 個別
     function _getFilterParticularConditionXmppElem(parentElem, condition) {
         _log.connectionLog(7, 'do func Xmpp._getFilterParticularConditionXmppElem(...');
+        /* This guard always evaluates to false.
         if (condition == null) {
             return;
-        }
+        } */
         if (condition.type == null
                 || condition.type != CONDITION_TYPE_PARTICULAR) {
             return;
@@ -3757,39 +3768,39 @@
         _itemsElem.attr({
             'count' : '' + 0,
         });
-
-        if (updateUserList != null) {
-            var _count = updateUserList.length;
-            _itemsElem.attr({
-                'count' : '' + _count,
-            });
-            for ( var _i = 0; _i < _count; _i++) {
-                var _itemElem = _itemsElem.node('item');
-                var _updateUserData = updateUserList[_i];
-                // <username>
-                var _userNameElem = _itemElem.node('username');
-                var _openfireAccount = _updateUserData.openfireAccount;
-                _userNameElem.text(_openfireAccount);
-                // <vCard>
-                var _vCardElem = _itemElem.node('vCard');
-                _vCardElem.namespace('vcard-temp');
-                // <NICKNAME>
-                var _nickNameElem = _vCardElem.node('NICKNAME');
-                _nickNameElem.text(_updateUserData.nickname);
-                // <group>
-                var _groups = _updateUserData.group;
-                var _groupElem = _getGroupElmFromGroupArray(_itemElem, _groups);
-                // <delete_flg>
-                var _deleteFlgElem = _itemElem.node('delete_flg');
-                var _delete_flg = _updateUserData.delete_flg;
-                _deleteFlgElem.text(_delete_flg);
-                // <EMAIL>
-                if(_updateUserData.mailAddress != null) {
-                    var _emailElem = _vCardElem.node('EMAIL');
-                    _emailElem.node('USERID').text(_updateUserData.mailAddress);
-                }
+        
+        /* This guard always evaluates to false.
+        if (updateUserList != null) { */
+        
+        var _count = updateUserList.length;
+        _itemsElem.attr({'count' : '' + _count,});
+        for ( var _i = 0; _i < _count; _i++) {
+            var _itemElem = _itemsElem.node('item');
+            var _updateUserData = updateUserList[_i];
+            // <username>
+            var _userNameElem = _itemElem.node('username');
+            var _openfireAccount = _updateUserData.openfireAccount;
+            _userNameElem.text(_openfireAccount);
+            // <vCard>
+            var _vCardElem = _itemElem.node('vCard');
+            _vCardElem.namespace('vcard-temp');
+            // <NICKNAME>
+            var _nickNameElem = _vCardElem.node('NICKNAME');
+            _nickNameElem.text(_updateUserData.nickname);
+            // <group>
+            var _groups = _updateUserData.group;
+            var _groupElem = _getGroupElmFromGroupArray(_itemElem, _groups);
+            // <delete_flg>
+            var _deleteFlgElem = _itemElem.node('delete_flg');
+            var _delete_flg = _updateUserData.delete_flg;
+            _deleteFlgElem.text(_delete_flg);
+            // <EMAIL>
+            if(_updateUserData.mailAddress != null) {
+                var _emailElem = _vCardElem.node('EMAIL');
+                _emailElem.node('USERID').text(_updateUserData.mailAddress);
             }
         }
+        // }
         return [ _iqElem.toString(), _id ];
     };
     // グループエレメントの生成
@@ -3841,19 +3852,20 @@
         _itemsElem.attr({
             'count' : '' + 0,
         });
-        if (deleteUserList != null) {
-            var _count = deleteUserList.length;
-            _itemsElem.attr({
-                'count' : '' + _count,
-            });
-            for ( var _i = 0; _i < _count; _i++) {
-                var _itemElem = _itemsElem.node('item');
-                var _deleteUser = deleteUserList[_i];
-                // <username>
-                var _userNameElem = _itemElem.node('username');
-                _userNameElem.text(_deleteUser);
-            }
+        
+        /* This guard always evaluates to true.
+        if (deleteUserList != null) { */
+        
+        var _count = deleteUserList.length;
+        _itemsElem.attr({'count' : '' + _count,});
+        for ( var _i = 0; _i < _count; _i++) {
+            var _itemElem = _itemsElem.node('item');
+            var _deleteUser = deleteUserList[_i];
+            // <username>
+            var _userNameElem = _itemElem.node('username');
+            _userNameElem.text(_deleteUser);
         }
+        // }
         return [ _iqElem.toString(), _id ];
     };
     // Admin用他のユーザのステータス更新のXMPP
