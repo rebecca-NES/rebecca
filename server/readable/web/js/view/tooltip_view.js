@@ -1144,14 +1144,17 @@ function TooltipView() {
             return _columnObj.getMsgObjByItemId(_itemId);
         };
 
-        function showTaskDialogFromMessage(message) {
+        // Unused function showTaskDialogFromMessage.
+        /* function showTaskDialogFromMessage(message) {
             if (_validation({'message' : message}) == false) {
                 return;
             }
             var _taskDialog = new DialogTaskView(message, TaskDialog.MODE_ADD);
             _taskDialog.showDialog();
         };
+        */
 
+        /* Unused function showTaskRegisterViewFromMessage.
         function showTaskRegisterViewFromMessage(htmlElement, message, title) {
             if (_validation({'message' : message, 'htmlElement' : htmlElement}) == false) {
                 return;
@@ -1159,6 +1162,7 @@ function TooltipView() {
             var _taskRegisterColumn = new TaskRegisterView(htmlElement, title, null);
             _taskRegisterColumn.appear(message);
         };
+        */
 
         function _getColumObjectFromToolTipIcon(toolTipIconElm) {
             if (_validation({'toolTipIconElm' : toolTipIconElm}) == false) {
