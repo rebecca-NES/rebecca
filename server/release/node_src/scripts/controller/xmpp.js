@@ -4,7 +4,8 @@
     var RequestData = require('../model/request_data').RequestData;
     var PersonData = require('../model/person_data');
     var RegisteredContactData = require('../model/registered_contact_data');
-    var UserAccountUtils = require('./user_account_utils');
+    // Unused variable UserAccountUtils.
+    // var UserAccountUtils = require('./user_account_utils');
     var ServerLog = require('./server_log');
     var _log = ServerLog.getInstance();
 
