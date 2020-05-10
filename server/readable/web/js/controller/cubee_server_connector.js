@@ -389,9 +389,10 @@ function CubeeServerConnector() {
 
                 for (var _j = 0; _j < _shortenUrlCount; _j++) {
                     var _shortenUrlItem = new ShortenURLInfo();
+                    /* This guard always evaluates to false.
                     if (_shortenUrlItem == null) {
                         continue;
-                    }
+                    } */
                     _shortenUrlItem.setDisplayedURL(Utils.urldecode(_shortenUrlItems[_j].DisplayedURL));
                     _shortenUrlItem.setShortenPath(Utils.urldecode(_shortenUrlItems[_j].ShortenPath));
                     _shortenUrlItem.setOriginalURL(Utils.urldecode(_shortenUrlItems[_j].OriginalURL));
@@ -2354,9 +2355,10 @@ function CubeeServerConnector() {
             for (var _i = 0; _i < _sMemberItemsCount; _i++) {
                 var _item = new AddContactListMember();
                 var _person = _getPersonDataFromResponseItem(_sMemberItems[_i]);
+                /* This guard always evaluates to false.
                 if(_person == null){
                     continue;
-                }
+                } */
                 _item.setPerson(_person);
                 var _contactListGroupArray = Utils.getSafeArrayData(_sMemberItems[_i].contactListGroup);
                 var _contactListGroupList = [];
@@ -4046,9 +4048,10 @@ function CubeeServerConnector() {
 
         for (var _j = 0; _j < _shortenUrlCount; _j++) {
             var _shortenUrlItem = new ShortenURLInfo();
+            /* This guard always evaluates to false.
             if (_shortenUrlItem == null) {
                 continue;
-            }
+            } */
             _shortenUrlItem.setDisplayedURL(Utils.urldecode(_shortenUrlItems[_j].DisplayedURL));
             _shortenUrlItem.setShortenPath(Utils.urldecode(_shortenUrlItems[_j].ShortenPath));
             _shortenUrlItem.setOriginalURL(Utils.urldecode(_shortenUrlItems[_j].OriginalURL));
@@ -4163,9 +4166,10 @@ function CubeeServerConnector() {
 
         for (var _j = 0; _j < _shortenUrlCount; _j++) {
             var _shortenUrlItem = new ShortenURLInfo();
+            /* This guard always evaluates to false.
             if (_shortenUrlItem == null) {
                 continue;
-            }
+            } */
             _shortenUrlItem.setDisplayedURL(Utils.urldecode(_shortenUrlItems[_j].DisplayedURL));
             _shortenUrlItem.setShortenPath(Utils.urldecode(_shortenUrlItems[_j].ShortenPath));
             _shortenUrlItem.setOriginalURL(Utils.urldecode(_shortenUrlItems[_j].OriginalURL));
@@ -4290,9 +4294,10 @@ function CubeeServerConnector() {
 
         for (var _j = 0; _j < _shortenUrlCount; _j++) {
             var _shortenUrlItem = new ShortenURLInfo();
+            /* This guard always evaluates to false.
             if (_shortenUrlItem == null) {
                 continue;
-            }
+            } */
             _shortenUrlItem.setDisplayedURL(Utils.urldecode(_shortenUrlItems[_j].DisplayedURL));
             _shortenUrlItem.setShortenPath(Utils.urldecode(_shortenUrlItems[_j].ShortenPath));
             _shortenUrlItem.setOriginalURL(Utils.urldecode(_shortenUrlItems[_j].OriginalURL));
@@ -4373,9 +4378,10 @@ function CubeeServerConnector() {
 
         for (var _j = 0; _j < _shortenUrlCount; _j++) {
             var _shortenUrlItem = new ShortenURLInfo();
+            /* This guard always evaluates to false.
             if (_shortenUrlItem == null) {
                 continue;
-            }
+            } */
             _shortenUrlItem.setDisplayedURL(Utils.urldecode(_shortenUrlItems[_j].DisplayedURL));
             _shortenUrlItem.setShortenPath(Utils.urldecode(_shortenUrlItems[_j].ShortenPath));
             _shortenUrlItem.setOriginalURL(Utils.urldecode(_shortenUrlItems[_j].OriginalURL));
@@ -4435,9 +4441,10 @@ function CubeeServerConnector() {
 
         for (var _j = 0; _j < _shortenUrlCount; _j++) {
             var _shortenUrlItem = new ShortenURLInfo();
+            /*  This guard always evaluates to false.
             if (_shortenUrlItem == null) {
                 continue;
-            }
+            } */
             _shortenUrlItem.setDisplayedURL(Utils.urldecode(_shortenUrlItems[_j].DisplayedURL));
             _shortenUrlItem.setShortenPath(Utils.urldecode(_shortenUrlItems[_j].ShortenPath));
             _shortenUrlItem.setOriginalURL(Utils.urldecode(_shortenUrlItems[_j].OriginalURL));
@@ -4511,9 +4518,10 @@ function CubeeServerConnector() {
 
         for (var _j = 0; _j < _shortenUrlCount; _j++) {
             var _shortenUrlItem = new ShortenURLInfo();
+            /* This guard always evaluates to false.
             if (_shortenUrlItem == null) {
                 continue;
-            }
+            } */
             _shortenUrlItem.setDisplayedURL(Utils.urldecode(_shortenUrlItems[_j].DisplayedURL));
             _shortenUrlItem.setShortenPath(Utils.urldecode(_shortenUrlItems[_j].ShortenPath));
             _shortenUrlItem.setOriginalURL(Utils.urldecode(_shortenUrlItems[_j].OriginalURL));
@@ -4582,9 +4590,10 @@ function CubeeServerConnector() {
 
         for (var _j = 0; _j < _shortenUrlCount; _j++) {
             var _shortenUrlItem = new ShortenURLInfo();
+            /* This guard always evaluates to false.
             if (_shortenUrlItem == null) {
                 continue;
-            }
+            } */
             _shortenUrlItem.setDisplayedURL(Utils.urldecode(_shortenUrlItems[_j].DisplayedURL));
             _shortenUrlItem.setShortenPath(Utils.urldecode(_shortenUrlItems[_j].ShortenPath));
             _shortenUrlItem.setOriginalURL(Utils.urldecode(_shortenUrlItems[_j].OriginalURL));
@@ -4662,9 +4671,10 @@ function CubeeServerConnector() {
 
         for (var _j = 0; _j < _shortenUrlCount; _j++) {
             var _shortenUrlItem = new ShortenURLInfo();
+            /* This guard always evaluates to false.
             if (_shortenUrlItem == null) {
                 continue;
-            }
+            } */
             _shortenUrlItem.setDisplayedURL(Utils.urldecode(_shortenUrlItems[_j].DisplayedURL));
             _shortenUrlItem.setShortenPath(Utils.urldecode(_shortenUrlItems[_j].ShortenPath));
             _shortenUrlItem.setOriginalURL(Utils.urldecode(_shortenUrlItems[_j].OriginalURL));
@@ -5557,8 +5567,8 @@ function CubeeServerConnector() {
     }
 
     function _onAddUserFollowReceived(_self, content) {
-        if (content == null ||
-            !content.type || !content.followeeJid || !content.followerJid) {
+        // This guard always evaluates to false. (content == null)
+        if (!content.type || !content.followeeJid || !content.followerJid) {
             console.log('content or content.items is null.');
             return;
         }
@@ -5602,8 +5612,8 @@ function CubeeServerConnector() {
     }
 
     function _onDelUserFollowReceived(_self, content) {
-        if (content == null ||
-            !content.type || !content.followeeJid || !content.followerJid) {
+        // This guard always evaluates to false. (content == null ||) 
+        if (!content.type || !content.followeeJid || !content.followerJid) {
             console.log('content or content.items is null.');
             return;
         }
@@ -5886,9 +5896,10 @@ function CubeeServerConnector() {
     }
 
     function _setCallback(_self, id, callbackFunc) {
+        /* This guard always evaluates to false.
         if (_self == null) {
             return;
-        }
+        } */
         if (id == null || typeof id != 'string' || id == '') {
             return;
         }
