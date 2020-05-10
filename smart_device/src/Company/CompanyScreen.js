@@ -18,6 +18,7 @@ limitations under the License.
 'use strict'
 
 import React, { Component } from 'react'
+// Unused import Image.
 import {
   Platform,
   StyleSheet,
@@ -26,20 +27,21 @@ import {
   Alert,
   ScrollView,
   ListView,
-  Image,
+//  Image,
   RefreshControl,
   ActivityIndicator,
   KeyboardAvoidingView,
   TouchableOpacity,
 } from 'react-native'
+// Unused imports Badge, Button, FormLabel.
 import {
   Header,
-  Button,
+//  Button,
   SearchBar,
-  FormLabel,
+//  FormLabel,
   FormInput,
   Avatar,
-  Badge,
+//  Badge,
   Divider,
 } from 'react-native-elements'
 import {
