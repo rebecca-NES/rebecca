@@ -58,7 +58,10 @@ const requestMap = {
 function receive(socket, _receiveObject={}, processCallback, apiUtil){
     // requestごとに実行する処理の振り分け
     if (_.has(requestMap, _receiveObject.request)) {
-        requestMap[_receiveObject.request](_receiveObject, processCallback, apiUtil);
+        // Invocation of method with 2 Values name may dispatch to unexpected target and cause an exception.
+        if (typeof requestMap[_receiveObject.request] === 'function') {
+            requestMap[_receiveObject.request](_receiveObject, processCallback, apiUtil);
+        }
     } else {
         var _content = utils.getChildObject(_receiveObject, 'content');
         processCallback(utils.createResponseStr(_receiveObject, _content,
