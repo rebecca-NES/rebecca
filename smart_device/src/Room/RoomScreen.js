@@ -16,10 +16,11 @@ limitations under the License.
 
 
 import React, { Component } from 'react'
+// Unused import Alert.
 import {
   View,
   Text,
-  Alert,
+//  Alert,
   ScrollView,
 } from 'react-native'
 import {
