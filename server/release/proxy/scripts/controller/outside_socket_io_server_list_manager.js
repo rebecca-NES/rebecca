@@ -1,6 +1,7 @@
 (function() {
     var Conf      = require('./conf');
-    var File      = require('./file_reader');
+    // Unused variable File.
+    // var File      = require('./file_reader');
     var ServerLog = require('./server_log');
 
     // confクラスインスタンス取得
@@ -31,7 +32,9 @@
             return;
         }
 
-        var _file = _file = File.getInstance();
+        // The value assigned to _file here is unused.
+        // var _file = _file = File.getInstance();
+        var _file;
         var _filePath = _conf.getConfData(CONF_KEY_SERVER_LIST_FILE_PATH) + LIST_FILE_SUFFIX;
         if (!_filePath) {
             // デフォルトファイル
@@ -40,7 +43,8 @@
             _log.connectionLog(4,
                 'OutsideSocketIOServerListManager.loadList:: spf_server_list.outsidemap file path Setting is nothing');
         }
-        _file.readFile(_filePath, _onReadFile);
+        // The base expression of this property access is always undefined.
+        // _file.readFile(_filePath, _onReadFile);
         function _onReadFile(readErr, serverList) {
             if(readErr) {
                 _log.connectionLog(3,

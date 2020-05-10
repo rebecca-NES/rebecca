@@ -73,7 +73,10 @@ exports.receive = (socket, _receiveObject, processCallback, apiUtil) => {
         const _authorityType = _typeElem.text();
         if (_authorityType == PersonData.AUTHORITY_TYPE_ADMIN) {
             // リクエストによって処理を振り分け
-            requestMap[_receiveObject.request](_receiveObject, processCallback, apiUtil);
+            // Invocation of method with 2 Values name may dispatch to unexpected target and cause an exception
+            if (typeof requestMap[_receiveObject.request] === 'function') {
+                requestMap[_receiveObject.request](_receiveObject, processCallback, apiUtil);
+            }
         } else {
             Log.connectionLog(3, `tenantAdmin-WEB_API receive: ` +
                 `login user is not tenant admin`);
