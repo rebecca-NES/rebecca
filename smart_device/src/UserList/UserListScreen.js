@@ -16,25 +16,27 @@ limitations under the License.
 
 
 import React, { Component } from 'react'
+// Unused imports Alert, RefreshControl.
 import {
   View,
   Text,
-  Alert,
+//  Alert,
   ScrollView,
   ListView,
-  RefreshControl,
+//  RefreshControl,
   ActivityIndicator,
 } from 'react-native'
 import {
     Actions,
 } from 'react-native-router-flux'
+// Unused imports Button, ButtonGroup, CheckBox, Icon.
 import {
   Avatar,
   Header,
-  Icon,
-  CheckBox,
-  Button,
-  ButtonGroup,
+//  Icon,
+//  CheckBox,
+//  Button,
+//  ButtonGroup,
 } from 'react-native-elements'
 
 import Common from '../Common/Common'
