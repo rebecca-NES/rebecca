@@ -545,7 +545,8 @@ function TooltipView() {
         CubeeController.getInstance().getThanksPointsTotal(jid, fiscalYearDate)
         .then(function(result){
             var point = result.content.items[0].points;
-            var rank = result.content.items[0].rank;
+            // Unused variable rank.
+            // var rank = result.content.items[0].rank;
             if (typeof point == 'number') {
                 vueInstance.setThanksPointsCount(point);
             }
