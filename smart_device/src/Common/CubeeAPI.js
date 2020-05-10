@@ -22,9 +22,9 @@ import {
   Text,
   Linking,
 } from 'react-native'
-import {
-  Actions,
-} from 'react-native-router-flux'
+# import {
+#   Actions,
+# } from 'react-native-router-flux'
 import Icon from 'react-native-vector-icons/FontAwesome'
 import RNFetchBlob from 'react-native-fetch-blob'
 
