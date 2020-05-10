@@ -213,7 +213,7 @@ function ColumnShowConversationView(columnInformation) {
     _proto.setConversationColumnSize = function(depth) {
         var _self = this;
         // Variable min_width is used like a local variable, but is missing a declaration.
-        var in_width = _self.columnMinSize;
+        var min_width = _self.columnMinSize;
         if (depth + _self.messageBodyMinSize > min_width) {
             min_width = depth + _self.messageBodyMinSize;
         }

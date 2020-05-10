@@ -180,7 +180,8 @@ function ColumnView(columnInfo) {
         var _closable = _self._closable;
         var _formAreaHtml = FormAreaHtml;
         var _columnType = _self.getType();
-        var columnInfo = _self.getColumnInfo();
+        // Unused variable columnInfo.
+        // var columnInfo = _self.getColumnInfo();
 
         _ret += '<div class="card col_card chat_card ' + _columnTypeClassString + '-wrapper">';
         _ret += '<div class="box-border olient-vertical ui-widget-content ';

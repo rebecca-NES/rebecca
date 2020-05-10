@@ -16,30 +16,33 @@ limitations under the License.
 
 
 import React, { Component } from 'react'
+// Unused imports Alert, RefreshControl.
 import {
   View,
   Text,
-  Alert,
+//  Alert,
   ScrollView,
   ListView,
-  RefreshControl,
+//  RefreshControl,
 } from 'react-native'
 import {
     Actions,
 } from 'react-native-router-flux'
+// Unused imports Avatar, Button, Icon.
 import {
   Header,
   SearchBar,
-  Avatar,
-  Icon,
+//  Avatar,
+//  Icon,
   CheckBox,
-  Button,
+//  Button,
 } from 'react-native-elements'
 
 import Common from '../Common/Common'
 import Const from '../Common/Const'
 import CubeeAPI from '../Common/CubeeAPI'
-import Validation from '../Common/Validation'
+// Unused import Validation.
+// import Validation from '../Common/Validation'
 
 var _datasource
 var _memberlist = []

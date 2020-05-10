@@ -21,7 +21,8 @@
     };
 
     //定数
-    var COLUMN_ID_NAME = "id";
+    // Unused variable COLUMN_ID_NAME.
+    // var COLUMN_ID_NAME = "id";
     var COLUMN_TENANT_UUID = "tenant_uuid";
     var COLUMN_LOGIN_ACCOUNT_NAME = "login_account";
     var COLUMN_OPENFIRE_ACCOUNT_NAME = "openfire_account";
@@ -33,8 +34,9 @@
     var LOGIN_ACCOUNT_NAME_MAX_LENGTH = 252;
 
     //パスワード長: ../../express_app/controller/user_account_manager.jsと合わせる
-    var PASSWORD_MIN_SIZE = 8;
-    var PASSWORD_MAX_SIZE = 32;
+    // Unused variables PASSWORD_MIN_SIZE, ASSWORD_MAX_SIZE.
+    // var PASSWORD_MIN_SIZE = 8;
+    // var PASSWORD_MAX_SIZE = 32;
 
     var _proto = UserAccountManager.prototype;
 

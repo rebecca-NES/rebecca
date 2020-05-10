@@ -23,9 +23,10 @@ import {
   AsyncStorage,
   ScrollView,
 } from 'react-native'
+// Unused import Avatar.
 import {
   Header,
-  Avatar,
+//  Avatar,
 } from 'react-native-elements'
 import {
     Actions,

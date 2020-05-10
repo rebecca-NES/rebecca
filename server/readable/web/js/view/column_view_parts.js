@@ -974,7 +974,8 @@ function ColumnTextAreaView(htmlElement, parent, placeholder) {
             for(let i=0;i<datalistSorted.length;i++){
                 let val = decodeURIComponent(datalistSorted[i]);
                 let bgColor = datalist[datalistSorted[i]].bgColor;
-                let color = datalist[datalistSorted[i]].color;
+                // Unused variable color.
+                // let color = datalist[datalistSorted[i]].color;
                 sel +=' <li class="thread-title-category-select-opt '
                     + extra_class_name + '" category="'
                     + val + '"><a><span class="title-category-color fa fa-check-square" style="font-size:16px;vertical-align:-1px;margin-right:5px;color:'

@@ -545,7 +545,8 @@ function TooltipView() {
         CubeeController.getInstance().getThanksPointsTotal(jid, fiscalYearDate)
         .then(function(result){
             var point = result.content.items[0].points;
-            var rank = result.content.items[0].rank;
+            // Unused variable rank.
+            // var rank = result.content.items[0].rank;
             if (typeof point == 'number') {
                 vueInstance.setThanksPointsCount(point);
             }
@@ -1143,14 +1144,17 @@ function TooltipView() {
             return _columnObj.getMsgObjByItemId(_itemId);
         };
 
-        function showTaskDialogFromMessage(message) {
+        // Unused function showTaskDialogFromMessage.
+        /* function showTaskDialogFromMessage(message) {
             if (_validation({'message' : message}) == false) {
                 return;
             }
             var _taskDialog = new DialogTaskView(message, TaskDialog.MODE_ADD);
             _taskDialog.showDialog();
         };
+        */
 
+        /* Unused function showTaskRegisterViewFromMessage.
         function showTaskRegisterViewFromMessage(htmlElement, message, title) {
             if (_validation({'message' : message, 'htmlElement' : htmlElement}) == false) {
                 return;
@@ -1158,6 +1162,7 @@ function TooltipView() {
             var _taskRegisterColumn = new TaskRegisterView(htmlElement, title, null);
             _taskRegisterColumn.appear(message);
         };
+        */
 
         function _getColumObjectFromToolTipIcon(toolTipIconElm) {
             if (_validation({'toolTipIconElm' : toolTipIconElm}) == false) {

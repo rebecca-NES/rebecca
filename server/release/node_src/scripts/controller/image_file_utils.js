@@ -1,12 +1,13 @@
 (function() {
     var Utils = require('../utils');
     var ServerLog = require('./server_log');
-    var SynchronousBridgeNodeXmpp = require('./synchronous_bridge_node_xmpp');
-    var SessionDataMannager = require('./session_data_manager');
-    var RequestData = require('../model/request_data').RequestData;
-    var PersonData = require('../model/person_data');
-    var SocketIo = require('./socket_io_receiver');
-    var RegisteredContactData = require('../model/registered_contact_data');
+    // Unused variable SynchronousBridgeNodeXmpp...
+    // var SynchronousBridgeNodeXmpp = require('./synchronous_bridge_node_xmpp');
+    // var SessionDataMannager = require('./session_data_manager');
+    // var RequestData = require('../model/request_data').RequestData;
+    // var PersonData = require('../model/person_data');
+    // var SocketIo = require('./socket_io_receiver');
+    // var RegisteredContactData = require('../model/registered_contact_data');
     var fs = require('fs');
     var path = require('path');
 
