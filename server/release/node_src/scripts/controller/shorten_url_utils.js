@@ -1,6 +1,7 @@
 (function() {
     var ShortenURLInfo = require('../model/shorten_url_info');
-    var SynchronousBridgeNodeXmpp = require('./synchronous_bridge_node_xmpp');
+    // Unused variable SynchronousBridgeNodeXmpp.
+    // var SynchronousBridgeNodeXmpp = require('./synchronous_bridge_node_xmpp');
     var ShortenURLManager = require('./shorten_url_manager');
     var Conf = require('./conf');
     var ServerLog = require('./server_log');
