@@ -1020,7 +1020,8 @@
         var _urlid = null
         // 短縮URLの形式は、/cubee/redir/XXXXXX(ただしエンコード済み)。ここから最後のXXXXXXを取り出す。
         log.connectionLog(7, "_extractionRedirectIdFromUrlPath: " + path);
-        var pat = _conf.getConfData('SYSTEM_LOCATION_ROOT') + "/redir/(.*)";
+        // Unused variable pat.
+        // var pat = _conf.getConfData('SYSTEM_LOCATION_ROOT') + "/redir/(.*)";
         try { // 引数の解析
             var _match = path.match("/([0-9A-Za-z]+)$");
             if (_match != null && _match.length == 2) {
