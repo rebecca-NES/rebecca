@@ -2,7 +2,8 @@
     var GlobalSNSManagerDbConnector = require('../../scripts/lib/DbHelper/global_sns_manager_db_connector');
     var UserAccountData = require('../../scripts/model/user_account_data');
     var ServerLog = require('../../scripts/controller/server_log');
-    var RequestData = require('../../scripts/model/request_data').RequestData;
+    // Unused variable RequestData.
+    // var RequestData = require('../../scripts/model/request_data').RequestData;
     var PersonData = require('../../scripts/model/person_data');
     var RegisteredContactData = require('../../scripts/model/registered_contact_data');
     var Utils = require('../../scripts/utils');
@@ -20,13 +21,14 @@
     function UserAccountManager() {
     };
 
-    //定数
-    var COLUMN_ID_NAME = "id";
-    var COLUMN_LOGIN_ACCOUNT_NAME = "login_account";
-    var COLUMN_OPENFIRE_ACCOUNT_NAME = "openfire_account";
-    var COLUMN_XMPP_SERVER_NAME = "xmpp_server_name";
-    var COLUMN_UPDATE_TIME_NAME = "update_time";
-    var COLUMN_DELETE_FLG_NAME = "delete_flg";
+    // 定数
+    // Unused variable COLUMN_ID_NAME...
+    // var COLUMN_ID_NAME = "id";
+    // var COLUMN_LOGIN_ACCOUNT_NAME = "login_account";
+    // var COLUMN_OPENFIRE_ACCOUNT_NAME = "openfire_account";
+    // var COLUMN_XMPP_SERVER_NAME = "xmpp_server_name";
+    // var COLUMN_UPDATE_TIME_NAME = "update_time";
+    // var COLUMN_DELETE_FLG_NAME = "delete_flg";
 
     var ERR_REASON_NON = 0;
     var ERR_REASON_ERROR_PARAM = 1;
@@ -58,7 +60,8 @@
     var PASSWORD_MAX_SIZE = 32;
     var NICKNAME_MAX_SIZE = 20;
 
-    var LOGIN_ACCOUNT_NAME_MAX_LENGTH = 252;
+    // Unused variable LOGIN_ACCOUNT_NAME_MAX_LENGTH.
+    // var LOGIN_ACCOUNT_NAME_MAX_LENGTH = 252;
 
     var _proto = UserAccountManager.prototype;
 
