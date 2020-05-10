@@ -38,7 +38,8 @@
         var _filePath = _conf.getConfData(CONF_KEY_SERVER_LIST_FILE_PATH) + LIST_FILE_SUFFIX;
         if (!_filePath) {
             // デフォルトファイル
-            _filePath = '../../../cmnconf/spf_server_list.outsidemap';
+            // The value assigned to _filePath here is unused.
+            // _filePath = '../../../cmnconf/spf_server_list.outsidemap';
 
             _log.connectionLog(4,
                 'OutsideSocketIOServerListManager.loadList:: spf_server_list.outsidemap file path Setting is nothing');

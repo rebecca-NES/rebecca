@@ -861,7 +861,9 @@
         var _id = _idObj.value();
         for(var _index = 0; _index < _sessionDataAry.length; _index++){
             var _callbackFunc = _sessionDataAry[_index].getCallback(_id);
-            if (_callbackFunc == undefined || _callbackFunc == null || typeof _callbackFunc != 'function') {
+            // This guard always evaluates to false.
+            // if (_callbackFunc == undefined || _callbackFunc == null || typeof _callbackFunc != 'function') {
+            if (_callbackFunc == undefined || typeof _callbackFunc != 'function') {
                 continue;
             }
             _log.connectionLog(7, 'onIq:callback['+_id+']');
@@ -872,9 +874,10 @@
     }
 
     function _onIqPingReceived(xsConn, xmlRootElem) {
-        if (xsConn == null) {
-            return;
-        }
+        // This guard always evaluates to false.
+        // if (xsConn == null) {
+        //     return;
+        // }
         if (xmlRootElem == null) {
             return;
         }
@@ -1121,8 +1124,9 @@
             // 5秒以内に帰ってこない場合はタイムアウトして返却する
             var _callbackFunc = _sessionData.getCallback(_id);
             _sessionData.unsetCallback(_id);
-            if (_callbackFunc == undefined || _callbackFunc == null
-                || typeof _callbackFunc != 'function') {
+            // This guard always evaluates to false.
+            // if (_callbackFunc == undefined || _callbackFunc == null
+            if (_callbackFunc == undefined || typeof _callbackFunc != 'function') {
                 // 既に処理済みのため処理なし
                 return;
             }
@@ -2445,9 +2449,10 @@
         }
 
         function _createMailBodyData(itemsArray, onCreateCallBack) {
-            if (itemsArray == null) {
-                return false;
-            }
+            // This guard always evaluates to false.
+            // if (itemsArray == null) {
+            //     return false;
+            // }
             if (onCreateCallBack == null
                 || typeof onCreateCallBack != 'function') {
                 return false;
@@ -2562,9 +2567,9 @@
      */
     function _getItemDataFromMessageItemElem(tenantUuid, itemElem, onGetItemDataCallBack, isAnalizeAccsess) {
         _log.connectionLog(7, "do func  SynchronousBridgeNodeXmpp._getItemDataFromMessageItemElem");
-        if(isAnalizeAccsess == undefined ||
-           isAnalizeAccsess == null ||
-           isAnalizeAccsess == ""){
+        // This guard always evaluates to false.
+        // isAnalizeAccsess == null
+        if(isAnalizeAccsess == undefined || isAnalizeAccsess == ""){
             isAnalizeAccsess = false;
         }
         if (itemElem == null) {
@@ -3206,8 +3211,9 @@
                         //qmotion_point_icon
                         let _emotionPointIconJsonElem = Utils.getChildXmlElement(_itemElem,'emotion_point_icon');
                         try{
+                            // This guard always evaluates to false.
+                            // _emotionPointIconJsonElem == null
                             if(_emotionPointIconJsonElem == undefined ||
-                               _emotionPointIconJsonElem == null ||
                                _emotionPointIconJsonElem.text() == "" ||
                                _emotionPointIconJsonElem.text() == "{}"){
                                 _itemData.emotionPointIcons =
@@ -5491,9 +5497,10 @@
     // 既読者一覧のitemsエレメントからitemsデータを生成
     function _getItemsFromGetExistingReaderListItemsElem(itemsElem,
             onGetItemsCallBack) {
-        if (itemsElem == null) {
-            return false;
-        }
+        // This guard always evaluates to false.
+        // if (itemsElem == null) {
+        //     return false;
+        // }
         var _itemElemArray = Utils.getChildXmlElementArray(itemsElem, 'item');
         var _ret = _getExistingReaderItemsFromExistingReaderElementArray(
                 _itemElemArray, _onGetExistingReaderItems);
@@ -5502,17 +5509,19 @@
         function _onGetExistingReaderItems(items) {
             // Variable 'onGetItemsCallBack' is of type function, but it is compared to an expression of type null.
             // (onGetItemsCallBack != null) は、常に真
-            if (typeof onGetItemsCallBack == 'function') {
-                onGetItemsCallBack(items);
-            }
+            // This guard always evaluates to true.
+            // if (typeof onGetItemsCallBack == 'function') {
+            onGetItemsCallBack(items);
+            // }
         }
     }
 
     // MessageOptionのSetからitemsエレメントからitemsデータを生成
     function _getItemsFromMessageOptionSetItemsElem(itemsElem) {
-        if (itemsElem == null) {
-            return null;
-        }
+        // This guard always evaluates to false.
+        // if (itemsElem == null) {
+        //     return null;
+        // }
         var _itemElemArray = Utils.getChildXmlElementArray(itemsElem, 'item');
         if (_itemElemArray == null) {
             return null;
@@ -6656,12 +6665,13 @@
 
     // Itemsエレメントからitems項目を抽出する(コミュニティ参加者取得応答用)
     function _getItemsFromCommunityMemberInfoItemsElem(itemsElem) {
-        if (itemsElem == null) {
-            _log
-                    .connectionLog(3,
-                            '_getItemsFromCommunityMemberInfoItemsElem :: itemsElem is null');
-            return null;
-        }
+        // This guard always evaluates to false.
+        // if (itemsElem == null) {
+        //     _log
+        //             .connectionLog(3,
+        //                     '_getItemsFromCommunityMemberInfoItemsElem :: itemsElem is null');
+        //     return null;
+        // }
         if (itemsElem.name == null || typeof itemsElem.name != 'function'
                 || itemsElem.name() != 'items') {
             _log
@@ -6714,8 +6724,9 @@
             // <generalmember>
             var _generalMemberArray = _getGeneralMemberItemsFromCommunityMemberInfoMembersElem(_membersElem);
             // memberCount
-            var _memberCount = ((_ownerArray) ? _ownerArray.length : 0)
-                    + ((_generalMemberArray) ? _generalMemberArray.length : 0);
+            // This guard always evaluates to true.
+            // _ownerArray, _generalMemberArray
+            var _memberCount = _ownerArray.length + _generalMemberArray.length;
             // This use of variable '_ownerArray' always evaluates to true.
             // This use of variable '_generalMemberArray' always evaluates to true.
             var _memberItems = {
@@ -7536,11 +7547,12 @@
 
     function _getItemsFromAddContactListMemberItemsElem(itemsElem, onGetItemsCallBack) {
         var _retArray = [];
-        if(itemsElem == null) {
-            _log.connectionLog(3, '_getItemsFromAddContactListMemberItemsElem :: itemsElem is null');
-            _callCallbackFunc();
-            return;
-        }
+        // This guard always evaluates to false.
+        // if(itemsElem == null) {
+        //     _log.connectionLog(3, '_getItemsFromAddContactListMemberItemsElem :: itemsElem is null');
+        //     _callCallbackFunc();
+        //     return;
+        // }
         if(itemsElem.name == null || typeof itemsElem.name != 'function' || itemsElem.name() != 'items') {
             _log.connectionLog(3, '_getItemsFromAddContactListMemberItemsElem :: itemsElem is invalid');
             _callCallbackFunc();
@@ -7632,11 +7644,12 @@
     }
 
     function _getSuccessMemberForAddContactListMember(element, onGetMemberCallBack){
-        if(element == null) {
-            _log.connectionLog(3, '_getSuccessMemberForAddContactListMember :: element is null');
-            onGetMemberCallBack(null);
-            return;
-        }
+        // This guard always evaluates to false.
+        // if(element == null) {
+        //     _log.connectionLog(3, '_getSuccessMemberForAddContactListMember :: element is null');
+        //     onGetMemberCallBack(null);
+        //     return;
+        // }
         var _successMembersElem = Utils.getChildXmlElement(element, 'successmembers');
         if(_successMembersElem == null) {
             _log.connectionLog(3, '_getSuccessMemberForAddContactListMember :: _successMembersElem is null.');
@@ -7719,10 +7732,11 @@
     }
 
     function _getFailureMemberForAddContactListMember(element){
-        if(element == null) {
-            _log.connectionLog(3, '_getFailureMemberForAddContactListMember :: element is null');
-            return null;
-        }
+        // This guard always evaluates to false.
+        // if(element == null) {
+        //     _log.connectionLog(3, '_getFailureMemberForAddContactListMember :: element is null');
+        //     return null;
+        // }
         var _failureMembersElem = Utils.getChildXmlElement(element, 'failuremembers');
         if(_failureMembersElem == null) {
             _log.connectionLog(3, '_getFailureMemberForAddContactListMember :: _failureMembersElem is null.');
@@ -8049,12 +8063,13 @@
     }
 
     function _getItemsFromGetMailServerListItemsElem(itemsElem) {
-        if (itemsElem == null) {
-            _log
-                    .connectionLog(3,
-                            '_getItemsFromGetMailServerListItemsElem :: itemsElem is null');
-            return null;
-        }
+        // This guard always evaluates to false.
+        // if (itemsElem == null) {
+        //     _log
+        //             .connectionLog(3,
+        //                     '_getItemsFromGetMailServerListItemsElem :: itemsElem is null');
+        //     return null;
+        // }
         if (itemsElem.name == null || typeof itemsElem.name != 'function'
                 || itemsElem.name() != 'items') {
             _log
@@ -8564,9 +8579,10 @@
         // settingInfoElemからsettingInfo(json)を取得
         function _getSettingInfoFromSettngInfoElm(settingInfoElem) {
             var _ret = {};
-            if (settingInfoElem == null) {
-                return _ret;
-            }
+            // This guard always evaluates to false.
+            // if (settingInfoElem == null) {
+            //     return _ret;
+            // }
             // =====今はPOPのみ対応===========
             // <pop_server>
             var _popServerElem = Utils.getChildXmlElement(settingInfoElem,
@@ -9506,12 +9522,13 @@
      *            itemsElem
      */
     function _getItemsFromRemoveContactListMemberItemsElem(itemsElem) {
-        if (itemsElem == null) {
-            _log
-                    .connectionLog(3,
-                            '_getItemsFromRemoveContactListMemberItemsElem :: itemsElem is null');
-            return null;
-        }
+        // This guard always evaluates to false.
+        // if (itemsElem == null) {
+        //     _log
+        //             .connectionLog(3,
+        //                     '_getItemsFromRemoveContactListMemberItemsElem :: itemsElem is null');
+        //     return null;
+        // }
         if (itemsElem.name == null || typeof itemsElem.name != 'function'
                 || itemsElem.name() != 'items') {
             _log
@@ -10095,13 +10112,14 @@
         var _retZeroItems = [];
         var _itemCount = 0;
         var _items = [];
-        if (_goodJobItemsXMLElem == null) {
-            _log.connectionLog(3, '_goodJobItemsXMLElem is invalid');
-            setTimeout(function(){
-                callback(_retZeroCount, _retZeroItems);
-            }, 1);
-            return;
-        }
+        // This guard always evaluates to false.
+        // if (_goodJobItemsXMLElem == null) {
+        //     _log.connectionLog(3, '_goodJobItemsXMLElem is invalid');
+        //     setTimeout(function(){
+        //         callback(_retZeroCount, _retZeroItems);
+        //     }, 1);
+        //     return;
+        // }
 
         var _goodJobItemElemArray = Utils.getChildXmlElementArray(_goodJobItemsXMLElem,'item');
         // goodJobCount goodJobItems
@@ -10158,13 +10176,14 @@
         var _retZeroItems = [];
         var _itemCount = 0;
         var _items = [];
-        if (_goodJobItemsXMLElem == null) {
-            _log.connectionLog(3, '_goodJobItemsXMLElem is invalid');
-            setTimeout(function(){
-                callback(_retZeroCount, _retZeroItems);
-            }, 1);
-            return;
-        }
+        // This guard always evaluates to false.
+        // if (_goodJobItemsXMLElem == null) {
+        //     _log.connectionLog(3, '_goodJobItemsXMLElem is invalid');
+        //     setTimeout(function(){
+        //         callback(_retZeroCount, _retZeroItems);
+        //     }, 1);
+        //     return;
+        // }
 
         var _goodJobItemElemArray = Utils.getChildXmlElementArray(_goodJobItemsXMLElem,'item');
         // goodJobCount goodJobItems
@@ -10429,13 +10448,14 @@
         var _retZeroItems = [];
         var _itemCount = 0;
         var _items = [];
-        if (_emotionPointItemsXMLElem == null) {
-            _log.connectionLog(3, '_emotionPointItemsXMLElem is invalid');
-            setTimeout(function(){
-                callback(_retZeroCount, _retZeroItems);
-            }, 1);
-            return;
-        }
+        // This guard always evaluates to false.
+        // if (_emotionPointItemsXMLElem == null) {
+        //     _log.connectionLog(3, '_emotionPointItemsXMLElem is invalid');
+        //     setTimeout(function(){
+        //         callback(_retZeroCount, _retZeroItems);
+        //     }, 1);
+        //     return;
+        // }
 
         var _emotionPointItemElemArray = Utils.getChildXmlElementArray(_emotionPointItemsXMLElem,'item');
         // emotionPointCount emotionPointItems
@@ -10492,13 +10512,14 @@
         var _retZeroItems = [];
         var _itemCount = 0;
         var _items = [];
-        if (_emotionPointItemsXMLElem == null) {
-            _log.connectionLog(3, '_emotionPointItemsXMLElem is invalid');
-            setTimeout(function(){
-                callback(_retZeroCount, _retZeroItems);
-            }, 1);
-            return;
-        }
+        // This guard always evaluates to false.
+        // if (_emotionPointItemsXMLElem == null) {
+        //     _log.connectionLog(3, '_emotionPointItemsXMLElem is invalid');
+        //     setTimeout(function(){
+        //         callback(_retZeroCount, _retZeroItems);
+        //     }, 1);
+        //     return;
+        // }
 
         var _emotionPointItemElemArray = Utils.getChildXmlElementArray(_emotionPointItemsXMLElem,'item');
         // emotionPointCount emotionPointItems
@@ -10803,10 +10824,11 @@
 
     // タスク催促や解除エレメントからItemsデータを取得
     function _getItemsFromDemandItemsElm(itemsElem) {
-        if (itemsElem == null) {
-            _log.connectionLog(3, '_itemsElem is invalid');
-            return null;
-        }
+        // This guard always evaluates to false.
+        // if (itemsElem == null) {
+        //     _log.connectionLog(3, '_itemsElem is invalid');
+        //     return null;
+        // }
         var _items = null;
         var _itemsElemArray = Utils.getChildXmlElementArray(itemsElem, 'item');
         // itemCount items
@@ -10915,10 +10937,11 @@
 
     // 既読通知エレメントからItemsデータを取得
     function _getItemsFromSetReadMessageElm(itemsElem, onGetItemsCallBack) {
-        if (itemsElem == null) {
-            _log.connectionLog(3, '_itemsElem is invalid');
-            return false;
-        }
+        // This guard always evaluates to false.
+        // if (itemsElem == null) {
+        //     _log.connectionLog(3, '_itemsElem is invalid');
+        //     return false;
+        // }
         var _itemsElemArray = Utils.getChildXmlElementArray(itemsElem, 'item');
         // itemCount items
         if (_itemsElemArray == null) {
@@ -11571,12 +11594,13 @@
     }
     // extrasエレメントからextras項目を抽出する(グループチャットルーム更新結果・通知用)
     function _getExtrasFromGroupChatRoomInfoExtrasElem(extrasElem) {
-        if (extrasElem == null) {
-            _log
-                    .connectionLog(3,
-                            '_getExtrasFromGroupChatRoomInfoExtrasElem :: extrasElem is null');
-            return null;
-        }
+        // This guard always evaluates to false.
+        // if (extrasElem == null) {
+        //     _log
+        //             .connectionLog(3,
+        //                     '_getExtrasFromGroupChatRoomInfoExtrasElem :: extrasElem is null');
+        //     return null;
+        // }
         var _extras = {};
         // <subtype>の要素を取得する
         var _subTypeElem = Utils.getChildXmlElement(extrasElem, 'subtype');
@@ -11655,11 +11679,12 @@
             return;
         }
         var _extras = _getExtrasFromUpdateCommunityInfoExtrasElem(_extrasElem);
-        if (_extras == null) {
-            _extras = {};
-            _log.connectionLog(6,
-                    '_onUpdateCommunityInfoNotify::_extras is nothing');
-        }
+        // This guard always evaluates to false.
+        // if (_extras == null) {
+        //     _extras = {};
+        //     _log.connectionLog(6,
+        //             '_onUpdateCommunityInfoNotify::_extras is nothing');
+        // }
         // items
         var _itemsElem = Utils.getChildXmlElement(_contentElem, 'items');
         if (_itemsElem == null) {
@@ -12306,12 +12331,13 @@
     }
     // Itemsエレメントからitems項目を抽出する(全ユーザ情報一覧取得応答用)
     function _getItemsFromGetAllUserListItemsElem(itemsElem) {
-        if (itemsElem == null) {
-            _log
-                    .connectionLog(3,
-                            '_getItemsFromGetAllUserListItemsElem :: itemsElem is null');
-            return null;
-        }
+        // This guard always evaluates to false.
+        // if (itemsElem == null) {
+        //     _log
+        //             .connectionLog(3,
+        //                     '_getItemsFromGetAllUserListItemsElem :: itemsElem is null');
+        //     return null;
+        // }
         if (itemsElem.name == null || itemsElem.name() != 'items') {
             _log
                     .connectionLog(3,
