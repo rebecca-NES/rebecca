@@ -107,7 +107,8 @@ function TaskRegister(parentObject, message, mode){
 
     _proto.getRegisterForm = function(){
         var _self = this;
-        var contactList = _self.getContactList(true);
+        // Unused variable contactList.
+        // var contactList = _self.getContactList(true);
         var loginUserID = LoginUser.getInstance().getJid();
         var i, selected, isMyTask;
         if(this._mode == TaskRegister.mode_add){
@@ -703,7 +704,8 @@ function TaskRegister(parentObject, message, mode){
     _proto.getInputClient = function(callback){
         var _self = this;
         var form = this._registerForm;
-        var loginUserJid = LoginUser.getInstance().getJid();
+        // Unused variable loginUserJid.
+        // var loginUserJid = LoginUser.getInstance().getJid();
 
         var _taskClientInputElem = $(form).find('div.register-task-client > input.register-client-input');
         if($(_taskClientInputElem).length > 0){
