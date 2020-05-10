@@ -16,14 +16,15 @@ limitations under the License.
 
 
 import React, { Component } from 'react'
+// Unused imports Alert, Image.
 import {
   Dimensions,
   Platform,
   View,
   Text,
-  Image,
+//  Image,
   ImageBackground,
-  Alert,
+//  Alert,
   AsyncStorage,
 } from 'react-native'
 import {
