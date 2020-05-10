@@ -2560,10 +2560,11 @@ function ViewUtils() {
                         }
                         return '['+p1+']';
                     }else{
+                        /* Unused variable avatarInfo.
                         var avatarInfo = Utils.avatarCreate({
                             type: 'hashtag',
                             name: p1
-                        });
+                        });*/
                         let bgColor = keysCate[p1].bgColor;
                         let color = keysCate[p1].color;
                         category.push({
