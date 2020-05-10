@@ -181,7 +181,8 @@ function SideMenuUserListView(partsType, viewType, parent) {
 
     _proto._addContactListDialog = function(contactList, beforeListNumber) {
       var _self = this;
-      var root = _self.getHtmlElement();
+      // Unused variable root.
+      // var root = _self.getHtmlElement();
       var addNumber = beforeListNumber + 10;
       var result = false;
       if (contactList.getCount() <= addNumber) {
