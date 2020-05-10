@@ -16,6 +16,7 @@ limitations under the License.
 
 
 import React, { Component } from 'react'
+// Unused import Image.
 import {
   StyleSheet,
   View,
@@ -24,7 +25,7 @@ import {
   ScrollView,
   ListView,
   TouchableOpacity,
-  Image,
+//  Image,
   RefreshControl,
   ActivityIndicator,
   Platform,
@@ -33,14 +34,15 @@ import {
     Actions,
 } from 'react-native-router-flux'
 import Icon from 'react-native-vector-icons/FontAwesome'
+// Unused imports Badge, Button, CheckBox.
 import {
   SearchBar,
   Avatar,
   Header,
-  CheckBox,
-  Button,
+//  CheckBox,
+//  Button,
   ButtonGroup,
-  Badge,
+//  Badge,
   Divider,
 } from 'react-native-elements'
 import Toast from 'react-native-simple-toast'
@@ -327,7 +329,8 @@ export default class NewerScreen extends Component<{}> {
     var roomTypeTextColor = ""
     var roomTypeName = ""
     var roomDescBackColor = ""
-    var roomDescTextColor = ""
+    // Unused variable roomDescTextColor.
+    // var roomDescTextColor = ""
 
     if (item.type === Const.cubee_message_feed) { // フィード
       roomTypeBackColor = Const.company_backcolor
