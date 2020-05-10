@@ -16,10 +16,11 @@ limitations under the License.
 
 
 import React, { Component } from 'react'
+// Unused imports Alert, AppRegistry.
 import {
   View,
   Text,
-  Alert,
+//  Alert,
   ScrollView,
   ListView,
   TouchableOpacity,
@@ -27,19 +28,20 @@ import {
   RefreshControl,
   ActivityIndicator,
   StyleSheet,
-  AppRegistry,
+//  AppRegistry,
   BackHandler,
 } from 'react-native'
 import {
   Actions,
 } from 'react-native-router-flux'
 import Icon from 'react-native-vector-icons/FontAwesome'
+// Unused imports Button, CheckBox.
 import {
   Header,
   SearchBar,
   Avatar,
-  CheckBox,
-  Button,
+//  CheckBox,
+//  Button,
 } from 'react-native-elements'
 
 import Common from '../Common/Common'
