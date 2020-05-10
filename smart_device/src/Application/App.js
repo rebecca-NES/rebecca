@@ -16,12 +16,13 @@ limitations under the License.
 
 
 import React, { Component } from 'react'
+// Unused import AsyncStorage.
 import {
   Platform,
   View,
   AppState,
   StyleSheet,
-  AsyncStorage,
+//  AsyncStorage,
   StatusBar,
   PushNotificationIOS
 } from 'react-native'
@@ -31,9 +32,10 @@ import {
     Actions,
 } from 'react-native-router-flux'
 import Icon from 'react-native-vector-icons/FontAwesome'
-import Menu, {
-  MenuProvider,
-} from 'react-native-popup-menu'
+// Unused imports Menu, MenuProvider.
+// import Menu, {
+//   MenuProvider,
+// } from 'react-native-popup-menu'
 import Toast from 'react-native-simple-toast'
 
 import Common from '../Common/Common'
@@ -134,6 +136,7 @@ if (Platform.OS === 'ios'){
 }
 
 // 未使用。ホーム画面に通知がきたらバッジを表示し、更新する処理
+/* Unused function checkPushNotification.
 function checkPushNotification(notification){
   if (notification.type === Const.cubee_message_feed){ // フィード
     if (_badgelist.feed === false){
@@ -166,6 +169,7 @@ function checkPushNotification(notification){
     Actions.refresh({notificationData: notification})
   }
 }
+*/
 
 PushNotification.configure({
   onRegister: function(token) {
@@ -213,7 +217,8 @@ PushNotification.configure({
         var messageType = messageData.content.messageNotice.messageType
         var roomInfo = messageData.content.messageNotice.roomInfo
         var toInfo = messageData.content.messageNotice.toInfo
-        var fromJid = messageData.content.messageNotice.fromJid
+        // Unused variable fromJid.
+        // var fromJid = messageData.content.messageNotice.fromJid
         var isWF = messageData.content.messageNotice.isWF
 
         if(notification.foreground === true){
