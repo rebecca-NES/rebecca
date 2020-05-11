@@ -29,7 +29,8 @@
     // 定数定義
     var CONTENT_TYPE_MULTIPART = 'multipart';
     var GET_DESTINATION_HOST = 'get_destination_host';
-    var CONF_KEY_SOCKET_IO_PORT = 'SOCKET_IO_PORT';
+    // Unused variable CONF_KEY_SOCKET_IO_PORT.
+    // var CONF_KEY_SOCKET_IO_PORT = 'SOCKET_IO_PORT';
     var ASYNCHRONOUS = 'asynchronous';
     var CONF_KEY_DEFAULT_TENANT_NAME = 'DEFAULT_TENANT_NAME';
     var REG_EXP_URL_TENANTNAME = '\/t\/[^\/]+';
