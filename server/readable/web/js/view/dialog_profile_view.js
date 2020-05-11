@@ -298,7 +298,8 @@ function DialogProfileView(title) {
                   CubeeController.getInstance().clearPrePresence();
                   ColumnMessageView.updateMessageAvatarToolTip(LoginUser.getInstance().getJid());
                   if (_self._backgroundPath) {
-                      var extras = LoginUser.getInstance().getExtras();
+                      // Unused variable extras.
+                      // var extras = LoginUser.getInstance().getExtras();
                       var saveExtras = {};
                       saveExtras.backgroundImage = _self._backgroundPath;
                       CubeeServerConnector.getInstance().setLoginUserExtras(saveExtras)
@@ -420,7 +421,8 @@ function DialogProfileView(title) {
             }
 
             _rootElement.on('change', 'input[name="push_notification_setting"]:radio', function(){
-                var a = $(this);
+                // Unused variable a.
+                // var a = $(this);
                 switch ($(this).attr('id')) {
                     case 'notification_on':
                         Notification.requestPermission(function(result) {
@@ -444,7 +446,8 @@ function DialogProfileView(title) {
         }
 
         _rootElement.on('change', 'input[name="background_setting"]:radio', function(){
-            var a = $(this);
+            // Unused variable a.
+            // var a = $(this);
             $('div[name="mainWrapper"]').removeClass (function (index, css) {
                 return (css.match (/\bdashboard_w\S+/g) || []).join(' ');
             });
