@@ -159,7 +159,8 @@ function DialogPublicGroupchatListView(tabInfo) {
                     <span class="public-gc-room-list-radio"></span>\
                 </div></label></li>';
                 var query = $(columnNameElement);
-                let roomId = columnNameList[i].getRoomId();
+                // Unused variable roomId.
+                // let roomId = columnNameList[i].getRoomId();
                 this._dialogInnerElement.find('.select_list').append(query);
             }
         }
