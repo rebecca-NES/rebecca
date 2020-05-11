@@ -3,7 +3,8 @@
      * GET user routes
      */
     var Utils = require('../../../../scripts/utils');
-    var SynchronousBridgeNodeXmpp = require('../../../../scripts/controller/synchronous_bridge_node_xmpp');
+    // Unused variable SynchronousBridgeNodeXmpp.
+    // var SynchronousBridgeNodeXmpp = require('../../../../scripts/controller/synchronous_bridge_node_xmpp');
     var ServerLog = require('../../../../scripts/controller/server_log');
     var Conf = require('../../../../scripts/controller/conf');
     var ReadCacheBeforeDBChef = require('../../../../scripts/lib/CacheHelper/read_cache_before_db_chef');
@@ -58,8 +59,10 @@
     var ERR_ACCOUNT_EMPTY = 'アカウントを入力して下さい';
     var ERR_ACCOUNT_OVER_MAX_SIZE = 'アカウントは252桁以内で入力して下さい';
     var ERR_PASSWORD_SIZE = 'パスワードは8桁以上、32桁以内で入力して下さい';
-    var ERR_PASSWORD_EMPTY = 'パスワードを入力して下さい';
-    var ERR_CONFIRM_PASSWORD_EMPTY = '確認用パスワードを入力して下さい';
+    // Unused variable ERR_PASSWORD_EMPTY.
+    // var ERR_PASSWORD_EMPTY = 'パスワードを入力して下さい';
+    // Unused variable ERR_CONFIRM_PASSWORD_EMPTY.
+    // var ERR_CONFIRM_PASSWORD_EMPTY = '確認用パスワードを入力して下さい';
     var ERR_NOT_MATCH_PASSWORD_AND_CONFIRM_PASSWORD = 'パスワードと確認用パスワードが一致していません';
     var ERR_EMAIL_EMPTY = 'emailを入力してください';
     var ERR_ACCOUNT_WRONG_FORMAT = 'アカウントの形式が不正です';
@@ -115,7 +118,9 @@
     var URL_QUERY_PARAM_ACCOUNT = 'account';
     var URL_QUERY_PARAM_NICKNAME = 'nickname';
     var URL_QUERY_PARAM_EMAIL = 'email';
+    // Unused variable URL_QUERY_PARAM_PASSWORD.
     var URL_QUERY_PARAM_PASSWORD = 'password';
+    // Unused variable URL_QUERY_PARAM_CONFIRM_PASSWORD.
     var URL_QUERY_PARAM_CONFIRM_PASSWORD = 'confirmPassword';
 
     var URL_QUERY_PARAM_CHAR_CODE_VALUE_UTF8 = 'utf8';
@@ -804,6 +809,7 @@
         }
 
         // 画面への描画（アカウント一覧取得失敗時）
+        /* Unused function renderToScreenForError.
         function renderToScreenForError(){
             _getUpdateUserLocals(req, _tName, null, function(_locals) {
                 _locals.error = true;
@@ -812,8 +818,7 @@
                 res.render('main');
                 return;
             });
-        }
-
+        }*/
         //エラーメッセージのセット
         function _setErrMessage(locals, errReason){
             if(locals == null){
