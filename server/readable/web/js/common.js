@@ -218,7 +218,8 @@ $(function(){
   });
 
   $(document).on('click', '.content-wrapper .col_card .col_close_btn', function(){
-    var $this = $(this);
+    // Unused variable $this.
+    // var $this = $(this);
     var col_w = $(this).parents('.col_card').outerWidth();
     $(this).parents('.col_card').addClass('closeaa').css({ 'margin-right': - col_w + 'px', 'opacity': 0, 'z-index': '1000' });
     setTimeout(function () {
@@ -228,6 +229,7 @@ $(function(){
     column_width();
   });
 
+  /* Unused function modal_on.
   function modal_on(modal_n, wizard) {
     if (!wizard) {
       $('#' + modal_n).show();
@@ -241,7 +243,7 @@ $(function(){
       }
     });
     $('.overlay').animate({ 'opacity':0.3}, 200 );
-  }
+  } */
   function modal_exit() {
     if ($('div#profile_modal').length && TabManager.getInstance().isActiveMyWorkplace()) {
       var backgroundClass = LoginUser.getInstance().getExtras().backgroundImage ? LoginUser.getInstance().getExtras().backgroundImage : 'dashboard_wrapper';
