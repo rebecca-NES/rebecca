@@ -194,6 +194,7 @@ function ColumnRecentView(columnInformation) {
             _columnTypeFilter = ColumnFilterManager.getColumnFilter(ColumnInformation.TYPE_COLUMN_TOME);
         }
         var _quickFilter = CustomFilterSetting.createSettingFilterCondition(_quickSettings);
+        // Unused variable columnFilter.
         var columnFilter = null;
         // Variable _columnFilter is used like a local variable, but is missing a declaration.
         var _columnFilter;

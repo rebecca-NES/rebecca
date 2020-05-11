@@ -503,6 +503,7 @@ function DialogQuoteMessageView(message, column, roomPrivacyType=0) {
         CubeeController.getInstance().getRoomInfoList(0, 1000, communityList, _sortCondition, onGetGroupInfoListHistoryCallback);
     }
 
+    /* Unused function setFollowListFrame.
     function setFollowListFrame(_self, _followList) {
         var followListCount= _chatList.getCount();
 
@@ -533,7 +534,7 @@ function DialogQuoteMessageView(message, column, roomPrivacyType=0) {
             _ret += '</a></li>';
         }
         return _ret;
-    }
+    } */
 
     function setGroupchatListFrame(_self, _groupchatList) {
         var groupchatListCount= _groupchatList.getCount();

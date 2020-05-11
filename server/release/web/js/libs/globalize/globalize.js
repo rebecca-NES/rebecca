@@ -711,7 +711,8 @@ formatDate = function( value, format, culture ) {
 		numberString = split[ 0 ];
 		right = split.length > 1 ? split[ 1 ] : "";
 
-		var l;
+		// Unused variable l.
+		// var l;
 		if ( exponent > 0 ) {
 			right = zeroPad( right, exponent, false );
 			numberString += right.slice( 0, exponent );

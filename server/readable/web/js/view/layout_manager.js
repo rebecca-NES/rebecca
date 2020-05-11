@@ -31,6 +31,7 @@ function LayoutManager() {
     LayoutManager.MAINOUTER = { WIDTH: 0, HEIGHT: 0 };
     LayoutManager.LIST = { WIDTH: 0, HEIGHT: 0 };
     var MNG = LayoutManager;
+    /* Unused variable columnContainer, ...
     var columnContainer = $('#columnContainer');
     var listContainer = $('#listContainer');
     var switchToList = $('#switchToList');
@@ -42,7 +43,7 @@ function LayoutManager() {
     var menubar = $('#menubar');
     var menuIcons = $('#menuIcons');
     var contextSearchIcon = $('#searchIcon_for_mobile');
-    var mainOuterContainer = $('#mainOuterContainer');
+    var mainOuterContainer = $('#mainOuterContainer'); */
 
     LayoutManager.initScreenLayout = function (){
         if (MNG.INIT_COMPLETE) return;

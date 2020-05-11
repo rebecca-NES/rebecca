@@ -231,7 +231,8 @@ function DialogSelectCommunityAddMemberView(communityId) {
                    </select> </label></li>';
 
                 let query = $(memberHtml);
-                let content = _self._dialogInnerElement.find('.select_list').append(query);
+                // Unused variable content.
+                // let content = _self._dialogInnerElement.find('.select_list').append(query);
                 query.find('.ico_user').append(avatar);
                 query.find("input:checkbox").val(person.getJid());
 

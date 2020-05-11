@@ -1,5 +1,6 @@
 (function() {
-    var SynchronousBridgeNodeXmpp = require('../../scripts/controller/synchronous_bridge_node_xmpp');
+    // Unused variable SynchronousBridgeNodeXmpp.
+    // var SynchronousBridgeNodeXmpp = require('../../scripts/controller/synchronous_bridge_node_xmpp');
     var ServerLog = require('../../scripts/controller/server_log');
     var Conf = require('../../scripts/controller/conf');
     var _log = ServerLog.getInstance();

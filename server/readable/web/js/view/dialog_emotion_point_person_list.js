@@ -72,7 +72,8 @@ function DialogEmotionPointPersonListView(messageItemId, emotionPointList, emoti
                 _data.add(0);
             }
         }
-        var myChart = new Chart(document.getElementById("emotion_canvas"), {
+        // Unused variable myChart.
+        // var myChart = new Chart(document.getElementById("emotion_canvas"), {
             type: 'horizontalBar',
             data: {
                 labels: _labels.reverse(),

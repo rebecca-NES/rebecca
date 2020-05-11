@@ -1455,16 +1455,19 @@ function extendRemove(target, props) {
 var splitDateTime = function(dateFormat, dateTimeString, dateSettings)
 {
 	try {
-		var date = $.datepicker._base_parseDate(dateFormat, dateTimeString, dateSettings);
+		// Unused variable date.
+		// var date = $.datepicker._base_parseDate(dateFormat, dateTimeString, dateSettings);
 	} catch (err) {
 		if (err.indexOf(":") >= 0) {
 			// Hack!  The error message ends with a colon, a space, and
 			// the "extra" characters.  We rely on that instead of
 			// attempting to perfectly reproduce the parsing algorithm.
-            var dateStringLength = dateTimeString.length-(err.length-err.indexOf(':')-2);
-            var timeString = dateTimeString.substring(dateStringLength);
-
-            return [dateTimeString.substring(0, dateStringLength), dateTimeString.substring(dateStringLength)];
+			
+			var dateStringLength = dateTimeString.length-(err.length-err.indexOf(':')-2);
+			// Unused variable timeString.
+			// var timeString = dateTimeString.substring(dateStringLength);
+			
+			return [dateTimeString.substring(0, dateStringLength), dateTimeString.substring(dateStringLength)];
             
 		} else {
 			throw err;
