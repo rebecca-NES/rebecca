@@ -74,13 +74,14 @@ function DialogMurmurListView() {
         });
     };
 
+    /* Unused function cleanUp.
     function cleanUp(_self) {
         _self._dialogAreaElement = null;
         _self._displayAllProjects = null;
         _self._weekRankingList = null;
         _self._monthRankingList = null;
         _self._yearRankingList = null;
-    }
+    } */
 
     _proto.getFrame = function() {
         let _self = this;
