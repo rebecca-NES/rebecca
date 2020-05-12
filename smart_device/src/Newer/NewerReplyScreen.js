@@ -15,7 +15,8 @@ limitations under the License.
 */
 
 
-import React, { Component } from 'react'
+// Unused imports Component, React.
+// import React, { Component } from 'react'
 import { Actions } from 'react-native-router-flux'
 
 import Common from '../Common/Common'
