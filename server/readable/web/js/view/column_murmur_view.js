@@ -28,7 +28,8 @@ function ColumnMurmurView(murmurColumnInformation) {
             }
             if(this.partnerJid != null){
                 const _self = this;
-                let basetitle = this._htmlElement.find(".column-header-title").text();
+                // Unused variable basetitle.
+                // let basetitle = this._htmlElement.find(".column-header-title").text();
                 CubeeController.getInstance().getPersonDataByJidFromServer(
                     this.partnerJid,
                     (personMap)=>{
