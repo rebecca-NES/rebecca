@@ -1,6 +1,7 @@
 (function() {
     // SSL 3.0無効化用モジュール読み込み
-    var constants = require('constants');
+    // Unused variable constants.
+    // var constants = require('constants');
     // 設定ファイルデータモジュールの読み込み
     var fs = require('fs');
     var Conf = require('./conf');
