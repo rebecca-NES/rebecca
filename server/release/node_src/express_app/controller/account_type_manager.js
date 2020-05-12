@@ -1,9 +1,11 @@
 'use strict'
 
-var authority_api = require('../../scripts/controller/authority/cubee_authority_api');
+// Unused variable authority_api.
+// var authority_api = require('../../scripts/controller/authority/cubee_authority_api');
 var authControl = require('../../scripts/controller/authority/controller');
 var ServerLog = require('../../scripts/controller/server_log');
-var utils = require('../../scripts/utils');
+// Unused variable utils.
+// var utils = require('../../scripts/utils');
 var sessionDataMannager = require('../../scripts/controller/session_data_manager').getInstance()
 const _ = require('underscore');
 var _log = ServerLog.getInstance();
