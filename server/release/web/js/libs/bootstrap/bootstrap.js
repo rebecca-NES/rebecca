@@ -672,9 +672,10 @@
     }
 
   , keydown: function (e) {
+    // Unused variable $active.
       var $this
         , $items
-        , $active
+        // , $active
         , $parent
         , isActive
         , index
@@ -854,7 +855,8 @@
     , hide: function (e) {
         e && e.preventDefault()
 
-        var that = this
+      // Unused variable that.
+      //  var that = this
 
         e = $.Event('hide')
 
@@ -924,8 +926,9 @@
       }
 
     , backdrop: function (callback) {
-        var that = this
-          , animate = this.$element.hasClass('fade') ? 'fade' : ''
+      // Unused variable that.
+      //  var that = this
+        var animate = this.$element.hasClass('fade') ? 'fade' : ''
 
         if (this.isShown && this.options.backdrop) {
           var doAnimate = $.support.transition && animate
@@ -1175,8 +1178,9 @@
     }
 
   , hide: function () {
-      var that = this
-        , $tip = this.tip()
+    // Unused variable that.
+    //  var that = this
+      var $tip = this.tip()
 
       $tip.removeClass('in')
 
