@@ -17,8 +17,10 @@ limitations under the License.
 function MyPresenceView(){
 }
 (function() {
-    var presence_type = $('#presence_type');
-    var myMemo_input = $('#myMemo > input');
+    // Unused variable presence_type.
+    // var presence_type = $('#presence_type');
+    // Unused variable myMemo_input.
+    // var myMemo_input = $('#myMemo > input');
     var _myPresenceView = new MyPresenceView();
 
     MyPresenceView.getInstance = function() {
