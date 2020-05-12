@@ -113,7 +113,8 @@ function DialogSelectChatRoomConfirmAuthorityMemberView(roomId) {
               </label></li>';
 
             let query = $(memberHtml);
-            let content = _self._dialogInnerElement.find('.select_list').append(query);
+            // Unused variable content.
+            // let content = _self._dialogInnerElement.find('.select_list').append(query);
             query.find('.ico_user').append(avatar);
             query.find(".group").text("@"+_account).html();
             if((authList[_loginUserUid] && authList[_loginUserUid] != 'manageGroupchat')||
