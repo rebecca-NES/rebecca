@@ -189,6 +189,7 @@ function DialogSelectChatRoomAddMemberView(roomId) {
                    </select> </label></li>';
 
                 let query = $(memberHtml);
+                // Unused variable content.
                 let content = _self._dialogInnerElement.find('.select_list').append(query);
                 query.find('.ico_user').append(avatar);
                 query.find("input:checkbox").val(person.getJid());
