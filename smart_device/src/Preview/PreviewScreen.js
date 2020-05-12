@@ -25,15 +25,16 @@ import {
 import {
     Actions,
 } from 'react-native-router-flux'
+// Unused import Icon.
 import {
   Header,
-  Icon,
+//  Icon,
 } from 'react-native-elements'
 import ImageZoom from 'react-native-image-pan-zoom';
 
 import Common from '../Common/Common'
 import Const from '../Common/Const'
-import CubeeAPI from '../Common/CubeeAPI'
+// import CubeeAPI from '../Common/CubeeAPI'
 
 const _ScreenName = "プレビュー画面"
 
