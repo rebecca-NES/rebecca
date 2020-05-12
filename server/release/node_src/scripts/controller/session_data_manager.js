@@ -1,6 +1,7 @@
 (function() {
     var CubeeWebApi = require('./cubee_web_api');
-    var SessionData = require('../model/session_data');
+    // Unused variable SessionData.
+    // var SessionData = require('../model/session_data');
     var StoreVolatileChef = require('../lib/CacheHelper/store_volatile_chef');
     var Conf = require('./conf');
     var Utils = require('../utils');
