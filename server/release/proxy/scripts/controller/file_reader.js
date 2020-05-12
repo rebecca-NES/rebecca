@@ -1,6 +1,7 @@
 (function() {
     var fs = require('fs');
-    var path = require('path');
+    // Unused variable path.
+    // var path = require('path');
     var ServerLog = require('./server_log');
 
     // ServerLogクラスインスタンス取得
