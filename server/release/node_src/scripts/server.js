@@ -26,6 +26,7 @@ function startServer() {
     express.start();
 
     // 権限管理DB接続の開始
+    /* Unused variable dbif.
     var dbif = DBIF.create().initialize('/opt/cubee/cmnconf/spf_rightctl_dbs.json',
         function(err) {
             if (err) {
@@ -34,7 +35,7 @@ function startServer() {
                 _log.connectionLog(6, 'Rightctl DB connected.');
             }
         }
-    );
+    ); */
     _log.connectionLog(6,'CubeeServer is running.');
 };
 

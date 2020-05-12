@@ -226,9 +226,10 @@ function SideMenuRecentView(){
       var _self = this;
       if(!_self._htmlElement.find('.scroll_content.ps').length) {
         var target = _self._htmlElement.find('.scroll_content');
+        /* Unused variable ps.
         var ps = new PerfectScrollbar(target[0], {
           suppressScrollX: true
-        });
+        }); */
         $(target).on('ps-scroll-y',() => {
           if ($('emoji-picker').hasClass('open')) {
             $('emoji-picker').removeClass('open');

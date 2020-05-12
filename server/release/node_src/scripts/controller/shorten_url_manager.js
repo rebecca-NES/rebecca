@@ -2,8 +2,10 @@
     var GlobalSNSManagerDbConnector = require('../lib/DbHelper/global_sns_manager_db_connector');
     var ShortenURLInfo = require('../model/shorten_url_info');
     var ServerLog = require('./server_log');
-    var Utils = require('../utils');
-    var SynchronousBridgeNodeXmpp = require('./synchronous_bridge_node_xmpp');
+	// Unused variable Utils.
+    // var Utils = require('../utils');
+	// Unused variable SynchronousBridgeNodeXmpp.
+    // var SynchronousBridgeNodeXmpp = require('./synchronous_bridge_node_xmpp');
     var Conf = require('./conf');
 
     var _log = ServerLog.getInstance();

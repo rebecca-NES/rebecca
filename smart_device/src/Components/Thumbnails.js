@@ -22,9 +22,11 @@ limitations under the License.
 
 import React, { Component } from 'react'
 import { View, Text, Image, TouchableOpacity } from 'react-native'
-import { Actions } from 'react-native-router-flux'
+// Unused import Actions.
+// import { Actions } from 'react-native-router-flux'
 
-import Common from '../Common/Common'
+// Unused import Common.
+// import Common from '../Common/Common'
 import Const from '../Common/Const'
 
 export default class Thumbnails extends Component<{}> {

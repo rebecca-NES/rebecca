@@ -17,7 +17,9 @@ limitations under the License.
 
 import React, { Component } from 'react'
 import { View, Text, ScrollView } from 'react-native'
-import { Header, FormLabel, FormInput } from 'react-native-elements'
+// Unused imports FormInput, FormLabel.
+// import { Header, FormLabel, FormInput } from 'react-native-elements'
+import { Header } from 'react-native-elements'
 import { Actions } from 'react-native-router-flux'
 
 import Common from '../Common/Common'

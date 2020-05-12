@@ -516,7 +516,8 @@ function CommunityDetailsView(){
                 <span class='group'></span>\
                 </li>";
             let query = $(ownerHtml);
-            let content = $("#community_detail_owner_info").append(query);
+            // Unused variable content.
+            // let content = $("#community_detail_owner_info").append(query);
 
             query.find('.ico_user').append(avatar);
             query.find('.status').addClass(ViewUtils.getPresenceColorCss(owner.getPresence()));
@@ -543,7 +544,8 @@ function CommunityDetailsView(){
                </a>\
                </li>";
             let query = $(memberHetml);
-            let content = $("#community_detail_member_list").append(query);
+            // Unused variable content.
+            // let content = $("#community_detail_member_list").append(query);
 
             let _selectedJid = member.getJid();
             var _cachedUser = CubeeController.getInstance().getPersonData(_selectedJid);
