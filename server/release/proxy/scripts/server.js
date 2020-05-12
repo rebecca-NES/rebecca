@@ -3,7 +3,8 @@ var ServerLog      = require('./controller/server_log');
 var RedisConnector = require('./controller/redis_connector');
 var SpfServer      = require('./controller/spf_server');
 var SpfListManager = require('./controller/spf_list_manager');
-var url            = require('url');
+// Unused variable url.
+// var url            = require('url');
 var http           = require('http');
 
 // 定数定義
