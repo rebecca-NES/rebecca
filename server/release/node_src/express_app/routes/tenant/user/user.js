@@ -119,9 +119,9 @@
     var URL_QUERY_PARAM_NICKNAME = 'nickname';
     var URL_QUERY_PARAM_EMAIL = 'email';
     // Unused variable URL_QUERY_PARAM_PASSWORD.
-    var URL_QUERY_PARAM_PASSWORD = 'password';
+    // var URL_QUERY_PARAM_PASSWORD = 'password';
     // Unused variable URL_QUERY_PARAM_CONFIRM_PASSWORD.
-    var URL_QUERY_PARAM_CONFIRM_PASSWORD = 'confirmPassword';
+    // var URL_QUERY_PARAM_CONFIRM_PASSWORD = 'confirmPassword';
 
     var URL_QUERY_PARAM_CHAR_CODE_VALUE_UTF8 = 'utf8';
     var URL_QUERY_PARAM_CHAR_CODE_VALUE_SJIS = 'sjis';
