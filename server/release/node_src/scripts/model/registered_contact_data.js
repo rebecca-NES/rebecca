@@ -1,5 +1,6 @@
 (function() {
-    var Utils = require('../utils');
+    // Unused variable Utils.
+    // var Utils = require('../utils');
 
     /**
      * @class 登録するコンタクトデータ
