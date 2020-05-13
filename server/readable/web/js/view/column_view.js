@@ -925,9 +925,10 @@ function ColumnView(columnInfo) {
         }
         var _type = message.getType();
         var _replyId = null;
+        /* The value assigned to _replyId here is unused.
         if (_type == Message.TYPE_PUBLIC) {
             _replyId = message.getReplyItemId();
-        }
+        } */
 
         var _loginUserJid = LoginUser.getInstance().getJid();
         var _messageAuthorJID = message.getFrom();
@@ -1053,7 +1054,8 @@ function ColumnView(columnInfo) {
             return;
         }
         var _content;
-        var _type = msg.getType();
+        // The initial value of _type is unused, since it is always overwritten.
+        var _type; // = msg.getType();
         var _targetColumnElem = _self.getHtmlElement();
         if(_targetColumnElem == null) {
             return;
