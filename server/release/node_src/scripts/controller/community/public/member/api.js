@@ -35,12 +35,13 @@ exports.receive = (_globalSnsDB, socket, request, processCallback, callBackRespo
        typeof _type != 'string' ||
        !Validation.accessTokenValidationCheck(request.accessToken, true)){
         _log.connectionLog(5, '  community.public.member.api.request not token');
-        _ret = {
+        // The value assigned to _ret here is unused.
+        _ret; /* = {
             errorCode : 9,
             content : {
                 result: false,
                 reason: Const.API_STATUS.FORBIDDEN
-            }
+            } */
         };
     }else{
         const _sessionDataMannager = SessionDataMannager.getInstance();
@@ -68,7 +69,8 @@ exports.receive = (_globalSnsDB, socket, request, processCallback, callBackRespo
                 break;
             }
                 //登録実行
-            _ret = joining(_globalSnsDB, request.accessToken,
+                // The value assigned to _ret here is unused.
+            _ret; /* = joining(_globalSnsDB, request.accessToken,
                                _content.roomId)
                     .then((res)=>{
                         //通知メンバーをリスト化
@@ -140,7 +142,7 @@ exports.receive = (_globalSnsDB, socket, request, processCallback, callBackRespo
                             request.version,
                             err.errorCode,
                             Object.assign({type: _type},err.content));
-                    });
+                    }); */
             break;
         case 'Withdraw':
                 //リクエスト値をチェック
@@ -163,7 +165,8 @@ exports.receive = (_globalSnsDB, socket, request, processCallback, callBackRespo
                 break;
             }
                 //登録実行
-            _ret = withdraw(_globalSnsDB, request.accessToken,
+                // The value assigned to _ret here is unused.
+            _ret; /* = withdraw(_globalSnsDB, request.accessToken,
                                 _content.roomId)
                     .then((res)=>{
                         //メンバーリスト作成
@@ -213,7 +216,7 @@ exports.receive = (_globalSnsDB, socket, request, processCallback, callBackRespo
                             request.version,
                             err.errorCode,
                             Object.assign({type: _type},err.content));
-                    });
+                    }); */
             break;
         default:
             _log.connectionLog(3, '  community.public.member.api.request not type');
