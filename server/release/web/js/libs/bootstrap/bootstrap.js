@@ -1470,7 +1470,8 @@
         this.offsets = $([])
         this.targets = $([])
 
-        $targets = this.$body
+      // The value assigned to $targets here is unused.
+        $targets; /* = this.$body
           .find(this.selector)
           .map(function () {
             var $el = $(this)
@@ -1484,7 +1485,7 @@
           .each(function () {
             self.offsets.push(this[0])
             self.targets.push(this[1])
-          })
+          }) */
       }
 
     , process: function () {
