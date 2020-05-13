@@ -73,8 +73,9 @@ module.exports = class PublicGroupDbStore {
                             if(startId == null || startId == 0){
                                 isList = true;
                             }
+                            // The value assigned to isList here is unused.
                             if(typeof count == 'number' && items.length >= count){
-                                isList = false;
+                                // isList = false;
                                 break;
                             }
                             if(isList){
