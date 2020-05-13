@@ -204,7 +204,8 @@ function DialogFolloweeListView(_jid) {
                 });
 
                 var _jid = columnNameList[i].getJid();
-                var _change = 'follow';
+                // The initial value of _change is unused, since it is always overwritten.
+                var _change; // = 'follow';
                 if (query.find('button').hasClass('follow-dialog-btn')){
                     _change = 'follow';
                 } else {
