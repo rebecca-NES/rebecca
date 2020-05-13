@@ -108,7 +108,8 @@
 				if ('oninput' in ta) {
 					var width = ta.style.width;
 					ta.style.width = '0px';
-					ignore = ta.offsetWidth; // This value isn't used, but getting it triggers the necessary reflow
+					// The value assigned to ignore here is unused.
+					// ignore; = ta.offsetWidth; // This value isn't used, but getting it triggers the necessary reflow
 					ta.style.width = width;
 				}
 			}
