@@ -36,9 +36,10 @@ UserAccountUtils.getUserDataByTenantLoginAccount = function(tenantUuid, loginAcc
 
     function _onResultCallBack(err, result) {
         var _ret = null;
+        /* The value assigned to _ret here is unused.
         if (result) {
             _ret = result;
-        }
+        } */
         onGetUserAccountDataCallBack(result);
     }
 };
