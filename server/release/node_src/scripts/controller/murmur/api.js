@@ -35,13 +35,14 @@ exports.receive = (_globalSnsDB, socket, request, processCallback, callBackRespo
        typeof _type != 'string' ||
         !Validation.accessTokenValidationCheck(request.accessToken, true)){
         _log.connectionLog(5, '  murmur.api.request not token');
-        _ret = {
+        // The value assigned to _ret here is unused.
+        _ret; /* = {
             errorCode : 9,
             content : {
                 result: false,
                 reason: Const.API_STATUS.FORBIDDEN
             }
-        };
+        }; */
     }else{
         const _sessionDataMannager = SessionDataMannager.getInstance();
         const _sessionData = _sessionDataMannager.get(request.accessToken);
