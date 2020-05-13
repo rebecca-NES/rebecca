@@ -154,9 +154,10 @@ function ColumnCommunityTaskView(columnInformation, tabType) {
         var _self = this;
         var _countTitle = Resource.getMessage('task_unfinished_number');
         var _unfinishedTaskCount = 0;
+        /* The value assigned to _unfinishedTaskCount here is unused.
         if (unfinishedTaskCount != null && typeof unfinishedTaskCount == 'number') {
             _unfinishedTaskCount = unfinishedTaskCount;
-        }
+        } */
         var _info = _self._info;
         var _baseDispalyName = _self._createDisplayName();
         if(this._tabType == TabItemView.TYPE_COMMUNITY){
@@ -176,7 +177,8 @@ function ColumnCommunityTaskView(columnInformation, tabType) {
         var _avatarToolTipOwner = messageElement.find('div.block-avatar').eq(0);
         if (_actionToolTipType != TooltipView.TYPE_UNKNOWN) {
 
-            var _communityInfo = _self._info.getCommunityInfomation();
+            // The initial value of _communityInfo is unused, since it is always overwritten.
+            var _communityInfo; // = _self._info.getCommunityInfomation();
             var _columnInfo = _self._info;
             var _communityInfo = _columnInfo.getCommunityInfomation();
             var _communityId = _communityInfo.getRoomId();
