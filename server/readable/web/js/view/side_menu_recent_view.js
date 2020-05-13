@@ -19,7 +19,8 @@ function SideMenuRecentView(){
     var isGotInstance = false;
     var isGotHistory = false;
 
-    var _proto = SideMenuRecentView.prototype;
+    // The initial value of _proto is unused, since it is always overwritten.
+    var _proto; // = SideMenuRecentView.prototype;
 
     SideMenuRecentView.prototype = $.extend({}, ColumnRecentView.prototype);
     var _super = ColumnRecentView.prototype;
