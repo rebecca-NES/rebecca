@@ -33,20 +33,22 @@ exports.receive = (_globalSnsDB, socket, request, processCallback, callBackRespo
        typeof _type != 'string' ||
        !Validation.accessTokenValidationCheck(request.accessToken, true)){
         _log.connectionLog(5, '  groupchat.public.api.request not token');
-        _ret = {
+        // The value assigned to _ret here is unused.
+        _ret; /* = {
             errorCode : 9,
             content : {
                 result: false,
                 reason: Const.API_STATUS.FORBIDDEN
             }
-        };
+        }; */
     }else{
         switch(_type){
         case 'getRoomList':
                 //_content.startId,_content.count
                 //はnullも許容するのでDBないで値チェック
                 //登録実行
-            _ret = getRoomList(_globalSnsDB, request.accessToken,
+                // The value assigned to _ret here is unused.
+            _ret; /* = getRoomList(_globalSnsDB, request.accessToken,
                                    _content.startId, _content.count)
                     .then((res)=>{
                         //httpレスポンスをここで実行
@@ -70,7 +72,7 @@ exports.receive = (_globalSnsDB, socket, request, processCallback, callBackRespo
                             request.version,
                             err.errorCode,
                             Object.assign({type: _type},err.content));
-                    });
+                    }); */
             break;
         default:
             _log.connectionLog(3, '  groupchat.public.api.request not type');
