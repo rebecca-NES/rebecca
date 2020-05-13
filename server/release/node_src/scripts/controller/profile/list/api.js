@@ -41,7 +41,8 @@ exports.receive = (_globalSnsDB, socket, request, processCallback, callBackRespo
     }else{
         switch(_type){
         case 'getAffiliationList':
-            _ret = getAffiliationList(_globalSnsDB, request.accessToken)
+                // The value assigned to _ret here is unused.
+            _ret; /* = getAffiliationList(_globalSnsDB, request.accessToken)
                     .then((res)=>{
                         //httpレスポンスをここで実行
                         //コールバックが最終レスポンスになるので
@@ -69,7 +70,7 @@ exports.receive = (_globalSnsDB, socket, request, processCallback, callBackRespo
                             Object.assign({
                                 "type": _type
                             },err.content));
-                    });
+                    }); */
             break;
         default:
                 //httpレスポンスをここで実行
