@@ -36,7 +36,7 @@ exports.receive = (_globalSnsDB, socket, request, processCallback, callBackRespo
         !Validation.accessTokenValidationCheck(request.accessToken, true)){
         _log.connectionLog(5, '  murmur.api.request not token');
         // The value assigned to _ret here is unused.
-        _ret; /* = {
+        /* _ret = {
             errorCode : 9,
             content : {
                 result: false,
