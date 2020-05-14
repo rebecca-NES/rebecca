@@ -87,7 +87,8 @@
 			});
 
 			function initMirror() {
-				var styles = {}, ignore;
+				// Unused variable ignore.
+				var styles = {}; //, ignore;
 
 				mirrored = ta;
 				mirror.className = options.className;
