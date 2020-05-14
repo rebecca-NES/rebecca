@@ -1266,7 +1266,8 @@ function CubeeController() {
             _postUrlPath += _path;
         }
         var _downloadFile = 'filedownload';
-        _downloadFile = _postUrlPath + _downloadFile;
+        // The value assigned to _downloadFile here is unused.
+        _downloadFile; // = _postUrlPath + _downloadFile;
 
         var _accessToken = CubeeServerConnector.getInstance().getAccessToken();
         if (_accessToken == "") {

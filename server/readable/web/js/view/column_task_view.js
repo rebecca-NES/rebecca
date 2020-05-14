@@ -511,14 +511,17 @@ function ColumnTaskView(columnInformation) {
     };
     _proto.updateColumnTitle = function(unfinishedTaskCount) {
         var _self = this;
-        var _countTitle = Resource.getMessage('task_unfinished_number');
+        // The initial value of _countTitle is unused, since it is always overwritten.
+        var _countTitle; // = Resource.getMessage('task_unfinished_number');
+        /* The value assigned to _countTitle here is unused.
         if (_self.getType() == ColumnInformation.TYPE_COLUMN_INBOX) {
             _countTitle = Resource.getMessage('inbox_item_number');
-        }
+        } */
         var _unfinishedTaskCount = 0;
+        /* The value assigned to _unfinishedTaskCount here is unused.
         if (unfinishedTaskCount != null && typeof unfinishedTaskCount == 'number') {
             _unfinishedTaskCount = unfinishedTaskCount;
-        }
+        } */
         var _info = _self._info;
         var _baseDispalyName = ViewUtils.createDisplayName(_info);
 

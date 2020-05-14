@@ -122,7 +122,8 @@ function ColumnCommunityTaskMessageView(parent, msg) {
                         continue;
                     }
                     var _childTaskContractorJid = _childTaskElem.attr('ownerjid');
-                    var _actionToolTipType = TooltipView.TYPE_UNKNOWN;
+                    // The initial value of _actionToolTipType is unused, since it is always overwritten.
+                    var _actionToolTipType; // = TooltipView.TYPE_UNKNOWN;
                     var _childTaskStatus = _childTask.getStatus();
                     if(_childTaskStatus == TaskMessage.STATUS_ASSIGNING) {
                         if(_communityAdmin) {

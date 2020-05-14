@@ -77,10 +77,12 @@
             else {
                 var _err = null;
                 var ret;
+                /* The value assigned to _err here is unused.
                 if(!result) {
                     _err = 'result is null.';
                 }
-                else {
+                else { */
+                if(result) {
                     ret = result.rows;
                 }
                 onSqlResultCallBack(err, ret);

@@ -306,13 +306,14 @@ function DialogProfileView(title) {
                       .then(function(res){
                           var _extras = res.content.extras;
                           if (_extras) {
-                              try {
+                              // try {
                                   _extras = JSON.parse(_extras);
                                   LoginUser.getInstance().setExtras(_extras);
                                   ViewUtils.modal_allexit();
-                              } catch (error) {
-                                  _extras = {};
-                              }
+                              // } catch (error) {
+                                  // The value assigned to _extras here is unused.
+                                 //  _extras = {};
+                              // }
                           }
                       });
                   } else {

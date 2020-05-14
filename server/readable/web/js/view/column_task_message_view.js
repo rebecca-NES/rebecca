@@ -54,7 +54,8 @@ function ColumnTaskMessageView(parent, msg) {
         var _message = _self._msg;
         var _itemId = _message.getItemId();
         var _parentItemId = _message.getParentItemId();
-        var _siblingTaskList = _message.getSiblingTaskDataList();
+        // The initial value of _siblingTaskList is unused, since it is always overwritten.
+        var _siblingTaskList; // = _message.getSiblingTaskDataList();
         _super.cleanup.call(_self);
         var _statusAreaTimerBlinkIDList = _self._statusAreaTimerBlinkIDList;
         var _statusAreaTimerBlinkIDCount = _statusAreaTimerBlinkIDList.getCount();
@@ -219,9 +220,10 @@ function ColumnTaskMessageView(parent, msg) {
         _timerId = ViewUtils.validBlinkTaskStatusElement(_rootElement,ColumnTaskMessageView.DEMAND_TASK_BLINK_DELAY,_baseHtml,_demandTaskHtml,_self._isMultiOwner,ownerJid);
         var _timerIdObj = {timerId : _timerId};
         var _ret = _self._statusAreaTimerBlinkIDList.setByKey(ownerJid,_timerIdObj);
+        /* The initial value of _ret is unused, since it is always overwritten.
         if(!_ret){
             var _ret = _self._statusAreaTimerBlinkIDList.add(ownerJid,_timerIdObj);
-        }
+        } */
     };
 
     _proto._invalidBlinkDemandTaskOnly = function(ownerJid, baseStatus) {
@@ -392,7 +394,8 @@ function ColumnTaskMessageView(parent, msg) {
 
         var _profileMap = msg.getProfileMap();
         var _profile = null;
-        var _person = new Person();
+        // The initial value of _person is unused, since it is always overwritten.
+        var _person; // = new Person();
         if (_clientJid) {
             _profile = _profileMap.getByKey(_clientJid);
             _person = ViewUtils.createPersonByProfile(_clientJid, _profile);

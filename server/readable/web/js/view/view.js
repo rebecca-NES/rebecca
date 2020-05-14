@@ -309,7 +309,8 @@ function View() {
                 }
             } else if (_subType == GroupChatNotification.SUB_TYPE_ADD_MEMBER) {
                 var _addedBy = notification.getAddedBy();
-                var _addedMemberList = notification.getAddedMemberList();
+                // The initial value of _addedMemberList is unused, since it is always overwritten.
+                var _addedMemberList; // = notification.getAddedMemberList();
                 if (_loginUser != _addedBy) {
                     if (LoginView.getInstance().getLoginedViewInitFinish()) {
                         if(_isNotification) {

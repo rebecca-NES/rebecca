@@ -151,9 +151,10 @@ module.exports = class HashtagDbStore {
                 _before_day = parseInt((new Date().getTime() - new Date(dateFrom).getTime()) / 1000 / 60 / 60 / 24);
             }
         }
+        /* The value assigned to isSetRankBottom here is unused.
         if(rankBottom != null && typeof rankBottom == 'number'){
             isSetRankBottom = true;
-        }
+        } */
         if(offset != null && typeof offset == 'number'){
             _offset = offset;
         }

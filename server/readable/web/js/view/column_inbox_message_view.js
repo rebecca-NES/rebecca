@@ -36,7 +36,8 @@ function ColumnInboxMessageView(parent, msg) {
         var _message = _self._msg;
         var _itemId = _message.getItemId();
         var _parentItemId = _message.getParentItemId();
-        var _siblingTaskList = _message.getSiblingTaskDataList();
+        // The initial value of _siblingTaskList is unused, since it is always overwritten.
+        var _siblingTaskList; // = _message.getSiblingTaskDataList();
         _super.cleanup.call(_self);
         if(_parentItemId != null && _parentItemId != ''){
             CubeeController.getInstance().onRemoveParentMessageRefarence(_parentItemId);

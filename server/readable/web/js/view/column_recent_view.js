@@ -121,12 +121,13 @@ function ColumnRecentView(columnInformation) {
         .then(function(res){
             var _extras = res.content.extras;
             if (_extras) {
-                try {
+                // The value assigned to _extras here is unused.
+                // try {
                     _extras = JSON.parse(_extras);
                     LoginUser.getInstance().setExtras(_extras);
-                } catch (error) {
-                    _extras = {};
-                }
+                // } catch (error) {
+                //     _extras = {};
+                // }
             }
         });
     }

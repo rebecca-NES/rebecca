@@ -107,10 +107,11 @@ exports.getTreadTitleList = (socket, receiveObj={}, callback, apiUtil) => {
      * openfireからresponstXMLにのXMPPのレスポンスが帰って来る
      */
     _sessionData.setCallback(_id, (responstXML) => {
-        let resContent = {
+        // The initial value of resContent is unused, since it is always overwritten.
+        let resContent; /* = {
             result: false,
             reason: API_STATUS.INTERNAL_SERVER_ERROR,
-        };
+        }; */
         let errorCode = 1;
         /*
          * openfireからのレスポンス値にエラーが有ればその値を
@@ -318,7 +319,8 @@ exports.updateTreadTitle = (socket, receiveObj={}, callback, apiUtil) => {
      */
     _sessionData.setCallback(_id, (responstXML) => {
         let result = false;
-        let reason = API_STATUS.INTERNAL_SERVER_ERROR;
+        // The initial value of reason is unused, since it is always overwritten.
+        let reason; // = API_STATUS.INTERNAL_SERVER_ERROR;
         /*
          * openfireからのレスポンス値にエラーが有ればその値を
          */

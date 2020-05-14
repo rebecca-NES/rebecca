@@ -396,7 +396,8 @@ function ColumnIconView() {
         if(_self._columnInfo != null) {
             var _imgSrc = _self._columnInfo.getIconImage();
             var _dispName = Utils.convertEscapedTag(_self._columnInfo.getDisplayName()); 
-            var _dispData = _dispName; 
+            // The initial value of _dispData is unused, since it is always overwritten.
+            var _dispData; // = _dispName; 
             var _resultName = _self._columnInfo.getDisplayName(); 
             var _type = _self._columnInfo.getColumnType();
             var _typeData = '';

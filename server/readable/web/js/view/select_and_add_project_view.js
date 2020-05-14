@@ -181,7 +181,8 @@ function SelectAndAddProjectView(){
 
         var projectListCount= _communityList.getCount();
 
-        var _roomInfo = _communityList.get(0);
+        // The initial value of _roomInfo is unused, since it is always overwritten.
+        var _roomInfo; // = _communityList.get(0);
 
         var _ret = "";
 

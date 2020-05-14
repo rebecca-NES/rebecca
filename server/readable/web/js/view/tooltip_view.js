@@ -56,9 +56,10 @@ function TooltipView() {
         if (_validation({'type' : type, 'owner' : owner}) == false) {
             return false;
         }
+        /* The value assigned to isShowConversation here is unused.
         if(isShowConversation != false) {
             isShowConversation = true;
-        }
+        } */
         var _selector = null;
         switch(type) {
           case TooltipView.TYPE_PUBLIC:
@@ -425,7 +426,8 @@ function TooltipView() {
                 }).catch(function(err){
                 });
             });
-            var _change = 'follow';
+            // The initial value of _change is unused, since it is always overwritten.
+            var _change; // = 'follow';
             if (owner.find('button').hasClass('follow-btn')){
                 _change = 'follow';
             } else {
@@ -930,9 +932,10 @@ function TooltipView() {
         if (_validation({'owner' : owner}) == false) {
             return false;
         }
+        /* The value assigned to isToolTipOwner here is unused.
         if(isToolTipOwner != false) {
             isToolTipOwner = true;
-        }
+        } */
         var _toolTipContent = '';
         if (messageExistingReaderInfo == null || typeof messageExistingReaderInfo != 'object' ) {
              return false;
@@ -1767,9 +1770,10 @@ function TooltipView() {
                 var _profileMap = msg.getProfileMap();
                 if(_profileMap && typeof _profileMap == 'object'){
                     var _profile = _profileMap.getByKey(_partnerJid);
+                    /* The value assigned to _partnerName here is unused.
                     if(_profile && typeof _profile == 'object'){
                         _partnerName = _profile.getNickName();
-                    }
+                    } */
                 }
                 let cName = msg.getColumnName();
                 if(!cName){

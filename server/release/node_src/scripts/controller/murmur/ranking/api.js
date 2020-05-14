@@ -33,13 +33,14 @@ exports.receive = (_globalSnsDB, socket, request, processCallback, callBackRespo
        typeof _type != 'string' ||
         !Validation.accessTokenValidationCheck(request.accessToken, true)){
         _log.connectionLog(5, '  murmur.ranking.api.request not token');
-        _ret = {
+        // The value assigned to _ret here is unused.
+        _ret; /* = {
             errorCode : 9,
             content : {
                 result: false,
                 reason: Const.API_STATUS.FORBIDDEN
             }
-        };
+        }; */
     }else{
         switch(_type){
         case 'getList':
@@ -69,7 +70,8 @@ exports.receive = (_globalSnsDB, socket, request, processCallback, callBackRespo
                     });
                 break;
             }
-            _ret = getRankingList(_globalSnsDB, request.accessToken,
+                // The value assigned to _ret here is unused.
+            _ret; /* = getRankingList(_globalSnsDB, request.accessToken,
                                   _content.dateFrom, _content.dateTo,
                                   _content.rankBottom, _content.offset, _content.limit)
                     .then((res)=>{
@@ -98,7 +100,7 @@ exports.receive = (_globalSnsDB, socket, request, processCallback, callBackRespo
                             request.version,
                             err.errorCode,
                             Object.assign({type: _type},err.content));
-                    });
+                    }); */
             break;
         default:
             _log.connectionLog(3, '  murmur.ranking.api.request not type:' + _type);
