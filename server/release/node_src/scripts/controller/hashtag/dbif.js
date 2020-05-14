@@ -134,7 +134,8 @@ module.exports = class HashtagDbStore {
         let msgToSQLInWhere = "";
         let _before_day = 365;
         let _toDate = 'now()';
-        let isSetRankBottom = false;
+        // Unused variable isSetRankBottom.
+        // let isSetRankBottom = false;
         let _offset = 0;
         let _limit = 100;
         if(Validation.msgToValidationCheck(msgTo, true)){
