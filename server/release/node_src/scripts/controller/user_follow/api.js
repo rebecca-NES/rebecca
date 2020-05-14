@@ -35,44 +35,44 @@ exports.receive = (_globalSnsDB, socket, request, processCallback, callBackRespo
         !Validation.accessTokenValidationCheck(request.accessToken, true)){
         _log.connectionLog(5, '  user_follow.api.request not token');
         // The value assigned to _ret here is unused.
-        _ret; /* = {
+        /* _ret = {
             errorCode : 9,
             content : {
                 result: false,
                 reason: Const.API_STATUS.FORBIDDEN
-            } */
-        };
-    }else{
+            } 
+        }; */
+    } else {
         const _sessionDataMannager = SessionDataMannager.getInstance();
         const _sessionData = _sessionDataMannager.get(request.accessToken);
         const _myJid = _sessionData.getJid();
         switch(_type){
-        case 'addUserFollow':
+                case 'addUserFollow':
                 //リクエスト値をチェック
-            if(typeof _content.followeeJid != 'string' ||
+                if(typeof _content.followeeJid != 'string' ||
                    !Validation.jidValidationCheck(_content.followeeJid, true) ||
                    _content.followeeJid == _myJid){
-                _log.connectionLog(4, '  user_follow.api.request addUserFollow invalid _content.followeeJid:'
-                                        + _content.followeeJid + ", _myJid:" + _myJid);
-                callBackResponse(
+                    _log.connectionLog(4, '  user_follow.api.request addUserFollow invalid _content.followeeJid:'
+                                       + _content.followeeJid + ", _myJid:" + _myJid);
+                    callBackResponse(
                         processCallback,
                         request.accessToken,
                         request.request,
                         request.id,
                         request.version,
                         1,
-                    {
-                        type: _type,
-                        result: false,
-                        reason: Const.API_STATUS.BAD_REQUEST
-                    });
-                break;
-            }
+                        {
+                            type: _type,
+                            result: false,
+                            reason: Const.API_STATUS.BAD_REQUEST
+                        });
+                    break;
+                }
                 // The value assigned to _ret here is unused.
-            _ret; /* = addUserFollow(_globalSnsDB, request.accessToken,
+                /* _ret = addUserFollow(_globalSnsDB, request.accessToken,
                                      _content.followeeJid)
-                    .then((res)=>{
-                        //httpレスポンスをここで実行
+                .then((res)=>{
+                    //httpレスポンスをここで実行
                         callBackResponse(
                             processCallback,
                             request.accessToken,
@@ -93,48 +93,50 @@ exports.receive = (_globalSnsDB, socket, request, processCallback, callBackRespo
                         NotificateApi.notifyPush(request.accessToken,
                                                  [notifyuser],
                                                  request.request,
-                            {
-                                type: _type,
-                                followeeJid: _content.followeeJid,
-                                followerJid: _myJid,
-                                personInfo: res.content.personInfo
-                            });
-                    })
-                    .catch((err)=>{
-                        //httpレスポンスをここで実行
-                        callBackResponse(
-                            processCallback,
-                            request.accessToken,
-                            request.request,
-                            request.id,
-                            request.version,
-                            err.errorCode,
-                            Object.assign({type: _type},err.content));
-                    }); */
-            break;
-        case 'delUserFollow':
+                                                 {
+                            type: _type,
+                            followeeJid: _content.followeeJid,
+                            followerJid: _myJid,
+                            personInfo: res.content.personInfo
+                        });
+                })
+                .catch((err)=>{
+                    //httpレスポンスをここで実行
+                    callBackResponse(
+                        processCallback,
+                        request.accessToken,
+                        request.request,
+                        request.id,
+                        request.version,
+                        err.errorCode,
+                        Object.assign({type: _type},err.content));
+                }); */
+                break;
+            
+                case 'delUserFollow':
                 //リクエスト値をチェック
-            if(typeof _content.followeeJid != 'string' ||
+                if(typeof _content.followeeJid != 'string' ||
                    !Validation.jidValidationCheck(_content.followeeJid, true) ||
                    _content.followeeJid == _myJid){
-                _log.connectionLog(4, '  user_follow.api.request delUserFollow invalid _content.followeeJid:'
-                                        + _content.followeeJid + ", _myJid:" + _myJid);
-                callBackResponse(
+                    _log.connectionLog(4, '  user_follow.api.request delUserFollow invalid _content.followeeJid:'
+                                       + _content.followeeJid + ", _myJid:" + _myJid);
+                    callBackResponse(
                         processCallback,
                         request.accessToken,
                         request.request,
                         request.id,
                         request.version,
                         1,
-                    {
-                        type: _type,
-                        result: false,
-                        reason: Const.API_STATUS.BAD_REQUEST
-                    });
-                break;
-            }
+                        {
+                            type: _type,
+                            result: false,
+                            reason: Const.API_STATUS.BAD_REQUEST
+                        });
+                    break;
+                }
+            
                 // The value assigned to _ret here is unused.
-            _ret; /* = delUserFollow(_globalSnsDB, request.accessToken,
+                /* _ret = delUserFollow(_globalSnsDB, request.accessToken,
                                      _content.followeeJid)
                     .then((res)=>{
                         //httpレスポンスをここで実行
@@ -196,7 +198,7 @@ exports.receive = (_globalSnsDB, socket, request, processCallback, callBackRespo
                 break;
             }
                 // The value assigned to _ret here is unused.
-            _ret; /* = getFollowInfo(_globalSnsDB, request.accessToken, _content.jid)
+                /* _ret = getFollowInfo(_globalSnsDB, request.accessToken, _content.jid)
                     .then((res)=>{
                         //httpレスポンスをここで実行
                         callBackResponse(
@@ -241,7 +243,7 @@ exports.receive = (_globalSnsDB, socket, request, processCallback, callBackRespo
                 break;
             }
                 // The value assigned to _ret here is unused.
-            _ret; /* = getFolloweeList(_globalSnsDB, request.accessToken, _content.jid)
+                /* _ret = getFolloweeList(_globalSnsDB, request.accessToken, _content.jid)
                     .then((res)=>{
                         //httpレスポンスをここで実行
                         callBackResponse(
@@ -289,7 +291,7 @@ exports.receive = (_globalSnsDB, socket, request, processCallback, callBackRespo
                 break;
             }
                 // The value assigned to _ret here is unused.
-            _ret; /* = getFollowerList(_globalSnsDB, request.accessToken, _content.jid)
+                /* _ret = getFollowerList(_globalSnsDB, request.accessToken, _content.jid)
                     .then((res)=>{
                         //httpレスポンスをここで実行
                         callBackResponse(
