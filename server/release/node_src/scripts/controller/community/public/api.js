@@ -34,7 +34,7 @@ exports.receive = (_globalSnsDB, socket, request, processCallback, callBackRespo
        !Validation.accessTokenValidationCheck(request.accessToken, true)){
         _log.connectionLog(5, '  community.public.api.request not token');
         // The value assigned to _ret here is unused.
-        _ret; /* = {
+        /* _ret = {
             errorCode : 9,
             content : {
                 result: false,
@@ -48,7 +48,7 @@ exports.receive = (_globalSnsDB, socket, request, processCallback, callBackRespo
                 //はnullも許容するのでDBないで値チェック
                 //登録実行
                 // The value assigned to _ret here is unused.
-            _ret; /* = getRoomList(_globalSnsDB, request.accessToken,
+            /* _ret = getRoomList(_globalSnsDB, request.accessToken,
                                    _content.startId, _content.count)
                     .then((res)=>{
                         //httpレスポンスをここで実行
