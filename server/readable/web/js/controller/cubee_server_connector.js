@@ -2494,9 +2494,10 @@ function CubeeServerConnector() {
             }
             for (var _i = 0; _i < _itemCount; _i++) {
                 var _person = _getPersonDataFromResponseItem(_items[_i]);
-                if (_person == null) {
+                // This guard always evaluates to false.
+                /* if (_person == null) {
                     continue;
-                }
+                } */
                 _searchResultPersonList.add(_person);
             }
             if(onSearchPersonCallback != null){
