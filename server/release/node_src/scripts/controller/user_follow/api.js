@@ -4,7 +4,8 @@ const SessionDataMannager = require("../session_data_manager");
 const Validation = require('../validation');
 const Const = require('../const');
 const _log = require("../server_log").getInstance();
-const NotificateApi = require('../notificate/api');
+// Unused variable NotificateApi.
+// const NotificateApi = require('../notificate/api');
 const UserFollowDbStore = require('./dbif');
 
 /**
@@ -344,7 +345,8 @@ exports.receive = (_globalSnsDB, socket, request, processCallback, callBackRespo
  * @param accessToken アクセストークン
  * @param followeeJid フォローされるユーザーJID
  */
-const addUserFollow = (globalSnsDB, accessToken, followeeJid) => {
+// Unused variable addUserFollow.
+/* const addUserFollow = (globalSnsDB, accessToken, followeeJid) => {
     _log.connectionLog(7, 'do func user_follow.api.addUserFollow(...');
     return new Promise((resolve, reject) => {
         const _sessionDataMannager = SessionDataMannager.getInstance();
@@ -375,7 +377,7 @@ const addUserFollow = (globalSnsDB, accessToken, followeeJid) => {
             });
         }
     });
-};
+}; */
 
 /**
  * API実行者が指定ユーザーのフォロー解除
@@ -385,7 +387,8 @@ const addUserFollow = (globalSnsDB, accessToken, followeeJid) => {
  * @param accessToken アクセストークン
  * @param followeeJid フォロー解除されるユーザーJID
  */
-const delUserFollow = (globalSnsDB, accessToken, followeeJid) => {
+// Unused variable delUserFollow.
+/* const delUserFollow = (globalSnsDB, accessToken, followeeJid) => {
     _log.connectionLog(7, 'do func user_follow.api.delUserFollow(...');
     return new Promise((resolve, reject) => {
         const _sessionDataMannager = SessionDataMannager.getInstance();
@@ -416,7 +419,7 @@ const delUserFollow = (globalSnsDB, accessToken, followeeJid) => {
             });
         }
     });
-};
+}; */
 
 /**
  * フォローの状態（フォローされている人数、フォローしている人数）を取得
@@ -425,7 +428,8 @@ const delUserFollow = (globalSnsDB, accessToken, followeeJid) => {
  * @param accessToken アクセストークン
  * @param jid 状態を取得するユーザーのJID
  */
-const getFollowInfo = (globalSnsDB, accessToken, jid) => {
+// Unused variable getFollowInfo.
+/* const getFollowInfo = (globalSnsDB, accessToken, jid) => {
     _log.connectionLog(7, 'do func user_follow.api.getFollowInfo(...');
     return new Promise((resolve, reject) => {
         const _sessionDataMannager = SessionDataMannager.getInstance();
@@ -455,7 +459,7 @@ const getFollowInfo = (globalSnsDB, accessToken, jid) => {
             });
         }
     });
-};
+}; */
 
 /**
  * 指定ユーザーがフォローしているリストを取得
@@ -464,7 +468,8 @@ const getFollowInfo = (globalSnsDB, accessToken, jid) => {
  * @param accessToken アクセストークン
  * @param jid フォローしているユーザーのJID(指定ユーザー)
  */
-const getFolloweeList = (globalSnsDB, accessToken, jid) => {
+// Unused variable getFolloweeList.
+/* const getFolloweeList = (globalSnsDB, accessToken, jid) => {
     _log.connectionLog(7, 'do func user_follow.api.getFolloweeList(...');
     return new Promise((resolve, reject) => {
         const _sessionDataMannager = SessionDataMannager.getInstance();
@@ -494,7 +499,7 @@ const getFolloweeList = (globalSnsDB, accessToken, jid) => {
             });
         }
     });
-};
+}; */
 
 /**
  * 指定ユーザーがフォローされているリストを取得
@@ -503,7 +508,8 @@ const getFolloweeList = (globalSnsDB, accessToken, jid) => {
  * @param accessToken アクセストークン
  * @param jid フォローされているユーザーのJID(指定ユーザー)
  */
-const getFollowerList = (globalSnsDB, accessToken, jid) => {
+// Unused variable getFollowerList.
+/* const getFollowerList = (globalSnsDB, accessToken, jid) => {
     _log.connectionLog(7, 'do func user_follow.api.getFollowerList(...');
     return new Promise((resolve, reject) => {
         const _sessionDataMannager = SessionDataMannager.getInstance();
@@ -533,4 +539,4 @@ const getFollowerList = (globalSnsDB, accessToken, jid) => {
             });
         }
     });
-};
+}; */
