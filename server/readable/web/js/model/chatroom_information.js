@@ -98,10 +98,12 @@ function ChatRoomInformation() {
         if(memberJid == null || typeof memberJid != 'string') {
             return;
         }
-        if(action == undefined || action == null || typeof action != 'string') {
+        // This guard always evaluates to false.
+        if(action == undefined /* || action == null */ || typeof action != 'string') {
             action = '';
         }
-        if(accountName == undefined || accountName == null || typeof accountName != 'string') {
+        // This guard always evaluates to false.
+        if(accountName == undefined /* || accountName == null */ || typeof accountName != 'string') {
             accountName = '';
         }
         var _idx = -1;
