@@ -654,8 +654,9 @@ function NotificationIconManager() {
             isAttentionIconUpdate = true;
         }
         let headerColumnCommIcon = this._attentionHeaderColumnIconPanelConntener.find(liselector);
+	    // This guard always evaluates to true.
         if(headerColumnCommIcon != undefined &&
-           headerColumnCommIcon != null &&
+           // headerColumnCommIcon != null &&
            headerColumnCommIcon.size() != 0){
             if(isAttentionIconUpdate &&
                this._attentionHeaderColumnIconSelectors[encodeURIComponent(liselector)] != undefined &&
@@ -683,8 +684,9 @@ function NotificationIconManager() {
         this._attentionHeaderColumnIconPanelConntener.ready(() =>{
             let headerColumnCommIcon = this._attentionHeaderColumnIconPanelConntener.find(liselector);
             headerColumnCommIcon.ready(() =>{
+		    // This guard always evaluates to true.
                 if(headerColumnCommIcon != undefined &&
-                   headerColumnCommIcon != null &&
+                   // headerColumnCommIcon != null &&
                    headerColumnCommIcon.size() != 0){
                     headerColumnCommIcon.removeClass('message-notice-mainheader');
                 }
