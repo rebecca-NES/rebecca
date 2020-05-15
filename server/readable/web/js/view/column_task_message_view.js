@@ -773,9 +773,10 @@ function ColumnTaskMessageView(parent, msg) {
     function _getUserStausStr(profile){
         var _ret = '';
         var _status = Profile.STATUS_UNKNOWN;
-        if(profile != null){
+        // This guard always evaluates to true.
+        // if(profile != null){
             _status = profile.getStatus();
-        }
+        // }
         _ret = ViewUtils.getUserStatusString(_status);
         return _ret;
     };
@@ -972,9 +973,10 @@ function ColumnTaskMessageView(parent, msg) {
         _retArray[TaskMessage.STATUS_FINISHED] = 0;
         _retArray[TaskMessage.STATUS_REJECTED] = 0;
         _retArray[TaskMessage.STATUS_UNKNOWN] = 0;
-        if(taskList == null) {
+        // This guard always evaluates to false.
+        /* if(taskList == null) {
             return _retArray;
-        }
+        } */
         var _count = taskList.getCount();
         for (var _i = 0; _i < _count; _i++) {
             var _taskMessage = taskList.get(_i);
