@@ -4,7 +4,8 @@ const SessionDataMannager = require("../session_data_manager");
 const Validation = require('../validation');
 const Const = require('../const');
 const _log = require("../server_log").getInstance();
-const NotificateApi = require('../notificate/api');
+// Unused variable NotificateApi.
+// const NotificateApi = require('../notificate/api');
 const UserFollowDbStore = require('./dbif');
 
 /**
