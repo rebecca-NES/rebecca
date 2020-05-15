@@ -422,9 +422,10 @@ function TabColumnStateStore() {
         var _columnInfo = ViewUtils.getGroupChatColumnInfo(_roomInfo);
 
         function _onGetRoomInfo(gottenRoomInfo) {
-            if(gottenRoomInfo != null) {
-                _roomInfo = gottenRoomInfo;
-            }
+            // This guard always evaluates to false.
+            // if(gottenRoomInfo != null) {
+            //    _roomInfo = gottenRoomInfo;
+            // }
             var _columnInfo = ViewUtils.getGroupChatColumnInfo(_roomInfo);
             callback(_columnInfo);
         };
