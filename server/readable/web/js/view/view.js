@@ -58,7 +58,8 @@ function View() {
 
 
     _proto.onError = function(err) {
-        if (err != undefined && err != null && err.message != undefined) {
+        // This guard always evaluates to true.
+        if (err != undefined /* && err != null */ && err.message != undefined) {
             console.log('onError : ' + err.message);
         } else {
             console.log('onError');
@@ -66,7 +67,8 @@ function View() {
         return LoginView.getInstance().onLoginError(err);
     };
     _proto.onSkipLoginError = function(err) {
-        if (err != undefined && err != null && err.message != undefined) {
+        // This guard always evaluates to true.
+        if (err != undefined /* && err != null */ && err.message != undefined) {
             console.log('onSkipLoginError : ' + err.message);
         } else {
             console.log('onSkipLoginError');
