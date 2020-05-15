@@ -347,9 +347,10 @@ function SideMenuUserListView(partsType, viewType, parent) {
         setTimeout(function(){
             // Variable 'callbackFunc' is of type function, but it is compared to an expression of type null.
             // if(callbackFunc != null && typeof callbackFunc == 'function') { 
-            if (typeof callbackFunc == 'function') {
+            // This guard always evaluates to true.
+            // if (typeof callbackFunc == 'function') {
                 callbackFunc();
-            }
+            // }
         }, 1);
     };
 

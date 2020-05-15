@@ -67,9 +67,10 @@ function DemandTaskCautionIconView(itemList) {
             content : _self._notificationTooltipHtml(),
             delay : [TooltipView.getInstance().TOOLTIP_SHOW_TIME, TooltipView.getInstance().TOOLTIP_HIDE_TIME]
         };
-        if(_toolTipSetting == null) {
-            return false;
-        }
+        // This guard always evaluates to false.
+        // if(_toolTipSetting == null) {
+        //     return false;
+        // }
         if (ViewUtils.isIE8()) _toolTipSetting.updateOn = 'dummy';
         var _innerElement = _selfElm.children('.mTip').children('div.notification_list');
         var _inboxCount = _self._itemList.getByKey(String(ColumnInformation.TYPE_COLUMN_INBOX));

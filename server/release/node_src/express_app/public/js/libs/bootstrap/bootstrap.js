@@ -1248,7 +1248,7 @@
           $tip.offset(offset)
           actualWidth = $tip[0].offsetWidth
           // The value assigned to actualHeight here is unused.
-          actualHeight; // = $tip[0].offsetHeight
+          // actualHeight = $tip[0].offsetHeight
         }
 
         this.replaceArrow(delta - width + actualWidth, actualWidth, 'left')
@@ -1574,14 +1574,15 @@
       constructor: ScrollSpy
 
     , refresh: function () {
-        var self = this
-          , $targets
+      // Unused variable self.
+      //  var self = this
+      //    , $targets
 
         this.offsets = $([])
         this.targets = $([])
 
       // The value assigned to $targets here is unused.
-        $targets; /* = this.$body
+      /*  $targets = this.$body
           .find(this.selector)
           .map(function () {
             var $el = $(this)

@@ -59,11 +59,12 @@ exports.notifyPush = (accessToken, loginUserList, notifyType, pushContent, polic
 
         //現在のテナントUUIDを取得
         for(let i=0;i<_sessionDataAry.length;i++){
-            if(tenantuuid == null){
+            // This guard always evaluates to true.
+            // if(tenantuuid == null){
                 tenantuuid = _sessionDataAry[i].getTenantUuid() ?
                              _sessionDataAry[i].getTenantUuid() : null;
                 break;
-            }
+            // }
         }
     }catch(e){
         _log.connectionLog(3, ' notificate.api.js notifyPushMessgeToLoginList send owner error:'+e);

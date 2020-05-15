@@ -397,9 +397,10 @@ function DialogSelectChatRoomAddMemberView(roomId) {
         }
 
         function _onAddChatRoomMemberCallback(addedMemberList){
-            if(addedMemberList == null){
+            // This guard always evaluates to false.
+            /* if(addedMemberList == null){
                 return;
-            }
+            } */
 
             var _promises = [];
             for ( var i of actionList){

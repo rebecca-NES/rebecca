@@ -42,7 +42,7 @@ exports.receive = (_globalSnsDB, socket, request, processCallback, callBackRespo
         switch(_type){
         case 'getAffiliationList':
                 // The value assigned to _ret here is unused.
-            _ret; /* = getAffiliationList(_globalSnsDB, request.accessToken)
+                /* _ret = getAffiliationList(_globalSnsDB, request.accessToken)
                     .then((res)=>{
                         //httpレスポンスをここで実行
                         //コールバックが最終レスポンスになるので
@@ -87,6 +87,7 @@ exports.receive = (_globalSnsDB, socket, request, processCallback, callBackRespo
     }
 };
 
+/* 
 const getAffiliationList = (globalSnsDB, accessToken) => {
     _log.connectionLog(7, 'do func profile.list.api.getAffiliationList(...');
     return new Promise((resolve, reject) => {
@@ -117,4 +118,4 @@ const getAffiliationList = (globalSnsDB, accessToken) => {
             });
         }
     });
-};
+}; */

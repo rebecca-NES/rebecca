@@ -42,7 +42,8 @@
     _proto.getConfData = function(key, defaultValue) {
         var _self = this;
         var _data = _self._confData[key];
-        if(_data == undefined || _data == null) {
+        // This guard always evaluates to false.
+        if(_data == undefined /* || _data == null */) {
             // 値が取得できない場合
             if(defaultValue != null && typeof defaultValue == 'string') {
                 // デフォルト値を返却

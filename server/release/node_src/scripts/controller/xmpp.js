@@ -3680,7 +3680,8 @@
             'count' : '' + 0,
         });
 
-        if (createUserList != null) {
+        // This guard always evaluates to true.
+        // if (createUserList != null) {
             var _count = createUserList.length;
             _itemsElem.attr({
                 'count' : '' + _count,
@@ -3728,7 +3729,7 @@
                     break;
                 }
             }
-        }
+        // }
         return [ _iqElem.toString(), _id ];
     };
     // ユーザ更新(※複数のユーザ更新に対応)

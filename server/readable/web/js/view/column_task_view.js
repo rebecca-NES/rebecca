@@ -695,9 +695,10 @@ function ColumnTaskView(columnInformation) {
         }
 
         var _pos = _self.getMsgObjIndexPositionByItemId(itemId);
-        if(_messageViewObj != null){
+        // This guard always evaluates to true.
+        // if(_messageViewObj != null){
             _messageViewObj.getHtmlElement().remove();
-        }
+        // }
         _self.removeMsgObjIndexByItemIdNoCleanupMessage(itemId);
         var _insertPos = _pos;
         if(isDemandUp) {

@@ -22,8 +22,9 @@ const Log = require('./server_log').getInstance();
  */
 exports.exTrim = (value) => {
     Log.connectionLog(7, 'do func Fotmatting.exTrim(...');
+    // This guard always evaluates to false.
     if(value == undefined ||
-       value == null ||
+       // value == null ||
        typeof value != "string" ||
        value.length == 0){
         return value;

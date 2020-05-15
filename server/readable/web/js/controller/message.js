@@ -42,7 +42,8 @@ function MessageManager() {
             for (var _i = 0; _i < _count; _i++) {
                 _self._addMessage(taskMessageDataList.get(_i));
             }
-            if (childrenTaskMessageDataList != undefined && childrenTaskMessageDataList != null) {
+            // This guard always evaluates to true.
+            if (childrenTaskMessageDataList != undefined /* && childrenTaskMessageDataList != null */) {
                 var _childrenCount = childrenTaskMessageDataList.getCount();
                 for (var _i = 0; _i < _childrenCount; _i++) {
                     _self._addMessage(childrenTaskMessageDataList.get(_i));

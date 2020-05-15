@@ -925,8 +925,8 @@ function ColumnView(columnInfo) {
         }
         var _type = message.getType();
         var _replyId = null;
-        /* The value assigned to _replyId here is unused.
-        if (_type == Message.TYPE_PUBLIC) {
+        // The value assigned to _replyId here is unused.
+        /* if (_type == Message.TYPE_PUBLIC) {
             _replyId = message.getReplyItemId();
         } */
 

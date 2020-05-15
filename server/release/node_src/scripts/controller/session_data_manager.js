@@ -37,9 +37,10 @@
         if(_accessToken == undefined) {
             return false;
         }
-        if(_accessToken == null) {
-            return false;
-        }
+        // This guard always evaluates to false.
+        // if(_accessToken == null) {
+        //     return false;
+        // }
         if(typeof _accessToken != 'string') {
             return false;
         }
@@ -130,7 +131,8 @@
         var _ret = null
         for(var _accessToken in _self._mapAccessTokenToSessionData) {
             var _sessionData = _self._mapAccessTokenToSessionData[_accessToken];
-            if(_sessionData == undefined || _sessionData == null) {
+            // This guard always evaluates to false.
+            if(_sessionData == undefined /* || _sessionData == null */) {
                 continue;
             }
             if(_sessionData.getSocketIoSock() == socketIoSock) {
@@ -154,7 +156,8 @@
         // 探す
         for(var _accessToken in _self._mapAccessTokenToSessionData) {
             var _sessionData = _self._mapAccessTokenToSessionData[_accessToken];
-            if(_sessionData == undefined || _sessionData == null) {
+            // This guard always evaluates to false.
+            if(_sessionData == undefined /* || _sessionData == null */) {
                 continue;
             }
             if(_sessionData.getOpenfireSock() == openfireSock) {
