@@ -611,9 +611,10 @@ function TooltipView() {
         if (isToolTipOwner) {
             _toolTipSetting.holder = owner;
         }
-        if (_toolTipSetting == null) {
+        // This guard always evaluates to false.
+        /* if (_toolTipSetting == null) {
             return false;
-        }
+        } */
         if(owner.data('mTip') == null) {
             owner.mTip(_toolTipSetting);
         } else {
@@ -651,9 +652,10 @@ function TooltipView() {
         if (isToolTipOwner) {
             _toolTipSetting.holder = owner;
         }
-        if (_toolTipSetting == null) {
+        // This guard always evaluates to false.
+        /* if (_toolTipSetting == null) {
             return false;
-        }
+        } */
         if(owner.data('mTip') == null) {
             owner.mTip(_toolTipSetting);
         } else {
@@ -681,9 +683,10 @@ function TooltipView() {
         if (isToolTipOwner) {
             _toolTipSetting.holder = owner;
         }
-        if (_toolTipSetting == null) {
+        // This guard always evaluates to false.
+        /* if (_toolTipSetting == null) {
             return false;
-        }
+        } */
         if(owner.data('mTip') == null) {
             owner.mTip(_toolTipSetting);
         } else {
@@ -859,9 +862,10 @@ function TooltipView() {
         if (isToolTipOwner) {
             _toolTipSetting.holder = owner;
         }
-        if (_toolTipSetting == null) {
+        // This guard always evaluates to false.
+        /* if (_toolTipSetting == null) {
             return false;
-        }
+        } */
         if(owner.data('mTip') == null) {
             owner.mTip(_toolTipSetting);
         } else {
@@ -1051,9 +1055,10 @@ function TooltipView() {
 
         var _avatarSrc = ViewUtils.getAvatarUrl(_person);
         var _accountStatus = Person.PROFILE_STATUS_ACTIVE;
-        if (_person != null) {
+        // This guard always evaluates to true.
+        // if (_person != null) {
             _accountStatus = _person.getStatus();
-        }
+        // }
         var _status = siblingTaskData.getSiblingTaskStatus();
         var _statusClassName = '';
         switch(_status) {
@@ -1639,9 +1644,10 @@ function TooltipView() {
                             _inputElm.val(_replyDefString);
                             _inputElm.trigger('autosize.resize');
                             if (_fileUpload != undefined) {
-                                if (_fileUpload != null) {
+                                // This guard always evaluates to true.
+                                //if (_fileUpload != null) {
                                     _fileUpload.clearFileUpload();
-                                }
+                                //}
                             }
                             _editElm.hide();
                         } else {
@@ -1650,7 +1656,8 @@ function TooltipView() {
                     };
 
                     if(!ViewUtils.isIE89()){
-                        if (_fileUpload == undefined || _fileUpload == null) {
+                        // This guard always evaluates to false.
+                        if (_fileUpload == undefined /*|| _fileUpload == null */) {
                             _sendMessage(_messageBody);
                             return;
                         }
@@ -1971,7 +1978,8 @@ function TooltipView() {
                 _arrayReplyAccount.push(_replyUserId);
             }
 
-            if (_ret != null) {
+            // This guard always evaluates to true.
+            // if (_ret != null) {
                 for (var i = 0; i < _ret.length; i++) {
                     var _userId = _ret[i].replace(/(^[\s　]+)|([\s　]+$)/g, "");
                     _userId = _userId.replace("@", "");
@@ -1981,16 +1989,17 @@ function TooltipView() {
                         }
                     }
                 }
-            }
+            // }
             return _arrayReplyAccount;
         };
         function _createReplyStringFromReplyUserList(replyUserList) {
             var _replyString = '';
-            if (replyUserList != null) {
+            // This guard always evaluates to true.
+            // if (replyUserList != null) {
                 for (var i = 0; i < replyUserList.length; i++) {
                     _replyString = _replyString + '@' + replyUserList[i] + ' ';
                 }
-            }
+            // }
             return _replyString;
         };
         function _addArrayUniqueOnly(array, str) {
