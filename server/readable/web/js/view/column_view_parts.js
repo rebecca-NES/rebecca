@@ -307,9 +307,10 @@ function GroupChatColumnOptionMenu(htmlElement, columnInfo, ownerObj) {
                 default:
                     return;
             }
-            if(_dialogView){
+            // This guard always evaluates to true.
+            // if(_dialogView){
                 _dialogView.showDialog();
-            }
+            // }
             if(_value != GroupChatColumnOptionMenu.ELEMENT_MENU_UPDATE_ROOM_INFO_VAL_NAME){
                 var textareaElement = $('textarea#add-member-account-input');
                 ViewUtils.setCursorEndOfLineForText(textareaElement);
