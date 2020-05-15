@@ -125,8 +125,9 @@ exports.getTreadTitleList = (socket, receiveObj={}, callback, apiUtil) => {
             const contentElem = Utils.getChildXmlElement(messageElem, "content");
             const extrasElem = Utils.getChildXmlElement(contentElem, "extras");
             const _extras = {};
+            // This guard always evaluates to true.
             if(extrasElem != undefined &&
-               extrasElem != null &&
+               // extrasElem != null &&
                extrasElem.name() == "extras" &&
                extrasElem.childNodes().length > 0){
                 for(let i=0;i<extrasElem.childNodes().length;i++){
