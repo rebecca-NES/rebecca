@@ -97,9 +97,10 @@ function ColumnCustomFilterView(columnInformation) {
             _filterSettingDialogView = new DialogSettingCustomFilterView(_title, _self._info, _self._ownerObj, _self);
             break;
         }
-        if(_filterSettingDialogView == null) {
-            return;
-        }
+        // This guard always evaluates to false.
+        // if(_filterSettingDialogView == null) {
+        //     return;
+        // }
         _filterSettingDialogView.showDialog();
     };
 
