@@ -21,6 +21,9 @@ fi
 
 mkdir -p ${BUILD_DIR}/spf_openfire
 
+FILEDIR=`dirname $0`
+cp ${FILEDIR}/update_db.sh ${BUILD_DIR}/spf_openfire/
+cp ${FILEDIR}/globalsns_update.sql ${BUILD_DIR}/spf_openfire/
 
 ## Prepare spf_openfire
 cat <<'EOFEOF' > ${BUILD_DIR}/spf_openfire/Dockerfile
@@ -37,6 +40,10 @@ RUN   sed -i -e "/^HOSTNAME/s/^HOSTNAME/#HOSTNAME/" /etc/sysconfig/network
 # put plugin
 ADD   globalSNS.jar /opt/openfire/plugins/globalSNS.jar
 RUN   chown daemon:daemon /opt/openfire/plugins/globalSNS.jar
+
+RUN mkdir -p /opt/cubee/db_update
+ADD update_db.sh /opt/cubee/db_update/
+ADD globalsns_update.sql /opt/cubee/db_update/
 
 # add entry-point.sh
 RUN mkdir /etc/entry-point
@@ -69,6 +76,8 @@ until psql -h "$DBHOST" -U "$DBUSER" "$DBNAME" -c '\l'; do
 done
 
 >&2 echo "Postgres is up - executing command"
+
+sh /opt/cubee/db_update/update_db.sh
 
 cd /opt/openfire/logs
 su -s /bin/bash - daemon -c "/usr/lib/jvm/jre-1.8.0-openjdk.x86_64/bin/java \

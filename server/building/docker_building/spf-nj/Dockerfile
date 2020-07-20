@@ -42,6 +42,10 @@ RUN apt install -y nkf postgresql-client
 ## 実行スクリプトの配置
 ADD ./building/docker_building/spf-nj/entry-point.sh /
 
+## 実行スクリプトの配置
+ADD ./building/docker_building/spf-nj/update_db.sh /opt/cubee/db_update/
+ADD ./building/docker_building/spf-nj/rightctl_update.sql /opt/cubee/db_update/
+
 ## ポート空け、実行コマンドの設定
 EXPOSE 3000 3001 3002 3003
 CMD ["/entry-point.sh"]
