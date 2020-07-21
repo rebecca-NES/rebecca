@@ -3,6 +3,19 @@
 ### build.shがあるディレクトリへ移動
 cd $(dirname $0)
 
+### ImageMagickをコンパイル
+if [ ! -f ImageMagick-7.0.7-25-make.tar.gz ];then
+    rm -rf 7.0.7-25.tar.gz ImageMagick
+    wget https://github.com/ImageMagick/ImageMagick/archive/7.0.7-25.tar.gz
+    tar zxvf 7.0.7-25.tar.gz
+    cd ImageMagick-7.0.7-25
+    ./configure
+    make
+    cd ..
+    mv ImageMagick-7.0.7-25 ImageMagick
+    tar zcvf ImageMagick-7.0.7-25-make.tar.gz ImageMagick
+fi
+
 ### release.zip配置箇所へ移動
 cd ../../../
 
