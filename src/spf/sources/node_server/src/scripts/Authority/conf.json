@@ -1,0 +1,13 @@
+{
+    "rightctl_cubee" : {
+        "db": "postgresql://rightctl:password@10.58.75.53:5432/rightctl_cubee",
+        "opts": {
+            "logging": false,
+            "pool": {
+                "max": 5,
+                "min": 1,
+                "idle": 60000
+        	}
+        }
+    }
+}
