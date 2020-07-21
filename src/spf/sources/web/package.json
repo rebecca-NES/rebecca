@@ -1,0 +1,45 @@
+{
+  "name": "CubeeWeb",
+  "version": "5.0.0",
+  "description": "",
+  "main": "",
+  "scripts": {
+    "test": "jest --forceExit",
+    "jsdoc": "jsdoc -R README.md -c jsdoc.json",
+    "eslint": "eslint js/**"
+  },
+  "author": "Rebecca_Develop_Team",
+  "license": "",
+  "dependencies": {
+    "jquery": "^1.7.2",
+    "jsdom": "^11.5.1"
+  },
+  "devDependencies": {
+    "cp": "0.2.0",
+    "eslint": "^2.13.1",
+    "jest": "^21.2.1",
+    "jsdoc": "3.5.5",
+    "minami": "1.2.3",
+    "rewire": "^3.0.2"
+  },
+  "jest": {
+    "browser": true,
+    "rootDir": "./",
+    "collectCoverage": true,
+    "coverageReporters": [
+      "lcov"
+    ],
+    "coverageDirectory": "test/coverage",
+    "collectCoverageFrom": [
+      "js/controller/authority.js",
+      "js/model/authority.js"
+    ]
+  },
+  "eslintConfig": {
+    "env": {
+      "es6": true
+    },
+    "extends": "eslint:recommended",
+    "format": "stylish"
+  }
+}
