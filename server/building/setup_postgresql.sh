@@ -52,11 +52,6 @@ fi
 echo "host all all 172.18.0.0/16 md5" >> /var/lib/pgsql/12/data/pg_hba.conf
 echo "host all all ::1/128 md5" >> /var/lib/pgsql/12/data/pg_hba.conf
 
-## docker のコンテナからアクセスを許容する設定
-# JSON=`docker network inspect cubee-network`
-# SUBNET=`echo $JSON | python -c "exec(\"import json, sys\\nj=json.load(sys.stdin)\\nprint j[0].get('IPAM').get('Config')[0].get('Subnet')\")"`
-# echo "host all all ${SUBNET} md5" >> /var/lib/pgsql/12/data/pg_hba.conf
-
 ##
 ## postgresql を再起動と、自動起動
 systemctl restart postgresql-12

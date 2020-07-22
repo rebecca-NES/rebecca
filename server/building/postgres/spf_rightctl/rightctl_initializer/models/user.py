@@ -1,7 +1,6 @@
 # -*- coding: utf-8 -*-
 
-# from sqlalchemy import Column, BigInteger, String, Sequence, TIMESTAMP, ForeignKey
-from sqlalchemy import Column, BigInteger, String, TIMESTAMP, ForeignKey
+from sqlalchemy import Column, BigInteger, String, Sequence, TIMESTAMP, ForeignKey
 
 from db_manager import Base
 

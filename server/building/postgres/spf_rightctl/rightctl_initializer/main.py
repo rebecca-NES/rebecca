@@ -4,15 +4,14 @@ import argparse
 import datetime
 import json
 import collections
-# Import of 'subprocess' is not used.
-# import subprocess
-# import sys
+import subprocess
+import sys
 
 from db_manager import DBManager
-# from models.user import User
+from models.user import User
 from models.role import Role
 from models.translation import Translation
-# from models.user_has_policy import UserHasPolicy
+from models.user_has_policy import UserHasPolicy
 from models.role_has_policy import RoleHasPolicy
 from models.policy import Policy
 from models.policy_has_right import PolicyHasRight
@@ -46,9 +45,8 @@ def main():
                           created_by = 'rightctl_initializer'
                       )
                 _session.add(rec)
-            # break しないときは、else は使わないほうが良いらしい。
-            # else:
-            _session.commit()
+            else:
+                _session.commit()
 
         elif key == 'rights':
             for dic in input_j[key]:
@@ -59,9 +57,8 @@ def main():
                           created_by = 'rightctl_initializer'
                       )
                 _session.add(rec)
-            # break しないときは、else は使わないほうが良いらしい。
-            # else:
-            _session.commit()
+            else:
+                _session.commit()
 
         elif key == 'policies':
             for dic in input_j[key]:
@@ -80,12 +77,10 @@ def main():
                                 right_id = right.id
                             )
                     _session.add(child)
-                # break しないときは、else は使わないほうが良いらしい。
-                # else:
+                else:
+                    _session.commit()
+            else:
                 _session.commit()
-            # break しないときは、else は使わないほうが良いらしい。
-            # else:
-            _session.commit()
 
         elif key == 'roles':
             for dic in input_j[key]:
@@ -104,16 +99,13 @@ def main():
                                 policy_id = policy.id
                             )
                     _session.add(child)
-                # break しないときは、else は使わないほうが良いらしい。
-                # else:
+                else:
+                    _session.commit()
+            else:
                 _session.commit()
-            # break しないときは、else は使わないほうが良いらしい。
-            # else:
-            _session.commit()
-        # break しないときは、else は使わないほうが良いらしい。
-        # else:
-        # None もいらない
-        # None
+
+        else:
+            None
 
 def parse_args():
     parser = argparse.ArgumentParser(__doc__)
