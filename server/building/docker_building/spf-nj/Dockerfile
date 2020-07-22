@@ -14,6 +14,8 @@ ADD ./building/docker_building/tls/private/server.key /etc/pki/tls/private/
 ADD ./building/docker_building/spf-nj/ImageMagick-7.0.7-25-make.tar.gz /
 RUN apt update && \
     apt install -y build-essential && \
+    ln -s /bin/sed /usr/bin/sed && \
+    ln -s /bin/mkdir /usr/bin/mkdir && \
     cd /ImageMagick && \
     make install && \
     ldconfig /usr/local/lib && \

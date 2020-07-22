@@ -4,26 +4,14 @@
 ## Docker Image の構築準備
 ##
 
-# release.zip から解凍
-#if [ ! -d ${BUILD_DIR}/release.${NOWADAY} ]; then
-#  unzip ${RELEASE_ZIP} -d ${BUILD_DIR}/
-#  mv ${BUILD_DIR}/release ${BUILD_DIR}/release.${NOWADAY}
-#  cp -p ${RELEASE_ZIP} ${BUILD_DIR}/release.${NOWADAY}/
-#fi
-
 ## 構築作業用ディレクトリの用意
 if [ -d ${BUILD_DIR}/spf_openfire ]; then
-  # Docker Image（後半）構築ディレクトリをバックアップ
-#  tar cvzf ${BUILD_DIR}/release.${NOWADAY}/spf_openfire.tar.gz.${NOWADAY} ${BUILD_DIR}/spf_openfire
   # 旧ファイル/ディレクトリを削除
   rm -rf ${BUILD_DIR}/spf_openfire
 fi
 
 mkdir -p ${BUILD_DIR}/spf_openfire
 
-FILEDIR=`dirname $0`
-cp ${FILEDIR}/update_db.sh ${BUILD_DIR}/spf_openfire/
-cp ${FILEDIR}/globalsns_update.sql ${BUILD_DIR}/spf_openfire/
 
 ## Prepare spf_openfire
 cat <<'EOFEOF' > ${BUILD_DIR}/spf_openfire/Dockerfile
@@ -40,10 +28,6 @@ RUN   sed -i -e "/^HOSTNAME/s/^HOSTNAME/#HOSTNAME/" /etc/sysconfig/network
 # put plugin
 ADD   globalSNS.jar /opt/openfire/plugins/globalSNS.jar
 RUN   chown daemon:daemon /opt/openfire/plugins/globalSNS.jar
-
-RUN mkdir -p /opt/cubee/db_update
-ADD update_db.sh /opt/cubee/db_update/
-ADD globalsns_update.sql /opt/cubee/db_update/
 
 # add entry-point.sh
 RUN mkdir /etc/entry-point
@@ -77,8 +61,6 @@ done
 
 >&2 echo "Postgres is up - executing command"
 
-sh /opt/cubee/db_update/update_db.sh
-
 cd /opt/openfire/logs
 su -s /bin/bash - daemon -c "/usr/lib/jvm/jre-1.8.0-openjdk.x86_64/bin/java \
 -server -DopenfireHome=/opt/openfire -Dopenfire.lib.dir=/opt/openfire/lib \
@@ -87,7 +69,7 @@ su -s /bin/bash - daemon -c "/usr/lib/jvm/jre-1.8.0-openjdk.x86_64/bin/java \
 EOFEOF
 
 # release.zip に含まれていたファイル/ディレクトリを配置
-mv ${BUILD_DIR}/release.${NOWADAY}/globalSNS.jar ${BUILD_DIR}/spf_openfire
+mv ${WORK_DIR}/../release/globalSNS.jar ${BUILD_DIR}/spf_openfire
 
 ## イメージのビルド
 cd ${BUILD_DIR}/spf_openfire
