@@ -10,7 +10,7 @@ yum install https://download.postgresql.org/pub/repos/yum/reporpms/EL-7-x86_64/p
 
 ##
 ## install
-yum install postgresql12-server
+yum install postgresql12-server postgresql12-contrib
 
 
 ##

@@ -20,7 +20,6 @@ NEW_APNS_CERT_PW=#{DEF_PASSWORD}
 PROXY_SV_NM="spf-dckr-px-0001"
 NOWADAY=`date +"%Y%m%d-%I%M%S"`
 ADD_TENANT="false"
-#OS_VERSION=`cat /etc/redhat-release | cut -d" " -f3 | cut -d "." -f1`
 
 ##
 ## Usage
@@ -148,10 +147,6 @@ sed -i -e "s/${EX_CONF}/${TENANT_CONF}/g"      ${NEW_BUILD_DIR}/build.tenant/ent
 sed -i -e "s/${EX_HOSTNM}/${OPENFIRE_SV_NM}/g" ${NEW_BUILD_DIR}/build.tenant/entry.sql
 sed -i -e "s/${EX_C_PW}/'${C_PASSWORD}'/g"     ${NEW_BUILD_DIR}/build.tenant/entry.sql
 
-#if [ "${OS_VERSION}" == "6" ]; then
-#  sed -i -e "s/--\\i/\\i/" ${NEW_BUILD_DIR}/build/build.sql
-#fi
-
 ##
 ## Execution
 echo "Executing.."
@@ -164,10 +159,7 @@ if [ "${ADD_TENANT}" == "false" ]; then
   psql -U postgres -f build/create_user.sql
   psql -U postgres -f build/create_database.sql
 
-  # PostgreSQL 8.x
-  # psql -U postgres -f /usr/share/pgsql/contrib/pgcrypto.sql
-
-  # PostgreSQL 9.6
+  # PostgreSQL 12
   psql -U postgres globalsns -c "CREATE EXTENSION pgcrypto;"
 
   export PGPASSWORD=${A_PASSWORD}
