@@ -153,7 +153,7 @@ function DialogMurmurListView() {
                     ViewUtils.modal_allexit();
                 });
             } else if (result.content.data.items.length == 0) {
-                _self._dialogInnerElement.find('#dialog-error').text(Resource.getMessage('dialog_error_nothing_ranking'))
+                _self._dialogInnerElement.find('#dialog-error').text(Resource.getMessage('dialog_error_nothing_murmur'))
             }
         }).catch(function(err){
             _self._dialogInnerElement.find('#dialog-error').text(Resource.getMessage('dialog_error_get_ranking'))

@@ -145,7 +145,7 @@ function DialogPointRankingView(point) {
                 _self._weekRankingList = result.content.items;
                 _self._dialogAreaElement.find('#rankingList').append(setRankingListFrame(_self,_self._weekRankingList));
             } else if (result.content.itemCount == 0) {
-                _self._dialogInnerElement.find('#dialog-error').text(Resource.getMessage('dialog_error_nothing_murmur'))
+                _self._dialogInnerElement.find('#dialog-error').text(Resource.getMessage('dialog_error_nothing_ranking'))
             }
         }).catch(function(err){
             _self._dialogInnerElement.find('#dialog-error').text(Resource.getMessage('dialog_error_get_ranking'))
@@ -175,7 +175,7 @@ function DialogPointRankingView(point) {
                 _self._monthRankingList = result.content.items;
                 _self._dialogAreaElement.find('#rankingList').append(setRankingListFrame(_self,_self._monthRankingList));
             } else if (result.content.itemCount == 0) {
-                _self._dialogInnerElement.find('#dialog-error').text(Resource.getMessage('dialog_error_nothing_murmur'))
+                _self._dialogInnerElement.find('#dialog-error').text(Resource.getMessage('dialog_error_nothing_ranking'))
             }
         }).catch(function(err){
             _self._dialogInnerElement.find('#dialog-error').text(Resource.getMessage('dialog_error_get_ranking'))
@@ -205,7 +205,7 @@ function DialogPointRankingView(point) {
                 _self._yearRankingList = result.content.items;
                 _self._dialogAreaElement.find('#rankingList').append(setRankingListFrame(_self,_self._yearRankingList));
             } else if (result.content.itemCount == 0) {
-                _self._dialogInnerElement.find('#dialog-error').text(Resource.getMessage('dialog_error_nothing_murmur'))
+                _self._dialogInnerElement.find('#dialog-error').text(Resource.getMessage('dialog_error_nothing_ranking'))
             }
         }).catch(function(err){
             _self._dialogInnerElement.find('#dialog-error').text(Resource.getMessage('dialog_error_get_ranking'))
@@ -216,7 +216,7 @@ function DialogPointRankingView(point) {
         var _rankingCount= _rankingList.length;
 
         if(_rankingCount == 0){
-            showErrMessage(_self._dialogMessageToPage, Resource.getMessage('dialog_error_nothing_murmur'));
+            showErrMessage(_self._dialogMessageToPage, Resource.getMessage('dialog_error_nothing_ranking'));
             return;
         }
 
