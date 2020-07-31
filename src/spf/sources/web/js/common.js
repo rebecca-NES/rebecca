@@ -474,6 +474,8 @@ $(function(){
           columnType = clickColumnInfo.getColumnType();
       }else if(emojiStampReplayBlock.closest("#side-bar-recent").length){
           columnType = ColumnInformation.TYPE_COLUMN_RECENT;
+      }else if(emojiStampReplayBlock.closest("#side-bar-murmur").length){
+          columnType = ColumnInformation.TYPE_COLUMN_MURMUR;
       }
       var isConversationOrRecent = false;
       if(columnType == ColumnInformation.TYPE_COLUMN_SHOW_CONVERSATION ||
