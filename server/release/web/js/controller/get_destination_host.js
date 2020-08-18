@@ -1,1 +1,0 @@
-var d_host=location.hostname,d_socketio_port=3e3;"https:"==location.protocol&&(d_socketio_port=3001);

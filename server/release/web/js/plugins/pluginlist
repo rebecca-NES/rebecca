@@ -1,8 +1,0 @@
-# プラグインを読み込む場合はここに読み込むプラグインのディレクトリを追加する（プラグインはjs/plugins/プラグイン名/に置く）
-# ここに書かれたプラグイン名のディレクトリ（js/plugins/プラグイン名/）配下のmain.jsを読み込むことができる
-# ex: js/plugins/someplugin1/main.jsとjs/plugins/someplugin2/main.jsを読み込む場合
-#     (main.jsはそれぞれの読み込み起点のjavascriptファイル）
-#     someplugin1
-#     someplugin2
-#     と1行1プラグイン（ディレクトリ）とする
-login_default_tenantname
