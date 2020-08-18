@@ -33,9 +33,7 @@ def main():
     rightctl_con.close()
 
     d = datetime.datetime.today()
-    # d を使うように、修正
-    # print 'DONE. %s' % datetime.datetime.today()
-    print 'DONE. %s' % d
+    print 'DONE. %s' % datetime.datetime.today()
 
 
 def migrate(target, spf_con, rightctl_con):

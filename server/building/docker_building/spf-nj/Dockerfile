@@ -14,6 +14,8 @@ ADD ./building/docker_building/tls/private/server.key /etc/pki/tls/private/
 ADD ./building/docker_building/spf-nj/ImageMagick-7.0.7-25-make.tar.gz /
 RUN apt update && \
     apt install -y build-essential && \
+    ln -s /bin/sed /usr/bin/sed && \
+    ln -s /bin/mkdir /usr/bin/mkdir && \
     cd /ImageMagick && \
     make install && \
     ldconfig /usr/local/lib && \
@@ -41,6 +43,10 @@ RUN apt install -y nkf postgresql-client
 
 ## 実行スクリプトの配置
 ADD ./building/docker_building/spf-nj/entry-point.sh /
+
+## 実行スクリプトの配置
+ADD ./building/docker_building/spf-nj/update_db.sh /opt/cubee/db_update/
+ADD ./building/docker_building/spf-nj/rightctl_update.sql /opt/cubee/db_update/
 
 ## ポート空け、実行コマンドの設定
 EXPOSE 3000 3001 3002 3003

@@ -5,7 +5,7 @@ cd $(dirname $0)
 
 ## システムロケーションルートの設定
 if [ "${SYSTEM_LOCATION_ROOT}" == "" ]; then
-  export SYSTEM_LOCATION_ROOT=cubee
+  export SYSTEM_LOCATION_ROOT=rebecca
 fi
 
 ## 前回実行時のnginx設定ファイルの削除

@@ -4,19 +4,14 @@
 ## Docker のインストール
 ##
 
-## ドッカーのリポジトリを yum に登録
-touch /etc/yum.repos.d/docker.repo
-cat <<'EOF' > /etc/yum.repos.d/docker.repo
-[dockerrepo]
-name=Docker Repository
-baseurl=https://yum.dockerproject.org/repo/main/centos/$releasever/
-enabled=1
-gpgcheck=1
-gpgkey=https://yum.dockerproject.org/gpg
-EOF
+## 必要なパッケージのインストール
+yum install -y yum-utils device-mapper-persistent-data lvm2
+
+## リポジトリの追加
+yum-config-manager --add-repo https://download.docker.com/linux/centos/docker-ce.repo
 
 ## インストールしてバージョン確認
-yum install -y docker-engine-1.12.6
+yum install -y docker-ce-19.03.12
 docker -v
 
 ##

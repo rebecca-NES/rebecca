@@ -34,6 +34,9 @@ export CUBEE_OPENFIRE_PW=password
 export HOST_NAME=center
 export LOG_DIR=/var/log/rebecca/${HOST_NAME}/
 
+## エンドポイント設定(system location root)
+export SYSTEM_LOCATION_ROOT=rebecca 
+
 ## 初期構築テナント名、UUID、ライセンスの定義
 export TENANT_NAME=spf
 export TENANT_UUID=XXXXXXXX-XXXX-XXXX-XXXX-XXXXXXXXXXXX

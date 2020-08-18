@@ -396,3 +396,21 @@ CREATE TABLE hashtag_store (
     created_at timestamp without time zone
 );
 
+CREATE TABLE user_follow_store
+(
+  id bigserial PRIMARY KEY,
+  followee varchar(513) NOT NULL,
+  follower varchar(513) NOT NULL,
+  created_at   timestamp without time zone NOT NULL
+);
+ALTER TABLE user_follow_store ADD CONSTRAINT user_follow_uniq UNIQUE(followee,follower);
+
+CREATE TABLE murmur_store
+(
+  id bigserial PRIMARY KEY,
+  own_jid character varying(513) NOT NULL UNIQUE,
+  column_name text NOT NULL DEFAULT '',
+  created_at   timestamp without time zone NOT NULL,
+  updated_at   timestamp without time zone
+);
+

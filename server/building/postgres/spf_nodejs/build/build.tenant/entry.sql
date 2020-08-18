@@ -124,3 +124,39 @@ UPDATE tenant_store SET conf = jsonb_set(conf,'
 {
      "disclosable","apiVersion"
 }','"5.11.1"',true);
+
+insert into tenant_system_conf (conf_key,value) values ('SHOW_READ_INFO_MURMUR', 'true');
+
+UPDATE tenant_store SET conf = jsonb_set(conf,'
+{
+     "disclosable","threadTitleCategoryForMurmur"
+}
+','
+{
+  "%E9%9B%91%E6%84%9F": {
+    "id": 1,
+    "color": "#fff",
+    "bgColor": "#E64A19"
+  },
+  "%E5%85%B1%E6%9C%89": {
+    "id": 2,
+    "color": "#fff",
+    "bgColor": "#aa0"
+  },
+  "%E9%80%A3%E7%B5%A1": {
+    "id": 3,
+    "color": "#fff",
+    "bgColor": "#00a"
+  },
+  "%E7%9B%B8%E8%AB%87": {
+    "id": 4,
+    "color": "#fff",
+    "bgColor": "#a0a"
+  },
+  "%E7%96%91%E5%95%8F": {
+    "id": 5,
+    "color": "#fff",
+    "bgColor": "#0288D1"
+  }
+}
+ ',true);

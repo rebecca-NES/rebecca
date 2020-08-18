@@ -6,6 +6,11 @@
             "t": "メンバー"
         },
         {
+            "id": "guest",
+            "locale": "ja",
+            "t": "ゲスト"
+        },
+        {
             "id": "p_view_feed",
             "locale": "ja",
             "t": "フィード閲覧"
@@ -66,6 +71,14 @@
             "enable_flag": true
         },
         {
+            "action": "sendMessageToMurmur",
+            "enable_flag": true
+        },
+        {
+            "action": "viewMessageInMurmur",
+            "enable_flag": true
+        },
+        {
             "action": "createGroupchat",
             "enable_flag": true
         },
@@ -120,6 +133,21 @@
             "rights": [
                 "viewMessageInFeed",
                 "sendMessageToFeed"
+            ]
+        },
+        {
+            "id": "p_view_murmur",
+            "policy_tid": "p_view_murmur",
+            "rights": [
+                "viewMessageInMurmur"
+            ]
+        },
+        {
+            "id": "p_send_murmur",
+            "policy_tid": "p_send_murmur",
+            "rights": [
+                "viewMessageInMurmur",
+                "sendMessageToMurmur"
             ]
         },
         {
@@ -201,6 +229,15 @@
             "role_tid": "normal",
             "policies": [
                 "p_send_feed",
+                "p_create_community",
+                "p_create_groupchat",
+                "p_send_murmur"
+            ]
+        },
+        {
+            "id": "guest",
+            "role_tid": "guest",
+            "policies": [
                 "p_create_community",
                 "p_create_groupchat"
             ]

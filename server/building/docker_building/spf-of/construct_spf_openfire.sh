@@ -4,17 +4,8 @@
 ## Docker Image の構築準備
 ##
 
-# release.zip から解凍
-#if [ ! -d ${BUILD_DIR}/release.${NOWADAY} ]; then
-#  unzip ${RELEASE_ZIP} -d ${BUILD_DIR}/
-#  mv ${BUILD_DIR}/release ${BUILD_DIR}/release.${NOWADAY}
-#  cp -p ${RELEASE_ZIP} ${BUILD_DIR}/release.${NOWADAY}/
-#fi
-
 ## 構築作業用ディレクトリの用意
 if [ -d ${BUILD_DIR}/spf_openfire ]; then
-  # Docker Image（後半）構築ディレクトリをバックアップ
-#  tar cvzf ${BUILD_DIR}/release.${NOWADAY}/spf_openfire.tar.gz.${NOWADAY} ${BUILD_DIR}/spf_openfire
   # 旧ファイル/ディレクトリを削除
   rm -rf ${BUILD_DIR}/spf_openfire
 fi
@@ -78,7 +69,7 @@ su -s /bin/bash - daemon -c "/usr/lib/jvm/jre-1.8.0-openjdk.x86_64/bin/java \
 EOFEOF
 
 # release.zip に含まれていたファイル/ディレクトリを配置
-mv ${BUILD_DIR}/release.${NOWADAY}/globalSNS.jar ${BUILD_DIR}/spf_openfire
+mv ${WORK_DIR}/../release/globalSNS.jar ${BUILD_DIR}/spf_openfire
 
 ## イメージのビルド
 cd ${BUILD_DIR}/spf_openfire
