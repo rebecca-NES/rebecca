@@ -11,7 +11,7 @@
   "author": "Rebecca_Develop_Team",
   "license": "",
   "dependencies": {
-    "jquery": "^1.7.2",
+    "jquery": "^3.5.1",
     "jsdom": "^11.5.1"
   },
   "devDependencies": {
